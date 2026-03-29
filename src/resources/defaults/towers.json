@@ -1,0 +1,803 @@
+{
+    "version":  2,
+    "towers":  [
+                   {
+                       "id":  "guard_post",
+                       "displayName":  "Лучник дупла",
+                       "role":  "Р вЂќР ВµРЎв‚¬РЎвЂР Р†РЎвЂ№Р в„– Р С‘ Р Р…Р В°Р Т‘РЎвЂР В¶Р Р…РЎвЂ№Р в„– РЎРѓРЎвЂљРЎР‚Р ВµР В»Р С•Р С” Р Т‘Р В»РЎРЏ РЎР‚Р В°Р Р…Р Р…Р С‘РЎвЂ¦ Р Р†Р С•Р В»Р Р… Р С‘ РЎС“Р Т‘Р ВµРЎР‚Р В¶Р В°Р Р…Р С‘РЎРЏ Р Р†Р Р…Р ВµРЎв‚¬Р Р…Р С‘РЎвЂ¦ РЎР‚РЎС“Р С”Р В°Р Р†Р С•Р Р†.",
+                       "targeting":  "first",
+                       "note":  "Р вЂєРЎС“РЎвЂЎРЎв‚¬Р Вµ Р Р†РЎРѓР ВµР С–Р С• РЎРѓРЎвЂљР С•Р С‘РЎвЂљ Р Р…Р В° РЎР‚Р В°Р Р…Р Р…Р С‘РЎвЂ¦ РЎвЂљР С•РЎвЂЎР С”Р В°РЎвЂ¦ Р С‘ Р Т‘Р В»Р С‘Р Р…Р Р…РЎвЂ№РЎвЂ¦ Р В±Р ВµР В·Р С•Р С—Р В°РЎРѓР Р…РЎвЂ№РЎвЂ¦ Р С—РЎР‚РЎРЏР СРЎвЂ№РЎвЂ¦.",
+                       "progressionBranch":  "archer",
+                       "modulesAllowed":  true,
+                       "baseUnlockedLevel":  5,
+                       "levels":  [
+                                      {
+                                          "level":  1,
+                                          "unlockCost":  80,
+                                          "range":  25,
+                                          "fireRate":  1.20,
+                                          "damage":  16.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  2,
+                                          "unlockCost":  110,
+                                          "range":  25.8,
+                                          "fireRate":  1.34,
+                                          "damage":  24.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  3,
+                                          "unlockCost":  150,
+                                          "range":  26.6,
+                                          "fireRate":  1.50,
+                                          "damage":  34.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  4,
+                                          "unlockCost":  200,
+                                          "range":  27.4,
+                                          "fireRate":  1.68,
+                                          "damage":  47.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  5,
+                                          "unlockCost":  270,
+                                          "range":  28.2,
+                                          "fireRate":  1.88,
+                                          "damage":  63.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  6,
+                                          "unlockCost":  360,
+                                          "range":  29.2,
+                                          "fireRate":  2.05,
+                                          "damage":  82.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  7,
+                                          "unlockCost":  470,
+                                          "range":  30,
+                                          "fireRate":  2.20,
+                                          "damage":  104.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  8,
+                                          "unlockCost":  600,
+                                          "range":  30.8,
+                                          "fireRate":  2.35,
+                                          "damage":  129.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  9,
+                                          "unlockCost":  760,
+                                          "range":  31.6,
+                                          "fireRate":  2.50,
+                                          "damage":  157.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  10,
+                                          "unlockCost":  950,
+                                          "range":  32.4,
+                                          "fireRate":  2.65,
+                                          "damage":  188.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      }
+                                  ]
+                   },
+                   {
+                       "id":  "sniper_desk",
+                       "displayName":  "Арбалетчик",
+                       "role":  "Р вЂќР В°Р В»РЎРЉР Р…Р С•Р В±Р С•Р в„–Р Р…РЎвЂ№Р в„– РЎРѓРЎвЂљРЎР‚Р ВµР В»Р С•Р С” Р С—Р С• РЎвЂљРЎРЏР В¶РЎвЂР В»РЎвЂ№Р С Р С‘ Р С—РЎР‚Р С‘Р С•РЎР‚Р С‘РЎвЂљР ВµРЎвЂљР Р…РЎвЂ№Р С РЎвЂ Р ВµР В»РЎРЏР С.",
+                       "targeting":  "strongest",
+                       "note":  "Р СњРЎС“Р В¶Р ВµР Р… Р Р…Р В° Р В±Р В°Р В»Р С”Р С•Р Р…Р В°РЎвЂ¦, Р С”РЎР‚РЎвЂ№РЎв‚¬Р В°РЎвЂ¦ Р С‘ Р Р† РЎвЂћР С‘Р Р…Р В°Р В»РЎРЉР Р…Р С•Р С Р С”Р С•Р В»РЎРЉРЎвЂ Р Вµ.",
+                       "progressionBranch":  "archer",
+                       "modulesAllowed":  true,
+                       "baseUnlockedLevel":  5,
+                       "levels":  [
+                                      {
+                                          "level":  1,
+                                          "unlockCost":  130,
+                                          "range":  44,
+                                          "fireRate":  0.44,
+                                          "damage":  60.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  2,
+                                          "unlockCost":  175,
+                                          "range":  46.4,
+                                          "fireRate":  0.50,
+                                          "damage":  90.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  3,
+                                          "unlockCost":  230,
+                                          "range":  48.8,
+                                          "fireRate":  0.57,
+                                          "damage":  128.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  4,
+                                          "unlockCost":  300,
+                                          "range":  51.2,
+                                          "fireRate":  0.65,
+                                          "damage":  176.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  5,
+                                          "unlockCost":  390,
+                                          "range":  53.6,
+                                          "fireRate":  0.74,
+                                          "damage":  238.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  6,
+                                          "unlockCost":  500,
+                                          "range":  55.6,
+                                          "fireRate":  0.80,
+                                          "damage":  300.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  7,
+                                          "unlockCost":  640,
+                                          "range":  57.6,
+                                          "fireRate":  0.86,
+                                          "damage":  368.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  8,
+                                          "unlockCost":  820,
+                                          "range":  59.6,
+                                          "fireRate":  0.92,
+                                          "damage":  438.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  9,
+                                          "unlockCost":  1030,
+                                          "range":  62,
+                                          "fireRate":  0.98,
+                                          "damage":  512.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  10,
+                                          "unlockCost":  1280,
+                                          "range":  65,
+                                          "fireRate":  1.04,
+                                          "damage":  600.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      }
+                                  ]
+                   },
+                   {
+                       "id":  "rapid_security",
+                       "displayName":  "Дротикомёт",
+                       "role":  "Р вЂРЎвЂ№РЎРѓРЎвЂљРЎР‚РЎвЂ№Р в„– anti-swarm Р Т‘Р В»РЎРЏ Р В±Р ВµР С–РЎС“Р Р…Р С•Р Р†, РЎРѓР В»Р В°Р В±РЎвЂ№РЎвЂ¦ РЎвЂ Р ВµР В»Р ВµР в„– Р С‘ Р С—РЎР‚Р С‘Р В·Р Р†Р В°Р Р…Р Р…РЎвЂ№РЎвЂ¦ Р С—Р С•Р СР С•РЎвЂ°Р Р…Р С‘Р С”Р С•Р Р†.",
+                       "targeting":  "first",
+                       "note":  "Р РЋР С‘Р В»РЎРЉР Р…Р ВµР Вµ Р Р†РЎРѓР ВµР С–Р С• Р Р…Р В° РЎС“Р В·Р С”Р С‘РЎвЂ¦ РЎР‚РЎС“Р С”Р В°Р Р†Р В°РЎвЂ¦ Р С‘ Р С—Р ВµРЎР‚Р Р†РЎвЂ№РЎвЂ¦ choke points.",
+                       "progressionBranch":  "swarm",
+                       "modulesAllowed":  true,
+                       "baseUnlockedLevel":  5,
+                       "levels":  [
+                                      {
+                                          "level":  1,
+                                          "unlockCost":  120,
+                                          "range":  33,
+                                          "fireRate":  4.20,
+                                          "damage":  7.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  2,
+                                          "unlockCost":  165,
+                                          "range":  34.2,
+                                          "fireRate":  4.90,
+                                          "damage":  8.8,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  3,
+                                          "unlockCost":  220,
+                                          "range":  35.4,
+                                          "fireRate":  5.70,
+                                          "damage":  11.1,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  4,
+                                          "unlockCost":  295,
+                                          "range":  36.6,
+                                          "fireRate":  6.50,
+                                          "damage":  14.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  5,
+                                          "unlockCost":  375,
+                                          "range":  37.8,
+                                          "fireRate":  7.30,
+                                          "damage":  17.6,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  6,
+                                          "unlockCost":  470,
+                                          "range":  38.8,
+                                          "fireRate":  7.90,
+                                          "damage":  19.8,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  7,
+                                          "unlockCost":  580,
+                                          "range":  39.8,
+                                          "fireRate":  8.40,
+                                          "damage":  21.9,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  8,
+                                          "unlockCost":  710,
+                                          "range":  40.8,
+                                          "fireRate":  8.80,
+                                          "damage":  23.8,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  9,
+                                          "unlockCost":  860,
+                                          "range":  41.8,
+                                          "fireRate":  9.00,
+                                          "damage":  25.2,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  10,
+                                          "unlockCost":  1035,
+                                          "range":  43,
+                                          "fireRate":  9.20,
+                                          "damage":  26.5,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      }
+                                  ]
+                   },
+                   {
+                       "id":  "freeze_gate",
+                       "displayName":  "Ледяной тотем",
+                       "role":  "Р С™Р С•Р Р…РЎвЂљРЎР‚Р С•Р В»РЎРЉР Р…Р В°РЎРЏ Р В±Р В°РЎв‚¬Р Р…РЎРЏ РЎРѓ AOE-Р В·Р В°Р СР ВµР Т‘Р В»Р ВµР Р…Р С‘Р ВµР С Р Р† РЎвЂљР С•РЎвЂЎР С”Р Вµ РЎС“Р Т‘Р В°РЎР‚Р В°.",
+                       "targeting":  "first",
+                       "note":  "Р С›Р В±РЎРЏР В·Р В°РЎвЂљР ВµР В»Р ВµР Р… Р Р…Р В° РЎРѓР В»Р С‘РЎРЏР Р…Р С‘РЎРЏРЎвЂ¦ Р С‘ Р С—Р ВµРЎР‚Р ВµР Т‘ РЎвЂћР С‘Р Р…Р В°Р В»РЎРЉР Р…РЎвЂ№Р С Р С”Р С•Р В»РЎРЉРЎвЂ Р С•Р С.",
+                       "progressionBranch":  "frost",
+                       "modulesAllowed":  true,
+                       "baseUnlockedLevel":  5,
+                       "levels":  [
+                                      {
+                                          "level":  1,
+                                          "unlockCost":  110,
+                                          "range":  24.8,
+                                          "fireRate":  0.95,
+                                          "damage":  10.0,
+                                          "slowPercent":  0.32,
+                                          "slowDuration":  2.2
+                                      },
+                                      {
+                                          "level":  2,
+                                          "unlockCost":  145,
+                                          "range":  25.8,
+                                          "fireRate":  1.03,
+                                          "damage":  14.0,
+                                          "slowPercent":  0.40,
+                                          "slowDuration":  2.6
+                                      },
+                                      {
+                                          "level":  3,
+                                          "unlockCost":  195,
+                                          "range":  26.8,
+                                          "fireRate":  1.12,
+                                          "damage":  19.0,
+                                          "slowPercent":  0.48,
+                                          "slowDuration":  3.0
+                                      },
+                                      {
+                                          "level":  4,
+                                          "unlockCost":  255,
+                                          "range":  27.8,
+                                          "fireRate":  1.22,
+                                          "damage":  25.0,
+                                          "slowPercent":  0.56,
+                                          "slowDuration":  3.4
+                                      },
+                                      {
+                                          "level":  5,
+                                          "unlockCost":  325,
+                                          "range":  28.8,
+                                          "fireRate":  1.34,
+                                          "damage":  33.0,
+                                          "slowPercent":  0.64,
+                                          "slowDuration":  3.9
+                                      },
+                                      {
+                                          "level":  6,
+                                          "unlockCost":  410,
+                                          "range":  29.6,
+                                          "fireRate":  1.43,
+                                          "damage":  38.0,
+                                          "slowPercent":  0.68,
+                                          "slowDuration":  4.2
+                                      },
+                                      {
+                                          "level":  7,
+                                          "unlockCost":  510,
+                                          "range":  30.4,
+                                          "fireRate":  1.52,
+                                          "damage":  42.0,
+                                          "slowPercent":  0.71,
+                                          "slowDuration":  4.5
+                                      },
+                                      {
+                                          "level":  8,
+                                          "unlockCost":  630,
+                                          "range":  31.2,
+                                          "fireRate":  1.60,
+                                          "damage":  45.0,
+                                          "slowPercent":  0.74,
+                                          "slowDuration":  4.8
+                                      },
+                                      {
+                                          "level":  9,
+                                          "unlockCost":  770,
+                                          "range":  31.8,
+                                          "fireRate":  1.68,
+                                          "damage":  47.0,
+                                          "slowPercent":  0.76,
+                                          "slowDuration":  5.0
+                                      },
+                                      {
+                                          "level":  10,
+                                          "unlockCost":  940,
+                                          "range":  32.4,
+                                          "fireRate":  1.75,
+                                          "damage":  49.0,
+                                          "slowPercent":  0.88,
+                                          "slowDuration":  6.5
+                                      }
+                                  ]
+                   },
+                   {
+                       "id":  "shock_relay",
+                       "displayName":  "Электрический Ленивец",
+                       "role":  "Р В¦Р ВµР С—Р Р…Р В°РЎРЏ Р В±Р В°РЎв‚¬Р Р…РЎРЏ Р Т‘Р В»РЎРЏ Р С—Р В»Р С•РЎвЂљР Р…РЎвЂ№РЎвЂ¦ Р С—Р В°РЎвЂЎР ВµР С” Р С‘ РЎвЂ Р ВµР Р…РЎвЂљРЎР‚Р В°Р В»РЎРЉР Р…РЎвЂ№РЎвЂ¦ kill zones.",
+                       "targeting":  "first",
+                       "note":  "Р вЂєРЎС“РЎвЂЎРЎв‚¬Р Вµ Р Р†РЎРѓР ВµР С–Р С• РЎР‚Р В°Р В±Р С•РЎвЂљР В°Р ВµРЎвЂљ Р С—Р С•РЎРѓР В»Р Вµ Р С—Р С•Р Р†Р С•РЎР‚Р С•РЎвЂљР С•Р Р† Р С‘ Р Р† Р СР ВµРЎРѓРЎвЂљР В°РЎвЂ¦, Р С–Р Т‘Р Вµ Р Р†РЎР‚Р В°Р С–Р С‘ РЎРѓР В±Р С‘Р Р†Р В°РЎР‹РЎвЂљРЎРѓРЎРЏ Р Р† Р В»Р С‘Р Р…Р С‘РЎР‹.",
+                       "progressionBranch":  "swarm",
+                       "modulesAllowed":  true,
+                       "baseUnlockedLevel":  5,
+                       "levels":  [
+                                      {
+                                          "level":  1,
+                                          "unlockCost":  145,
+                                          "range":  33,
+                                          "fireRate":  0.90,
+                                          "damage":  22.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  2,
+                                          "unlockCost":  195,
+                                          "range":  34.2,
+                                          "fireRate":  1.00,
+                                          "damage":  31.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  3,
+                                          "unlockCost":  255,
+                                          "range":  35.4,
+                                          "fireRate":  1.12,
+                                          "damage":  43.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  4,
+                                          "unlockCost":  330,
+                                          "range":  36.6,
+                                          "fireRate":  1.24,
+                                          "damage":  58.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  5,
+                                          "unlockCost":  420,
+                                          "range":  37.8,
+                                          "fireRate":  1.36,
+                                          "damage":  76.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  6,
+                                          "unlockCost":  530,
+                                          "range":  38.8,
+                                          "fireRate":  1.48,
+                                          "damage":  88.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  7,
+                                          "unlockCost":  660,
+                                          "range":  39.8,
+                                          "fireRate":  1.60,
+                                          "damage":  99.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  8,
+                                          "unlockCost":  820,
+                                          "range":  40.8,
+                                          "fireRate":  1.76,
+                                          "damage":  108.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  9,
+                                          "unlockCost":  1010,
+                                          "range":  41.8,
+                                          "fireRate":  1.92,
+                                          "damage":  116.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  10,
+                                          "unlockCost":  1240,
+                                          "range":  43,
+                                          "fireRate":  2.05,
+                                          "damage":  124.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      }
+                                  ]
+                   },
+                   {
+                       "id":  "armor_drill",
+                       "displayName":  "Корнеплюй",
+                       "role":  "Р СћРЎРЏР В¶РЎвЂР В»Р С•Р Вµ anti-tank Р С•РЎР‚РЎС“Р В¶Р С‘Р Вµ Р С—РЎР‚Р С•РЎвЂљР С‘Р Р† Р С–РЎР‚Р С•Р СР С‘Р В», РЎРЊР В»Р С‘РЎвЂљРЎвЂ№ Р С‘ Р В±Р С•РЎРѓРЎРѓР С•Р Р†.",
+                       "targeting":  "strongest",
+                       "note":  "Р СњРЎС“Р В¶Р ВµР Р… Р Р† РЎвЂ Р ВµР Р…РЎвЂљРЎР‚Р Вµ Р С‘ Р Р…Р В° Р С—Р С•РЎРѓР В»Р ВµР Т‘Р Р…Р ВµР С РЎР‚РЎС“Р В±Р ВµР В¶Р Вµ.",
+                       "progressionBranch":  "siege",
+                       "modulesAllowed":  true,
+                       "baseUnlockedLevel":  5,
+                       "levels":  [
+                                      {
+                                          "level":  1,
+                                          "unlockCost":  170,
+                                          "range":  33,
+                                          "fireRate":  0.33,
+                                          "damage":  105.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  2,
+                                          "unlockCost":  230,
+                                          "range":  34.2,
+                                          "fireRate":  0.38,
+                                          "damage":  155.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  3,
+                                          "unlockCost":  305,
+                                          "range":  35.4,
+                                          "fireRate":  0.44,
+                                          "damage":  220.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  4,
+                                          "unlockCost":  400,
+                                          "range":  36.6,
+                                          "fireRate":  0.51,
+                                          "damage":  305.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  5,
+                                          "unlockCost":  520,
+                                          "range":  37.8,
+                                          "fireRate":  0.58,
+                                          "damage":  420.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  6,
+                                          "unlockCost":  670,
+                                          "range":  38.8,
+                                          "fireRate":  0.64,
+                                          "damage":  500.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  7,
+                                          "unlockCost":  850,
+                                          "range":  39.8,
+                                          "fireRate":  0.71,
+                                          "damage":  590.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  8,
+                                          "unlockCost":  1070,
+                                          "range":  40.8,
+                                          "fireRate":  0.78,
+                                          "damage":  690.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  9,
+                                          "unlockCost":  1330,
+                                          "range":  41.8,
+                                          "fireRate":  0.84,
+                                          "damage":  800.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  10,
+                                          "unlockCost":  1640,
+                                          "range":  43,
+                                          "fireRate":  0.90,
+                                          "damage":  930.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      }
+                                  ]
+                   },
+                   {
+                       "id":  "heart_of_roots",
+                       "displayName":  "Сердце корней",
+                       "role":  "Р С›Р Т‘Р Р…Р С•РЎР‚Р В°Р В·Р С•Р Р†Р В°РЎРЏ РЎРѓРЎС“Р С—Р ВµРЎР‚-Р В±Р В°РЎв‚¬Р Р…РЎРЏ-РЎР‚Р С‘РЎвЂљРЎС“Р В°Р В»: Р Р†РЎР‚РЎС“РЎвЂЎР Р…РЎС“РЎР‹ Р В°Р С”РЎвЂљР С‘Р Р†Р С‘РЎР‚РЎС“Р ВµРЎвЂљРЎРѓРЎРЏ Р Р†Р С• Р Р†РЎР‚Р ВµР СРЎРЏ Р Р†Р С•Р В»Р Р…РЎвЂ№ Р С‘ Р Т‘Р В°РЎвЂРЎвЂљ Р Р†РЎРѓР ВµР С Р В±Р В°РЎв‚¬Р Р…РЎРЏР С +30% РЎС“РЎР‚Р С•Р Р…Р В° Р Т‘Р С• Р ВµРЎвЂ Р С”Р С•Р Р…РЎвЂ Р В°.",
+                       "targeting":  "first",
+                       "note":  "Р РЋРЎвЂљР В°Р Р†РЎРЉ Р В·Р В°РЎР‚Р В°Р Р…Р ВµР Вµ, Р В° Р С—РЎР‚Р С•Р В¶Р С‘Р СР В°Р в„– Р Р…Р В° РЎвЂљРЎРЏР В¶РЎвЂР В»Р С•Р в„– Р Р†Р С•Р В»Р Р…Р Вµ Р С‘Р В»Р С‘ Р С—Р ВµРЎР‚Р ВµР Т‘ Р В±Р С•РЎРѓРЎРѓР С•Р С. Р СџР С•РЎРѓР В»Р Вµ Р В°Р С”РЎвЂљР С‘Р Р†Р В°РЎвЂ Р С‘Р С‘ Р РЋР ВµРЎР‚Р Т‘РЎвЂ Р Вµ Р С”Р С•РЎР‚Р Р…Р ВµР в„– РЎР‚Р В°РЎРѓРЎРѓРЎвЂ№Р С—Р В°Р ВµРЎвЂљРЎРѓРЎРЏ.",
+                       "progressionBranch":  "roots",
+                       "superTower":  true,
+                       "modulesAllowed":  false,
+                       "baseUnlockedLevel":  1,
+                       "levels":  [
+                                      {
+                                          "level":  1,
+                                          "unlockCost":  900,
+                                          "range":  28,
+                                          "fireRate":  0.32,
+                                          "damage":  48.0,
+                                          "slowPercent":  0.78,
+                                          "slowDuration":  3.0
+                                      },
+                                      {
+                                          "level":  2,
+                                          "unlockCost":  1350,
+                                          "range":  30.4,
+                                          "fireRate":  0.36,
+                                          "damage":  76.0,
+                                          "slowPercent":  0.84,
+                                          "slowDuration":  3.6
+                                      },
+                                      {
+                                          "level":  3,
+                                          "unlockCost":  1900,
+                                          "range":  32.8,
+                                          "fireRate":  0.42,
+                                          "damage":  112.0,
+                                          "slowPercent":  0.90,
+                                          "slowDuration":  4.2
+                                      }
+                                  ]
+                   },
+                   {
+                       "id":  "storm_monolith",
+                       "displayName":  "Штормовой монолит",
+                       "role":  "Р С›Р Т‘Р Р…Р С•РЎР‚Р В°Р В·Р С•Р Р†Р В°РЎРЏ РЎРѓРЎС“Р С—Р ВµРЎР‚-Р В·Р В°РЎвЂ°Р С‘РЎвЂљР В° Р Т‘РЎС“Р С—Р В»Р В°: Р С—РЎР‚Р С‘ Р С—РЎР‚Р С•РЎР‚РЎвЂ№Р Р†Р Вµ Р С•РЎвЂљР СР ВµР Р…РЎРЏР ВµРЎвЂљ РЎС“РЎР‚Р С•Р Р…, Р С•РЎвЂљР В±РЎР‚Р В°РЎРѓРЎвЂ№Р Р†Р В°Р ВµРЎвЂљ Р Р†РЎРѓРЎР‹ Р Р†Р С•Р В»Р Р…РЎС“ Р С” РЎРѓР С—Р В°Р Р†Р Р…Р В°Р С Р С‘ Р В»Р С•Р СР В°Р ВµРЎвЂљРЎРѓРЎРЏ.",
+                       "targeting":  "first",
+                       "note":  "Р СџР С•Р С”РЎС“Р С—Р В°Р ВµРЎвЂљРЎРѓРЎРЏ Р С”Р В°Р С” РЎРѓРЎвЂљРЎР‚Р В°РЎвЂ¦Р С•Р Р†Р С”Р В° Р Р…Р В° Р С”РЎР‚Р С‘РЎвЂљР С‘РЎвЂЎР ВµРЎРѓР С”Р С‘Р в„– Р С—РЎР‚Р С•РЎР‚РЎвЂ№Р Р†. Р СџР С•РЎРѓР В»Р Вµ РЎРѓРЎР‚Р В°Р В±Р В°РЎвЂљРЎвЂ№Р Р†Р В°Р Р…Р С‘РЎРЏ Р С‘РЎРѓРЎвЂЎР ВµР В·Р В°Р ВµРЎвЂљ.",
+                       "progressionBranch":  "monolith",
+                       "superTower":  true,
+                       "modulesAllowed":  false,
+                       "baseUnlockedLevel":  1,
+                       "levels":  [
+                                      {
+                                          "level":  1,
+                                          "unlockCost":  1250,
+                                          "range":  48,
+                                          "fireRate":  0.08,
+                                          "damage":  420.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  2,
+                                          "unlockCost":  1900,
+                                          "range":  52,
+                                          "fireRate":  0.10,
+                                          "damage":  620.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  3,
+                                          "unlockCost":  2700,
+                                          "range":  56,
+                                          "fireRate":  0.12,
+                                          "damage":  900.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      }
+                                  ]
+                   },
+                   {
+                       "id":  "seed_idol",
+                       "displayName":  "Идол урожая",
+                       "role":  "Р ВР Р…Р Р†Р ВµРЎРѓРЎвЂљР С‘РЎвЂ Р С‘Р С•Р Р…Р Р…Р В°РЎРЏ РЎРѓРЎС“Р С—Р ВµРЎР‚-Р В±Р В°РЎв‚¬Р Р…РЎРЏ: РЎР‚Р ВµР В¶Р С‘Р С Р Р†РЎвЂ№Р В±Р С‘РЎР‚Р В°Р ВµРЎвЂљРЎРѓРЎРЏ Р С—РЎР‚Р С‘ РЎС“РЎРѓРЎвЂљР В°Р Р…Р С•Р Р†Р С”Р Вµ, Р В° Р Р…Р В°Р С–РЎР‚Р В°Р Т‘Р В° Р С—РЎР‚Р С‘РЎвЂ¦Р С•Р Т‘Р С‘РЎвЂљ РЎвЂљР С•Р В»РЎРЉР С”Р С• Р Р…Р В° Р С”Р В°Р В¶Р Т‘Р С•Р в„– Р С—РЎРЏРЎвЂљР С•Р в„– Р Р†Р С•Р В»Р Р…Р Вµ.",
+                       "targeting":  "first",
+                       "note":  "Р В Р ВµР В¶Р С‘Р С \u0027Р Р€РЎР‚Р С•Р В¶Р В°Р в„–\u0027 Р Т‘Р В°РЎвЂРЎвЂљ Р В±Р С•Р В»РЎРЉРЎв‚¬Р Вµ Р СР С•Р Р…Р ВµРЎвЂљ. Р В Р ВµР В¶Р С‘Р С \u0027Р С›Р В±Р ВµРЎР‚Р ВµР С–\u0027 Р Т‘Р В°РЎвЂРЎвЂљ Р СР ВµР Р…РЎРЉРЎв‚¬Р Вµ Р СР С•Р Р…Р ВµРЎвЂљ, Р Р…Р С• Р Т‘Р С•Р В±Р В°Р Р†Р В»РЎРЏР ВµРЎвЂљ РЎвЂ°Р С‘РЎвЂљ Р Т‘РЎС“Р С—Р В»Р В°, Р ВµРЎРѓР В»Р С‘ Р С•Р Р… Р ВµРЎвЂ°РЎвЂ Р Р…Р Вµ Р В·Р В°Р С—Р С•Р В»Р Р…Р ВµР Р….",
+                       "progressionBranch":  "idol",
+                       "superTower":  true,
+                       "modulesAllowed":  false,
+                       "baseUnlockedLevel":  1,
+                       "levels":  [
+                                      {
+                                          "level":  1,
+                                          "unlockCost":  1000,
+                                          "range":  0,
+                                          "fireRate":  0.0,
+                                          "damage":  0.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  2,
+                                          "unlockCost":  1500,
+                                          "range":  0,
+                                          "fireRate":  0.0,
+                                          "damage":  0.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      },
+                                      {
+                                          "level":  3,
+                                          "unlockCost":  2200,
+                                          "range":  0,
+                                          "fireRate":  0.0,
+                                          "damage":  0.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      }
+                                  ]
+                   },
+                   {
+                       "id":  "root_snare",
+                       "displayName":  "Корневая хватка",
+                       "role":  "Р С›Р Т‘Р Р…Р С•РЎР‚Р В°Р В·Р С•Р Р†Р В°РЎРЏ Р В»Р С•Р Р†РЎС“РЎв‚¬Р С”Р В°: Р Р…Р В°Р С–Р В»РЎС“РЎвЂ¦Р С• РЎРѓРЎвЂљР С•Р С—Р С•РЎР‚Р С‘РЎвЂљ Р С—Р В°РЎвЂЎР С”РЎС“ Р Р† Р В±Р С•Р В»РЎРЉРЎв‚¬Р С•Р С РЎР‚Р В°Р Т‘Р С‘РЎС“РЎРѓР Вµ.",
+                       "targeting":  "first",
+                       "note":  "Р РЋР С‘Р В»РЎРЉР Р…Р ВµР Вµ Р Р†РЎРѓР ВµР С–Р С• Р Р† Р В·Р С•Р Р…Р В°РЎвЂ¦ РЎРѓР В»Р С‘РЎРЏР Р…Р С‘РЎРЏ Р С‘ Р С—Р ВµРЎР‚Р ВµР Т‘ Р Т‘РЎС“Р С—Р В»Р С•Р С.",
+                       "progressionBranch":  "trap",
+                       "trapTower":  true,
+                       "modulesAllowed":  false,
+                       "baseUnlockedLevel":  1,
+                       "levels":  [
+                                      {
+                                          "level":  1,
+                                          "unlockCost":  140,
+                                          "range":  9.6,
+                                          "fireRate":  0.0,
+                                          "damage":  18.0,
+                                          "slowPercent":  1.0,
+                                          "slowDuration":  2.6
+                                      }
+                                  ]
+                   },
+                   {
+                       "id":  "spore_mine",
+                       "displayName":  "Споровая мина",
+                       "role":  "Р С›Р Т‘Р Р…Р С•РЎР‚Р В°Р В·Р С•Р Р†Р В°РЎРЏ Р Р†Р В·РЎР‚РЎвЂ№Р Р†Р Р…Р В°РЎРЏ Р В»Р С•Р Р†РЎС“РЎв‚¬Р С”Р В° Р С—РЎР‚Р С•РЎвЂљР С‘Р Р† Р С—Р В»Р С•РЎвЂљР Р…РЎвЂ№РЎвЂ¦ Р С—Р В°РЎвЂЎР ВµР С”.",
+                       "targeting":  "first",
+                       "note":  "Р вЂєРЎС“РЎвЂЎРЎв‚¬Р В°РЎРЏ Р В»Р С•Р Р†РЎС“РЎв‚¬Р С”Р В° Р Т‘Р В»РЎРЏ РЎР‚Р С•Р ВµР Р† Р С‘ РЎС“Р В·Р С”Р С‘РЎвЂ¦ choke points.",
+                       "progressionBranch":  "trap",
+                       "trapTower":  true,
+                       "modulesAllowed":  false,
+                       "baseUnlockedLevel":  1,
+                       "levels":  [
+                                      {
+                                          "level":  1,
+                                          "unlockCost":  180,
+                                          "range":  8.8,
+                                          "fireRate":  0.0,
+                                          "damage":  220.0,
+                                          "slowPercent":  0.0,
+                                          "slowDuration":  0.0
+                                      }
+                                  ]
+                   },
+                   {
+                       "id":  "frost_seal",
+                       "displayName":  "Ледяная печать",
+                       "role":  "Р С›Р Т‘Р Р…Р С•РЎР‚Р В°Р В·Р С•Р Р†Р В°РЎРЏ utility-Р В»Р С•Р Р†РЎС“РЎв‚¬Р С”Р В°: Р С”РЎР‚РЎС“Р С—Р Р…Р В°РЎРЏ Р В·Р С•Р Р…Р В° Р В·Р В°Р СР ВµР Т‘Р В»Р ВµР Р…Р С‘РЎРЏ.",
+                       "targeting":  "first",
+                       "note":  "Р вЂќР ВµРЎв‚¬Р ВµР Р†Р В»Р Вµ Р Т‘РЎР‚РЎС“Р С–Р С‘РЎвЂ¦ Р В»Р С•Р Р†РЎС“РЎв‚¬Р ВµР С”, Р Р…Р С• РЎРѓР С‘Р В»РЎРЉР Р…Р В° Р С—Р С• Р С”Р С•Р Р…РЎвЂљРЎР‚Р С•Р В»РЎР‹.",
+                       "progressionBranch":  "trap",
+                       "trapTower":  true,
+                       "modulesAllowed":  false,
+                       "baseUnlockedLevel":  1,
+                       "levels":  [
+                                      {
+                                          "level":  1,
+                                          "unlockCost":  110,
+                                          "range":  9.2,
+                                          "fireRate":  0.0,
+                                          "damage":  34.0,
+                                          "slowPercent":  0.62,
+                                          "slowDuration":  4.4
+                                      }
+                                  ]
+                   }
+               ]
+}

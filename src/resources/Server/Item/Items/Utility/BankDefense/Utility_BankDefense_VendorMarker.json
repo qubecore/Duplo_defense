@@ -1,0 +1,42 @@
+{
+  "TranslationProperties": {
+    "Name": "Progression Marker",
+    "Description": "Invisible interaction carrier for the DUPLO Defense progression UI."
+  },
+  "Categories": [],
+  "Icon": "Icons/ItemsGenerated/Weapon_Handgun.png",
+  "IconProperties": {
+    "Scale": 0.67,
+    "Translation": [0.69, -10.11],
+    "Rotation": [315, 90, 0]
+  },
+  "PlayerAnimationsId": "Item",
+  "MaxStack": 1,
+  "Quality": "Technical",
+  "BlockType": {
+    "DrawType": "Empty",
+    "Material": "Solid",
+    "Opacity": "Transparent",
+    "HitboxType": "Full",
+    "InteractionHitboxType": "Full",
+    "IgnoreSupportWhenPlaced": true,
+    "InteractionHint": "Talk to the keeper [F]",
+    "AllowsMultipleUsers": true,
+    "Interactions": {
+      "Use": {
+        "Cooldown": {
+          "Id": "BankDefense_VendorMarker_Use",
+          "Cooldown": 0.05
+        },
+        "Interactions": [
+          {
+            "Type": "OpenCustomUI",
+            "Page": {
+              "Id": "BankDefenseProgression"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

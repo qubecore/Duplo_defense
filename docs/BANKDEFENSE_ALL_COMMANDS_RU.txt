@@ -1,0 +1,818 @@
+Полный список команд BankDefense
+
+Префикс:
+/bankdefense
+
+Обозначения:
+- <...> = обязательный аргумент
+- [...] = необязательный аргумент
+- если аргумент не указан, берётся значение по умолчанию
+
+================================================================
+1. Диагностика и общий статус
+================================================================
+
+/bankdefense status
+Показывает общий статус мира: конфиги, маркеры, маршруты, слоты, матч, прогрессию, визуализацию и результаты валидации.
+
+/bankdefense duostatus
+Показывает статус только Duo-режима: duo NPC, duo старты, duo спавны, duo маршруты, duo chest points, duo слоты и duo validation.
+
+/bankdefense validate
+Проверяет файлы и данные карты на ошибки.
+
+================================================================
+2. Матч, режимы, волны, тестовый режим
+================================================================
+
+/bankdefense match solo
+Переключает мир в Solo-режим.
+
+/bankdefense match duo
+Переключает мир в Duo-режим.
+
+/bankdefense match start
+Начинает игру или запускает следующую волну.
+
+/bankdefense match reset
+Сбрасывает текущий матч.
+
+/bankdefense start
+Быстрый алиас для /bankdefense match start.
+
+/bankdefense reset
+Быстрый алиас для /bankdefense match reset.
+
+/bankdefense duotest on
+Включает Duo solo-test режим: можно тестировать Duo одному.
+
+/bankdefense duotest off
+Выключает Duo solo-test режим и возвращает обычные правила Duo.
+
+/bankdefense duotest status
+Показывает, включён ли Duo solo-test режим.
+
+/bankdefense duofillmax
+Для тестов заполняет все Duo-пады самыми дорогими башнями максимального уровня.
+
+/bankdefense reward
+Открывает текущее окно выбора модульной награды, если награда сейчас активна.
+
+/bankdefense rewardmenu
+Принудительно подготавливает и открывает меню модульной награды.
+
+/bankdefense ranges
+Переключает показ радиусов башен.
+
+================================================================
+3. HUD, меню и UI
+================================================================
+
+/bankdefense hud on
+Показывает кастомный HUD BankDefense для текущего игрока.
+
+/bankdefense hud off
+Скрывает кастомный HUD BankDefense для текущего игрока.
+
+/bankdefense hud toggle
+Переключает состояние кастомного HUD BankDefense.
+
+/bankdefense hud status
+Показывает, включён ли кастомный HUD BankDefense у текущего игрока.
+
+/bankdefense menu
+Открывает чит-меню/служебное меню BankDefense.
+
+/bankdefense progression
+Открывает дерево прогрессии.
+
+================================================================
+4. Прогрессия, статистика, обучение
+================================================================
+
+/bankdefense progressreset
+Сбрасывает прогрессию, ядра/осколки и связанные улучшения.
+
+/bankdefense statsreset
+Сбрасывает статистику режима.
+
+/bankdefense tutorialreset
+Перезапускает обучение и возвращает игрока к обучающему NPC.
+
+/bankdefense tutorialskip
+Пропускает обучение и отмечает его завершённым.
+
+================================================================
+5. Редакторские права и перемещение
+================================================================
+
+/bankdefense nobuild on
+Включает блокировку редактирования карты.
+
+/bankdefense nobuild off
+Выключает блокировку редактирования карты.
+
+/bankdefense nobuild status
+Показывает состояние блокировки редактирования карты.
+
+/bankdefense buildertools on
+Включает builder tools для текущего игрока.
+
+/bankdefense buildertools off
+Выключает builder tools для текущего игрока.
+
+/bankdefense buildertools status
+Показывает состояние builder tools.
+
+/bankdefense mobility on
+Включает полёт и ускорение x5 для текущего игрока.
+
+/bankdefense mobility off
+Выключает полёт и ускорение.
+
+/bankdefense mobility status
+Показывает состояние полёта и ускорения.
+
+================================================================
+6. Деньги, башни и быстрые действия рядом с игроком
+================================================================
+
+/bankdefense money add <amount>
+Добавляет указанное количество монет в текущий матч.
+
+/bankdefense money set <amount>
+Устанавливает точный баланс монет в текущем матче.
+
+/bankdefense towers
+Показывает все доступные id башен.
+
+/bankdefense build <towerId>
+Строит башню с указанным id в ближайшем слоте.
+
+/bankdefense upgrade
+Улучшает ближайшую башню.
+
+/bankdefense sell
+Продаёт ближайшую башню.
+
+================================================================
+7. Визуализация и refresh
+================================================================
+
+/bankdefense visual refresh
+Обновляет и включает визуализацию.
+
+/bankdefense visual clear
+Очищает и выключает визуализацию.
+
+/bankdefense visual status
+Показывает детальный статус визуализации.
+
+/bankdefense refresh
+Быстрый алиас для visual refresh.
+
+/bankdefense visualclear
+Быстрый алиас для visual clear.
+
+/bankdefense visualstatus
+Быстрый алиас для visual status.
+
+================================================================
+8. Общие marker-команды
+================================================================
+
+/bankdefense marker set <marker>
+Ставит маркер с указанным id в текущую позицию игрока.
+
+/bankdefense marker clear <marker>
+Очищает маркер с указанным id.
+
+/bankdefense markerset <marker>
+Быстрый алиас для marker set.
+
+/bankdefense markerclear <marker>
+Быстрый алиас для marker clear.
+
+Поддерживаемые marker id для marker set/clear:
+- spawn_a
+- spawn_b
+- spawn_c
+- bank
+- vault
+- playerstart
+- control
+- vendor
+- mode
+- statistics
+- tutorialstart
+- tutorialspawna
+- tutorialspawnb
+- tutorialspawnc
+- tutorialbank
+- tutorialvault
+- tutorialcontrol
+- tutorialvendor
+- wizardintro
+- tutorialwizard
+- duoplayerblue
+- duoplayergreen
+- duospawnblue
+- duospawngreen
+- duobank
+- duovault
+- duosealblue
+- duosealgreen
+- duostats
+- duoteam
+- duoteleportnpc
+- teleportduo
+- teleportsolo
+
+================================================================
+9. Tutorial marker-команды
+================================================================
+
+/bankdefense marktutorialstart
+Ставит старт обучения.
+
+/bankdefense marktutorialplayerstart
+Ставит точку старта игрока в обучении.
+
+/bankdefense marktutorialspawna
+Ставит tutorial spawn A.
+
+/bankdefense marktutorialspawnb
+Ставит tutorial spawn B.
+
+/bankdefense marktutorialspawnc
+Ставит tutorial spawn C.
+
+/bankdefense marktutorialbank
+Ставит центр обучения.
+
+/bankdefense marktutorialvault
+Ставит дупло обучения.
+
+/bankdefense marktutorialcontrol
+Ставит tutorial operator.
+
+/bankdefense marktutorialoperator
+То же самое, что marktutorialcontrol.
+
+/bankdefense marktutorialvendor
+Ставит tutorial keeper/vendor.
+
+/bankdefense marktutorialkeeper
+То же самое, что marktutorialvendor.
+
+/bankdefense markwizardintro
+Ставит вступительного Квибека.
+
+/bankdefense marktutorialwizard
+Ставит Квибека обучения.
+
+/bankdefense cleartutorialstart
+Очищает старт обучения.
+
+/bankdefense cleartutorialplayerstart
+Очищает точку старта игрока в обучении.
+
+/bankdefense cleartutorialspawna
+Очищает tutorial spawn A.
+
+/bankdefense cleartutorialspawnb
+Очищает tutorial spawn B.
+
+/bankdefense cleartutorialspawnc
+Очищает tutorial spawn C.
+
+/bankdefense cleartutorialbank
+Очищает центр обучения.
+
+/bankdefense cleartutorialvault
+Очищает дупло обучения.
+
+/bankdefense cleartutorialcontrol
+Очищает tutorial operator.
+
+/bankdefense cleartutorialoperator
+То же самое, что cleartutorialcontrol.
+
+/bankdefense cleartutorialvendor
+Очищает tutorial keeper/vendor.
+
+/bankdefense cleartutorialkeeper
+То же самое, что cleartutorialvendor.
+
+/bankdefense clearwizardintro
+Очищает вступительного Квибека.
+
+/bankdefense cleartutorialwizard
+Очищает Квибека обучения.
+
+/bankdefense marktutorialchest
+Ставит учебный сундук в текущую точку.
+
+/bankdefense cleartutorialchest
+Очищает учебный сундук.
+
+/bankdefense marktutorialtrap
+Ставит учебную ловушечную площадку.
+
+/bankdefense cleartutorialtraps
+Очищает все учебные ловушечные площадки.
+
+================================================================
+10. Solo / общие маркеры карты
+================================================================
+
+/bankdefense markspawna
+Ставит spawn A.
+
+/bankdefense markspawnb
+Ставит spawn B.
+
+/bankdefense markspawnc
+Ставит spawn C.
+
+/bankdefense markbank
+Ставит маркер банка.
+
+/bankdefense markvault
+Ставит маркер дупла/Hollow.
+
+/bankdefense markplayerstart
+Ставит старт игрока.
+
+/bankdefense markcontrol
+Ставит оператора.
+
+/bankdefense markvendor
+Ставит хранителя улучшений/vendor NPC.
+
+/bankdefense markmode
+Ставит NPC телепорта/выбора режима.
+
+/bankdefense marksolostats
+Ставит NPC статистики Solo.
+
+/bankdefense markqubecoresolo
+Ставит отдельного NPC QubeCore на Solo-карте.
+
+/bankdefense markqubecoreduo
+Ставит отдельного NPC QubeCore на Duo-карте.
+
+/bankdefense markduo
+Старый алиас для Solo-side QubeCore. Для новых карт лучше использовать /bankdefense markqubecoresolo.
+
+/bankdefense markstats
+Ставит NPC статистики через старую короткую команду.
+
+/bankdefense clearspawna
+Очищает spawn A.
+
+/bankdefense clearspawnb
+Очищает spawn B.
+
+/bankdefense clearspawnc
+Очищает spawn C.
+
+/bankdefense clearbank
+Очищает банк.
+
+/bankdefense clearvault
+Очищает дупло/Hollow.
+
+/bankdefense clearplayerstart
+Очищает старт игрока.
+
+/bankdefense clearcontrol
+Очищает оператора.
+
+/bankdefense clearvendor
+Очищает vendor NPC.
+
+/bankdefense clearmode
+Очищает NPC телепорта/режима.
+
+/bankdefense clearsolostats
+Очищает NPC статистики Solo.
+
+/bankdefense clearqubecoresolo
+Очищает NPC QubeCore на Solo-карте.
+
+/bankdefense clearqubecoreduo
+Очищает NPC QubeCore на Duo-карте.
+
+/bankdefense clearduo
+Старый алиас для очистки Solo-side QubeCore. Для новых карт лучше использовать /bankdefense clearqubecoresolo.
+
+/bankdefense clearstats
+Очищает NPC статистики через старую короткую команду.
+
+================================================================
+11. Duo marker-команды
+================================================================
+
+/bankdefense markduoplayerblue
+Ставит старт синего игрока Duo.
+
+/bankdefense markduoplayergreen
+Ставит старт зелёного игрока Duo.
+
+/bankdefense markduospawnblue
+Ставит spawn синего маршрута Duo.
+
+/bankdefense markduospawngreen
+Ставит spawn зелёного маршрута Duo.
+
+/bankdefense markduobank
+Ставит центр Duo-карты.
+
+/bankdefense markduovault
+Ставит Hollow Duo-карты.
+
+/bankdefense markduosealblue
+Ставит seal node синего фронта.
+
+/bankdefense markduosealgreen
+Ставит seal node зелёного фронта.
+
+/bankdefense markduostats
+Ставит NPC статистики Duo.
+
+/bankdefense markqubecoreduo
+Ставит NPC QubeCore на Duo-карте.
+
+/bankdefense markduoteam
+Ставит NPC выбора стороны на Duo-карте.
+
+/bankdefense markduoteleportnpc
+Ставит NPC телепорта на Duo-карте.
+
+/bankdefense markteleportduo
+Ставит точку, куда игрок прилетает на Duo-карте.
+
+/bankdefense markteleportsolo
+Ставит точку, куда игрок прилетает на Solo-карте.
+
+/bankdefense clearduoplayerblue
+Очищает старт синего игрока Duo.
+
+/bankdefense clearduoplayergreen
+Очищает старт зелёного игрока Duo.
+
+/bankdefense clearduospawnblue
+Очищает spawn синего маршрута Duo.
+
+/bankdefense clearduospawngreen
+Очищает spawn зелёного маршрута Duo.
+
+/bankdefense clearduobank
+Очищает центр Duo-карты.
+
+/bankdefense clearduovault
+Очищает Hollow Duo-карты.
+
+/bankdefense clearduosealblue
+Очищает seal node синего фронта.
+
+/bankdefense clearduosealgreen
+Очищает seal node зелёного фронта.
+
+/bankdefense clearduostats
+Очищает NPC статистики Duo.
+
+/bankdefense clearqubecoreduo
+Очищает NPC QubeCore на Duo-карте.
+
+/bankdefense clearduoteam
+Очищает NPC выбора стороны на Duo-карте.
+
+/bankdefense clearduoteleportnpc
+Очищает NPC телепорта на Duo-карте.
+
+/bankdefense clearteleportduo
+Очищает точку телепорта на Duo-карте.
+
+/bankdefense clearteleportsolo
+Очищает точку телепорта на Solo-карте.
+
+================================================================
+12. Обычные маршруты Solo / Tutorial
+================================================================
+
+/bankdefense route add [lane]
+Добавляет точку маршрута в линию.
+По умолчанию lane = a.
+
+/bankdefense route pop [lane]
+Удаляет последнюю точку маршрута линии.
+По умолчанию lane = a.
+
+/bankdefense route clear [lane]
+Очищает маршрут линии.
+По умолчанию lane = all.
+
+/bankdefense route list [lane]
+Показывает точки маршрута линии.
+По умолчанию lane = all.
+
+Допустимые lane:
+- a
+- b
+- c
+- ta
+- tb
+- tc
+- all
+
+Алиасы добавления маршрута:
+/bankdefense routeadd [lane]
+/bankdefense routeadda
+/bankdefense routeaddb
+/bankdefense routeaddc
+/bankdefense routeaddta
+/bankdefense routeaddtb
+/bankdefense routeaddtc
+
+Алиасы удаления последней точки:
+/bankdefense routepop [lane]
+/bankdefense routepopa
+/bankdefense routepopb
+/bankdefense routepopc
+/bankdefense routepopta
+/bankdefense routepoptb
+/bankdefense routepoptc
+
+Алиасы очистки маршрутов:
+/bankdefense routeclear [lane]
+/bankdefense routecleara
+/bankdefense routeclearb
+/bankdefense routeclearc
+/bankdefense routeclearta
+/bankdefense routecleartb
+/bankdefense routecleartc
+/bankdefense routeclearall
+
+Алиасы просмотра маршрутов:
+/bankdefense routelist [lane]
+/bankdefense routelista
+/bankdefense routelistb
+/bankdefense routelistc
+/bankdefense routelista
+/bankdefense routelistta
+/bankdefense routelisttb
+/bankdefense routelisttc
+/bankdefense routelistall
+
+================================================================
+13. Duo-маршруты
+================================================================
+
+/bankdefense duorouteaddblue
+Добавляет точку duo-маршрута blue.
+
+/bankdefense duorouteaddgreen
+Добавляет точку duo-маршрута green.
+
+/bankdefense duoroutepopblue
+Удаляет последнюю точку duo-маршрута blue.
+
+/bankdefense duoroutepopgreen
+Удаляет последнюю точку duo-маршрута green.
+
+/bankdefense duorouteclearblue
+Очищает duo-маршрут blue.
+
+/bankdefense duoroutecleargreen
+Очищает duo-маршрут green.
+
+/bankdefense duorouteclearall
+Очищает оба duo-маршрута.
+
+/bankdefense duoroutelistblue
+Показывает duo-маршрут blue.
+
+/bankdefense duoroutelistgreen
+Показывает duo-маршрут green.
+
+/bankdefense duoroutelistall
+Показывает оба duo-маршрута.
+
+/bankdefense duoresetroutes
+Очищает duo-маршруты и duo spawn-точки.
+
+/bankdefense duoresetstarts
+Очищает стартовые точки игроков Duo.
+
+================================================================
+14. Слоты: базовые команды
+================================================================
+
+/bankdefense slot add [type]
+Добавляет слот в текущую точку.
+По умолчанию type = standard.
+
+/bankdefense slot remove [radius]
+Удаляет ближайший слот.
+По умолчанию radius = 3.
+
+/bankdefense slot clear [type]
+Очищает слоты указанного типа.
+По умолчанию type = all.
+
+/bankdefense slot list
+Показывает все слоты.
+
+Допустимые type:
+- standard
+- super
+- trap
+- tutorial
+- tutorial_super
+- tutorial_trap
+- all
+
+================================================================
+15. Слоты: алиасы
+================================================================
+
+/bankdefense slotadd
+Алиас для slot add standard.
+
+/bankdefense slotaddstandard
+Добавляет обычный слот.
+
+/bankdefense slotaddsuper
+Добавляет super-slot.
+
+/bankdefense slotaddtrap
+Добавляет trap-slot.
+
+/bankdefense slotaddtutorial
+Добавляет tutorial-обычный слот.
+
+/bankdefense slotaddtutorial_super
+Добавляет tutorial super-slot.
+
+/bankdefense slotaddtutorial_trap
+Добавляет tutorial trap-slot.
+
+/bankdefense slotremove [radius]
+Удаляет ближайший слот.
+По умолчанию radius = 3.
+
+/bankdefense slotclear [type]
+Очищает слоты указанного типа.
+По умолчанию type = all.
+
+/bankdefense slotclearstandard
+Очищает обычные слоты.
+
+/bankdefense slotclearsuper
+Очищает super-slots.
+
+/bankdefense slotcleartrap
+Очищает trap-slots.
+
+/bankdefense slotcleartutorial
+Очищает tutorial-обычные слоты.
+
+/bankdefense slotcleartutorial_super
+Очищает tutorial super-slots.
+
+/bankdefense slotcleartutorial_trap
+Очищает tutorial trap-slots.
+
+/bankdefense slotclearall
+Очищает вообще все слоты.
+
+/bankdefense slotlist
+Показывает список всех слотов.
+
+/bankdefense slotteamblue [radius]
+Назначает владельцем ближайшего слота синюю сторону Duo.
+По умолчанию radius = 3.
+
+/bankdefense slotteamgreen [radius]
+Назначает владельцем ближайшего слота зелёную сторону Duo.
+По умолчанию radius = 3.
+
+/bankdefense slotteamshared [radius]
+Назначает ближайший слот shared в Duo.
+По умолчанию radius = 3.
+
+================================================================
+16. Слоты Duo: отдельные команды разметки
+================================================================
+
+/bankdefense slotaddblue
+Добавляет duo standard-slot синей стороны.
+
+/bankdefense slotaddgreen
+Добавляет duo standard-slot зелёной стороны.
+
+/bankdefense slotaddduoblue
+То же самое, что slotaddblue.
+
+/bankdefense slotaddduogreen
+То же самое, что slotaddgreen.
+
+/bankdefense slotaddduotrapblue
+Добавляет duo trap-slot синей стороны.
+
+/bankdefense slotaddduotrapgreen
+Добавляет duo trap-slot зелёной стороны.
+
+/bankdefense slotaddduosuper
+Добавляет duo shared super-slot.
+
+================================================================
+17. Сундуки Solo / общие
+================================================================
+
+/bankdefense chestadd
+Добавляет точку спавна бонусного сундука в текущую точку.
+
+/bankdefense chestremove [radius]
+Удаляет ближайшую точку сундука.
+По умолчанию radius = 3.
+
+/bankdefense chestclear
+Очищает все точки сундуков.
+
+/bankdefense chestlist
+Показывает все точки сундуков.
+
+================================================================
+18. Сундуки Duo
+================================================================
+
+/bankdefense duochestadd
+Добавляет точку duo-сундука в текущую точку.
+
+/bankdefense duochestremove [radius]
+Удаляет ближайшую точку duo-сундука.
+По умолчанию radius = 3.
+
+/bankdefense duochestclear
+Очищает все точки duo-сундуков.
+
+/bankdefense duochestlist
+Показывает все точки duo-сундуков.
+
+================================================================
+19. Что использовать чаще всего на практике
+================================================================
+
+Для Solo:
+- markqubecoresolo
+- markspawna / markspawnb / markspawnc
+- markbank
+- markvault
+- markplayerstart
+- markcontrol
+- markvendor
+- markmode
+- marksolostats
+- routeadd...
+- chestadd
+- slotadd / slotaddsuper / slotaddtrap
+
+Для Duo:
+- match duo
+- markqubecoreduo
+- markduoteam
+- markduoteleportnpc
+- markteleportduo
+- markteleportsolo
+- markduostats
+- markduoplayerblue
+- markduoplayergreen
+- markduospawnblue
+- markduospawngreen
+- markduobank
+- markduovault
+- duorouteaddblue
+- duorouteaddgreen
+- duochestadd
+- slotaddblue
+- slotaddgreen
+- slotaddduotrapblue
+- slotaddduotrapgreen
+- slotaddduosuper
+- duostatus
+
+Для обучения:
+- tutorialreset
+- tutorialskip
+- marktutorialstart
+- marktutorialcontrol
+- marktutorialvendor
+- markwizardintro
+- marktutorialwizard
+- marktutorialchest
+- marktutorialtrap
+
+Конец файла.

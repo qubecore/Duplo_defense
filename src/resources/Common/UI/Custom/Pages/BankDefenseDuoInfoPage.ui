@@ -1,0 +1,71 @@
+$C = "../Common.ui";
+
+$C.@PageOverlay {}
+
+$C.@Container {
+  Anchor: (Width: 980, Height: 360);
+
+  #Title {
+    Group {
+      LayoutMode: Left;
+
+      $C.@Title #TitleLabel {
+        @Text = "Duplo TD: duo mode";
+      }
+    }
+  }
+
+  #Content {
+    LayoutMode: Top;
+
+    Group {
+      Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+      Anchor: (Height: 250, Bottom: 14);
+      LayoutMode: Top;
+      Padding: (Horizontal: 18, Vertical: 18);
+
+      Label #Header {
+        Style: (FontSize: 28, TextColor: #f4d06f, RenderBold: true, Wrap: true);
+        Text: "Switch to Duo Mode";
+      }
+
+      Label #Body {
+        Anchor: (Top: 16, Bottom: 20);
+        Style: (FontSize: 18, TextColor: #f3f7ff, Wrap: true);
+        Text: "";
+      }
+
+      Group {
+        LayoutMode: Left;
+
+        $C.@TextButton #TelegramButton {
+          @Anchor = (Width: 290, Height: 46, Right: 12);
+          @Text = "Telegram";
+        }
+
+        $C.@SecondaryTextButton #YouTubeButton {
+          @Anchor = (Width: 290, Height: 46, Right: 12);
+          @Text = "YouTube";
+        }
+
+        $C.@SecondaryTextButton #DiscordButton {
+          @Anchor = (Width: 290, Height: 46);
+          @Text = "Discord";
+        }
+      }
+    }
+
+    Group {
+      Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+      Anchor: (Height: 48);
+      Padding: (Horizontal: 12, Vertical: 12);
+
+      Label #Hint {
+        Style: (FontSize: 13, TextColor: #c9d1d9, Wrap: true);
+        Text: "";
+      }
+    }
+  }
+}
+
+$C.@BackButton {}

@@ -1,0 +1,27 @@
+{
+  "Parent": "Kweebec_Sapling",
+  "Model": "NPC/BankDefense/TutorialWizard/Model.blockymodel",
+  "Texture": "NPC/BankDefense/TutorialWizard/Textures/Body_Pink.png",
+  "DefaultAttachments": [
+    {
+      "Model": "NPC/BankDefense/TutorialWizard/Attachments/Head/Eyes.blockymodel",
+      "Texture": "NPC/BankDefense/TutorialWizard/Attachments/Head/Eyes_Pink.png"
+    },
+    {
+      "Model": "NPC/BankDefense/TutorialWizard/Attachments/Head/Mouth.blockymodel",
+      "Texture": "NPC/BankDefense/TutorialWizard/Attachments/Head/Mouth_Texture.png"
+    },
+    {
+      "Model": "NPC/BankDefense/TutorialWizard/Attachments/Head/Eyebrows.blockymodel",
+      "Texture": "NPC/BankDefense/TutorialWizard/Attachments/Head/Eyebrows_Young.png"
+    },
+    {
+      "Model": "NPC/BankDefense/TutorialWizard/Attachments/Chest/Chest.blockymodel",
+      "Texture": "NPC/BankDefense/TutorialWizard/Attachments/Chest/Chest_Pink.png"
+    },
+    {
+      "Model": "NPC/BankDefense/TutorialWizard/Attachments/Feet/Feet.blockymodel",
+      "Texture": "NPC/BankDefense/TutorialWizard/Attachments/Feet/Feet_Pink.png"
+    }
+  ]
+}

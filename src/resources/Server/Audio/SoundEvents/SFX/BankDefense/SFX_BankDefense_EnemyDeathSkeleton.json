@@ -1,0 +1,33 @@
+{
+    "Layers":  [
+                   {
+                       "Files":  [
+                                     "Sounds/NPC/Undead/Skeleton/Skeleton_Death_01_Foley_01.ogg",
+                                     "Sounds/NPC/Undead/Skeleton/Skeleton_Death_01_Foley_02.ogg",
+                                     "Sounds/NPC/Undead/Skeleton/Skeleton_Death_01_Foley_03.ogg",
+                                     "Sounds/NPC/Undead/Skeleton/Skeleton_Death_02_Foley_01.ogg",
+                                     "Sounds/NPC/Undead/Skeleton/Skeleton_Death_02_Foley_02.ogg",
+                                     "Sounds/NPC/Undead/Skeleton/Skeleton_Death_02_Foley_03.ogg",
+                                     "Sounds/NPC/Undead/Skeleton/Skeleton_Death_03_Foley_01.ogg",
+                                     "Sounds/NPC/Undead/Skeleton/Skeleton_Death_03_Foley_02.ogg",
+                                     "Sounds/NPC/Undead/Skeleton/Skeleton_Death_03_Foley_03.ogg",
+                                     "Sounds/NPC/Undead/Skeleton/Skeleton_Death_04_Foley_01.ogg",
+                                     "Sounds/NPC/Undead/Skeleton/Skeleton_Death_04_Foley_02.ogg",
+                                     "Sounds/NPC/Undead/Skeleton/Skeleton_Death_04_Foley_03.ogg"
+                                 ],
+                       "RandomSettings":  {
+                                              "MinPitch":  -0.1,
+                                              "MaxPitch":  0.1,
+                                              "MinVolume":  0,
+                                              "MaxVolume":  0
+                                          },
+                       "StartDelay":  0,
+                       "Looping":  false,
+                       "Volume":  0
+                   }
+               ],
+    "Volume":  -0.1,
+    "PreventSoundInterruption":  true,
+    "MaxInstance":  16,
+    "Parent":  "SFX_Attn_Moderate"
+}

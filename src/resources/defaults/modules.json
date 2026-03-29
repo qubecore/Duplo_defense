@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "modules": [
+    {
+      "id": "overload",
+      "displayName": "Перегрузка",
+      "note": "+20% к скорострельности.",
+      "fireRateMultiplier": 1.20,
+      "damageMultiplier": 1.0,
+      "chargedDamageMultiplier": 1.0
+    },
+    {
+      "id": "heavy_caliber",
+      "displayName": "Тяжёлый калибр",
+      "note": "+30% к урону, но -12% к скорострельности.",
+      "fireRateMultiplier": 0.88,
+      "damageMultiplier": 1.30,
+      "chargedDamageMultiplier": 1.0
+    },
+    {
+      "id": "long_optics",
+      "displayName": "Дальняя оптика",
+      "note": "+дальность для прицельных башен.",
+      "rangeBonus": 2.2,
+      "chargedDamageMultiplier": 1.0
+    },
+    {
+      "id": "cryo_capsule",
+      "displayName": "Крио-капсула",
+      "note": "Атаки дополнительно замедляют цель.",
+      "slowPercentBonus": 0.12,
+      "slowDurationBonus": 0.9,
+      "chargedDamageMultiplier": 1.0
+    },
+    {
+      "id": "fragment_charge",
+      "displayName": "Осколочный заряд",
+      "note": "Попадания наносят урон по площади в радиусе, увеличенном в 3 раза, вокруг цели.",
+      "splashDamageRatio": 0.35,
+      "splashRadius": 6.0,
+      "chargedDamageMultiplier": 1.0
+    },
+    {
+      "id": "armor_scanner",
+      "displayName": "Сканер брони",
+      "note": "+40% урона по тяжёлым целям и боссам.",
+      "bonusDamageToHeavy": 0.4,
+      "chargedDamageMultiplier": 1.0
+    },
+    {
+      "id": "arc_splitter",
+      "displayName": "Дуговой разветвитель",
+      "note": "Выстрел перескакивает ещё на одну цель.",
+      "chainBonusTargets": 1,
+      "chainRangeBonus": 1.2,
+      "chargedDamageMultiplier": 1.0
+    },
+    {
+      "id": "dual_camera",
+      "displayName": "Двойная камера",
+      "note": "Каждый 5-й выстрел даёт дополнительный выстрел на 120% урона.",
+      "doubleShotEvery": 5,
+      "doubleShotDamageMultiplier": 1.20,
+      "chargedDamageMultiplier": 1.0
+    },
+    {
+      "id": "reserve_capacitor",
+      "displayName": "Резервный конденсатор",
+      "note": "После 2.2 секунд простоя следующий выстрел получает +90% урона.",
+      "chargeSeconds": 2.2,
+      "chargedDamageMultiplier": 1.9
+    }
+  ]
+}

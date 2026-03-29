@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1100" viewBox="0 0 1800 1100">
+  <defs>
+    <style>
+      .bg { fill: #0d1726; }
+      .frame { fill: #11243a; stroke: #355377; stroke-width: 8; rx: 26; }
+      .grid { stroke: #1d314d; stroke-width: 1; opacity: 0.55; }
+      .pathOuter { fill: none; stroke: #6b5733; stroke-width: 54; stroke-linecap: round; stroke-linejoin: round; }
+      .pathInner { fill: none; stroke: #d7bb86; stroke-width: 42; stroke-linecap: round; stroke-linejoin: round; }
+      .merge { fill: #17324f; stroke: #4d7db3; stroke-width: 3; rx: 12; }
+      .keep { fill: #25492f; stroke: #7dd48d; stroke-width: 4; rx: 20; }
+      .core { fill: #9dff9a; fill-opacity: 0.18; stroke: #d8ffba; stroke-width: 4; rx: 16; }
+      .slot { fill: #71b7ff; stroke: #eef7ff; stroke-width: 3; }
+      .super { fill: #ff9a54; stroke: #fff0d8; stroke-width: 3; }
+      .spawn { fill: #ff7070; stroke: #ffe2e2; stroke-width: 4; }
+      .npc { fill: #b89cff; stroke: #efe5ff; stroke-width: 3; }
+      .text { fill: #edf3fb; font-family: Segoe UI, Arial, sans-serif; font-size: 24px; font-weight: 700; }
+      .small { fill: #b7c9df; font-family: Segoe UI, Arial, sans-serif; font-size: 18px; }
+      .mono { fill: #e2edf9; font-family: Consolas, monospace; font-size: 16px; font-weight: 700; }
+      .legend { fill: #102033; stroke: #3a5c83; stroke-width: 3; rx: 16; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1800" height="1100"/>
+  <rect class="frame" x="40" y="40" width="1720" height="1020"/>
+
+  <g opacity="0.9">
+    <path class="grid" d="M100 90V1010 M180 90V1010 M260 90V1010 M340 90V1010 M420 90V1010 M500 90V1010 M580 90V1010 M660 90V1010 M740 90V1010 M820 90V1010 M900 90V1010 M980 90V1010 M1060 90V1010 M1140 90V1010 M1220 90V1010 M1300 90V1010 M1380 90V1010 M1460 90V1010 M1540 90V1010 M1620 90V1010 M1700 90V1010"/>
+    <path class="grid" d="M80 130H1720 M80 210H1720 M80 290H1720 M80 370H1720 M80 450H1720 M80 530H1720 M80 610H1720 M80 690H1720 M80 770H1720 M80 850H1720 M80 930H1720"/>
+  </g>
+
+  <text class="text" x="84" y="104">DUPLO DEFENSE - MULTILANE BLOCK PLAN</text>
+  <text class="small" x="84" y="132">Target size 384x320 blocks | 3 spawn arms | 32 standard pads | 6 super pads</text>
+
+  <rect class="merge" x="860" y="260" width="220" height="180"/>
+  <text class="text" x="892" y="310">MERGE A/B</text>
+  <text class="small" x="896" y="338">11x9 blocks</text>
+
+  <rect class="merge" x="1120" y="470" width="220" height="180"/>
+  <text class="text" x="1150" y="520">MERGE B/C</text>
+  <text class="small" x="1156" y="548">11x9 blocks</text>
+
+  <rect class="keep" x="1420" y="270" width="250" height="360"/>
+  <text class="text" x="1488" y="320">DUPLO KEEP</text>
+  <rect class="core" x="1495" y="390" width="100" height="110"/>
+  <text class="text" x="1518" y="455">CORE</text>
+  <text class="small" x="1466" y="585">Final ring width: 5 blocks</text>
+
+  <path class="pathOuter" d="M120 190 L420 190 L420 330 L860 330 L980 330 L980 560 L1120 560 L1240 560 L1240 450 L1460 450"/>
+  <path class="pathInner" d="M120 190 L420 190 L420 330 L860 330 L980 330 L980 560 L1120 560 L1240 560 L1240 450 L1460 450"/>
+  <path class="pathOuter" d="M120 360 L520 360 L520 330 L860 330"/>
+  <path class="pathInner" d="M120 360 L520 360 L520 330 L860 330"/>
+  <path class="pathOuter" d="M120 620 L520 620 L520 560 L980 560"/>
+  <path class="pathInner" d="M120 620 L520 620 L520 560 L980 560"/>
+
+  <circle class="spawn" cx="120" cy="190" r="20"/>
+  <circle class="spawn" cx="120" cy="360" r="20"/>
+  <circle class="spawn" cx="120" cy="620" r="20"/>
+  <text class="text" x="74" y="165">SPAWN A</text>
+  <text class="text" x="74" y="335">SPAWN B</text>
+  <text class="text" x="74" y="595">SPAWN C</text>
+
+  <circle class="npc" cx="1450" cy="760" r="16"/>
+  <circle class="npc" cx="1545" cy="760" r="16"/>
+  <text class="small" x="1480" y="768">control npc</text>
+  <text class="small" x="1575" y="768">vendor npc</text>
+
+  <text class="small" x="250" y="150">Arm A: 80x20 blocks</text>
+  <text class="small" x="250" y="395">Arm B: 100x20 blocks</text>
+  <text class="small" x="250" y="655">Arm C: 100x20 blocks</text>
+  <text class="small" x="1330" y="418">Final gate: 20x10 blocks</text>
+
+  <g>
+    <rect class="slot" x="210" y="118" width="26" height="26"/><text class="mono" x="242" y="137">S01</text>
+    <rect class="slot" x="300" y="118" width="26" height="26"/><text class="mono" x="332" y="137">S02</text>
+    <rect class="slot" x="390" y="118" width="26" height="26"/><text class="mono" x="422" y="137">S03</text>
+    <rect class="slot" x="250" y="240" width="26" height="26"/><text class="mono" x="282" y="259">S04</text>
+    <rect class="slot" x="340" y="240" width="26" height="26"/><text class="mono" x="372" y="259">S05</text>
+    <rect class="slot" x="430" y="240" width="26" height="26"/><text class="mono" x="462" y="259">S06</text>
+    <rect class="slot" x="250" y="288" width="26" height="26"/><text class="mono" x="282" y="307">S07</text>
+    <rect class="slot" x="340" y="288" width="26" height="26"/><text class="mono" x="372" y="307">S08</text>
+    <rect class="slot" x="430" y="288" width="26" height="26"/><text class="mono" x="462" y="307">S09</text>
+
+    <rect class="slot" x="210" y="425" width="26" height="26"/><text class="mono" x="242" y="444">S10</text>
+    <rect class="slot" x="300" y="425" width="26" height="26"/><text class="mono" x="332" y="444">S11</text>
+    <rect class="slot" x="390" y="425" width="26" height="26"/><text class="mono" x="422" y="444">S12</text>
+    <rect class="slot" x="210" y="572" width="26" height="26"/><text class="mono" x="242" y="591">S13</text>
+    <rect class="slot" x="300" y="572" width="26" height="26"/><text class="mono" x="332" y="591">S14</text>
+    <rect class="slot" x="390" y="572" width="26" height="26"/><text class="mono" x="422" y="591">S15</text>
+    <rect class="slot" x="270" y="505" width="26" height="26"/><text class="mono" x="302" y="524">S16</text>
+    <rect class="slot" x="360" y="505" width="26" height="26"/><text class="mono" x="392" y="524">S17</text>
+
+    <rect class="slot" x="720" y="240" width="26" height="26"/><text class="mono" x="752" y="259">S18</text>
+    <rect class="slot" x="720" y="392" width="26" height="26"/><text class="mono" x="752" y="411">S19</text>
+    <rect class="slot" x="860" y="220" width="26" height="26"/><text class="mono" x="892" y="239">S20</text>
+    <rect class="slot" x="860" y="454" width="26" height="26"/><text class="mono" x="892" y="473">S21</text>
+    <rect class="slot" x="1100" y="410" width="26" height="26"/><text class="mono" x="1132" y="429">S22</text>
+    <rect class="slot" x="1100" y="670" width="26" height="26"/><text class="mono" x="1132" y="689">S23</text>
+    <rect class="slot" x="1280" y="410" width="26" height="26"/><text class="mono" x="1312" y="429">S24</text>
+    <rect class="slot" x="1280" y="670" width="26" height="26"/><text class="mono" x="1312" y="689">S25</text>
+
+    <rect class="slot" x="1410" y="340" width="26" height="26"/><text class="mono" x="1442" y="359">S26</text>
+    <rect class="slot" x="1410" y="545" width="26" height="26"/><text class="mono" x="1442" y="564">S27</text>
+    <rect class="slot" x="1510" y="320" width="26" height="26"/><text class="mono" x="1542" y="339">S28</text>
+    <rect class="slot" x="1510" y="560" width="26" height="26"/><text class="mono" x="1542" y="579">S29</text>
+    <rect class="slot" x="1610" y="340" width="26" height="26"/><text class="mono" x="1642" y="359">S30</text>
+    <rect class="slot" x="1610" y="545" width="26" height="26"/><text class="mono" x="1642" y="564">S31</text>
+    <rect class="slot" x="1510" y="670" width="26" height="26"/><text class="mono" x="1542" y="689">S32</text>
+  </g>
+
+  <g>
+    <rect class="super" x="760" y="168" width="34" height="34"/><text class="mono" x="800" y="191">X1</text>
+    <rect class="super" x="760" y="454" width="34" height="34"/><text class="mono" x="800" y="477">X2</text>
+    <rect class="super" x="1180" y="372" width="34" height="34"/><text class="mono" x="1220" y="395">X3</text>
+    <rect class="super" x="1180" y="690" width="34" height="34"/><text class="mono" x="1220" y="713">X4</text>
+    <rect class="super" x="1445" y="650" width="34" height="34"/><text class="mono" x="1485" y="673">X5</text>
+    <rect class="super" x="1580" y="650" width="34" height="34"/><text class="mono" x="1620" y="673">X6</text>
+  </g>
+
+  <g>
+    <rect class="legend" x="80" y="820" width="770" height="180"/>
+    <text class="text" x="108" y="860">BUILD SUMMARY</text>
+    <text class="small" x="108" y="900">Standard pads: 32 total</text>
+    <text class="small" x="108" y="930">A arms: S01-S17 | mid merges: S18-S25 | final ring: S26-S32</text>
+    <text class="small" x="108" y="960">Super pads: X1-X6 | X1-X2 mid control | X3-X4 pre-final | X5-X6 last stand</text>
+    <rect class="slot" x="610" y="886" width="22" height="22"/><text class="small" x="644" y="903">standard slot (3x3 pad)</text>
+    <rect class="super" x="610" y="930" width="22" height="22"/><text class="small" x="644" y="947">super slot (5x5 pad)</text>
+  </g>
+
+  <g>
+    <rect class="legend" x="1030" y="820" width="640" height="180"/>
+    <text class="text" x="1058" y="860">FLOW</text>
+    <text class="small" x="1058" y="900">1. Waves 1-4 usually single lane</text>
+    <text class="small" x="1058" y="930">2. Waves 5-12 mix A/B/C and double-lane pressure</text>
+    <text class="small" x="1058" y="960">3. Waves 13+ converge into merge zones, then final ring around the core</text>
+  </g>
+</svg>

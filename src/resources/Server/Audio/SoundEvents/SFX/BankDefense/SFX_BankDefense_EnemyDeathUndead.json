@@ -1,0 +1,24 @@
+{
+    "Layers":  [
+                   {
+                       "Files":  [
+                                     "Sounds/NPC/Undead/Skeleton/Skeleton_Death_VO_01.ogg",
+                                     "Sounds/NPC/Undead/Skeleton/Skeleton_Death_VO_02.ogg",
+                                     "Sounds/NPC/Undead/Skeleton/Skeleton_Death_VO_03.ogg"
+                                 ],
+                       "RandomSettings":  {
+                                              "MinPitch":  -0.1,
+                                              "MaxPitch":  0.1,
+                                              "MinVolume":  0,
+                                              "MaxVolume":  0
+                                          },
+                       "StartDelay":  0,
+                       "Looping":  false,
+                       "Volume":  0
+                   }
+               ],
+    "Volume":  -0.5,
+    "PreventSoundInterruption":  true,
+    "MaxInstance":  12,
+    "Parent":  "SFX_Attn_Moderate"
+}

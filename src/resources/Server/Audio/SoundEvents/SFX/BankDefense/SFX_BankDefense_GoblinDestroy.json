@@ -1,0 +1,23 @@
+{
+    "Layers":  [
+                   {
+                       "Files":  [
+                                     "Sounds/Blocks/Crystal/Crystal_Break_01.ogg",
+                                     "Sounds/Blocks/Crystal/Crystal_Break_02.ogg"
+                                 ],
+                       "RandomSettings":  {
+                                              "MinPitch":  -0.08,
+                                              "MaxPitch":  0.08,
+                                              "MinVolume":  0,
+                                              "MaxVolume":  0
+                                          },
+                       "StartDelay":  0,
+                       "Looping":  false,
+                       "Volume":  0
+                   }
+               ],
+    "Volume":  0.7,
+    "PreventSoundInterruption":  true,
+    "MaxInstance":  8,
+    "Parent":  "SFX_Attn_Loud"
+}

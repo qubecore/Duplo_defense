@@ -1,0 +1,26 @@
+{
+    "Layers":  [
+                   {
+                       "Files":  [
+                                     "Sounds/Movement/Landing/FS_Land_Coins_01.ogg",
+                                     "Sounds/Movement/Landing/FS_Land_Coins_02.ogg",
+                                     "Sounds/Movement/Landing/FS_Land_Coins_03.ogg",
+                                     "Sounds/Movement/Landing/FS_Land_Coins_04.ogg",
+                                     "Sounds/Movement/Landing/FS_Land_Coins_05.ogg"
+                                 ],
+                       "RandomSettings":  {
+                                              "MinPitch":  -0.08,
+                                              "MaxPitch":  0.08,
+                                              "MinVolume":  0,
+                                              "MaxVolume":  0
+                                          },
+                       "StartDelay":  0,
+                       "Looping":  false,
+                       "Volume":  0
+                   }
+               ],
+    "Volume":  0.6,
+    "PreventSoundInterruption":  true,
+    "MaxInstance":  10,
+    "Parent":  "SFX_Attn_Loud"
+}

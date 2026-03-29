@@ -1,0 +1,22 @@
+{
+    "Layers":  [
+                   {
+                       "Files":  [
+                                     "Sounds/CreativePlay/Default/Shimmer_Sweeps_Stereo.ogg"
+                                 ],
+                       "RandomSettings":  {
+                                              "MinPitch":  -0.06,
+                                              "MaxPitch":  0.08,
+                                              "MinVolume":  0,
+                                              "MaxVolume":  0
+                                          },
+                       "StartDelay":  0,
+                       "Looping":  false,
+                       "Volume":  0
+                   }
+               ],
+    "Volume":  0.6,
+    "PreventSoundInterruption":  true,
+    "MaxInstance":  4,
+    "Parent":  "SFX_Attn_Loud"
+}

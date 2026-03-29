@@ -1,0 +1,24 @@
+{
+    "Layers":  [
+                   {
+                       "Files":  [
+                                     "Sounds/Weapons/Shield/Shield_T1_Raise_Stereo_01.ogg",
+                                     "Sounds/Weapons/Shield/Shield_T1_Raise_Stereo_02.ogg",
+                                     "Sounds/Weapons/Shield/Shield_T1_Raise_Stereo_03.ogg"
+                                 ],
+                       "RandomSettings":  {
+                                              "MinPitch":  -0.04,
+                                              "MaxPitch":  0.08,
+                                              "MinVolume":  0,
+                                              "MaxVolume":  0
+                                          },
+                       "StartDelay":  0,
+                       "Looping":  false,
+                       "Volume":  0
+                   }
+               ],
+    "Volume":  0.2,
+    "PreventSoundInterruption":  true,
+    "MaxInstance":  6,
+    "Parent":  "SFX_Attn_Loud"
+}

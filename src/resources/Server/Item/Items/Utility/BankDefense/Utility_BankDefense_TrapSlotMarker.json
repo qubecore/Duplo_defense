@@ -1,0 +1,60 @@
+{
+    "TranslationProperties":  {
+                                  "Name":  "Trap Slot",
+                                  "Description":  "Empty interactive trap slot for Bank Defense."
+                              },
+    "Categories":  [
+
+                   ],
+    "Model":  "Blocks/Miscellaneous/Editor_Empty_Cube.blockymodel",
+    "Texture":  "Resources/Utility/NpcInteraction_Point64.png",
+    "Icon":  "Icons/ItemsGenerated/Weapon_Handgun.png",
+    "IconProperties":  {
+                           "Scale":  0.67,
+                           "Translation":  [
+                                               0.69,
+                                               -10.11
+                                           ],
+                           "Rotation":  [
+                                            315,
+                                            90,
+                                            0
+                                        ]
+                       },
+    "PlayerAnimationsId":  "Item",
+    "MaxStack":  1,
+    "Quality":  "Technical",
+    "BlockType":  {
+                      "DrawType":  "Model",
+                      "Material":  "Solid",
+                      "Opacity":  "Transparent",
+                      "CustomModel":  "Blocks/BankDefense/Pad_Custom.blockymodel",
+                      "CustomModelTexture":  [
+                                                 {
+                                                     "Texture":  "Blocks/BankDefense/Texture_lovushkaemptySlot.png",
+                                                     "Weight":  1
+                                                 }
+                                             ],
+                      "HitboxType":  "Pad_Portal",
+                      "InteractionHitboxType":  "Full",
+                      "IgnoreSupportWhenPlaced":  true,
+                      "InteractionHint":  "Open slot [F]",
+                      "AllowsMultipleUsers":  true,
+                      "Interactions":  {
+                                           "Use":  {
+                                                       "Cooldown":  {
+                                                                        "Id":  "BankDefense_SlotMarker_Use",
+                                                                        "Cooldown":  0.05
+                                                                    },
+                                                       "Interactions":  [
+                                                                            {
+                                                                                "Type":  "OpenCustomUI",
+                                                                                "Page":  {
+                                                                                             "Id":  "BankDefenseSlot"
+                                                                                         }
+                                                                            }
+                                                                        ]
+                                                   }
+                                       }
+                  }
+}

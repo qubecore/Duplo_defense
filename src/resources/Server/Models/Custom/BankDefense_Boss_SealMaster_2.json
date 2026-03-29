@@ -1,0 +1,6 @@
+{
+  "Parent": "Zombie_Aberrant",
+  "Model": "NPC/BankDefense/Bosses/SealMaster/Model.blockymodel",
+  "Texture": "NPC/BankDefense/Bosses/SealMaster/Texture_2.png",
+  "DefaultAttachments": []
+}

@@ -1,0 +1,15 @@
+{
+  "Parent": "Werewolf",
+  "Model": "NPC/BankDefense/Bosses/NodeArbiter/Model.blockymodel",
+  "Texture": "NPC/BankDefense/Bosses/NodeArbiter/Texture.png",
+  "DefaultAttachments": [
+    {
+      "Model": "NPC/BankDefense/Bosses/NodeArbiter/Attachments/Chest.blockymodel",
+      "Texture": "NPC/BankDefense/Bosses/NodeArbiter/Attachments/Chest_Texture.png"
+    },
+    {
+      "Model": "NPC/BankDefense/Bosses/NodeArbiter/Attachments/Leg.blockymodel",
+      "Texture": "NPC/BankDefense/Bosses/NodeArbiter/Attachments/Leg_Texture.png"
+    }
+  ]
+}

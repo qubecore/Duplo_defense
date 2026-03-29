@@ -1,0 +1,65 @@
+{
+  "version": 2,
+  "contracts": [
+    {
+      "id": "none",
+      "displayName": "Без контракта",
+      "note": "Чистый матч без дополнительных модификаторов.",
+      "rewardMultiplier": 1.0,
+      "matchIncomeMultiplier": 1.0,
+      "enemyHpMultiplier": 1.0,
+      "enemyCountMultiplier": 1.0,
+      "startingCurrencyMultiplier": 1.0,
+      "startingCurrencyFlat": 0,
+      "multiLanePressureMultiplier": 1.0
+    },
+    {
+      "id": "triple_breach",
+      "displayName": "Тройной прорыв",
+      "note": "Двухлинейные и трёхлинейные волны начинаются раньше, а боссов чаще прикрывают соседние линии.",
+      "rewardMultiplier": 1.22,
+      "matchIncomeMultiplier": 1.0,
+      "enemyHpMultiplier": 1.0,
+      "enemyCountMultiplier": 1.0,
+      "startingCurrencyMultiplier": 1.0,
+      "startingCurrencyFlat": 0,
+      "multiLanePressureMultiplier": 1.12
+    },
+    {
+      "id": "lean_purse",
+      "displayName": "Пустой кошель",
+      "note": "Стартовые монеты урезаны, сундуки с золотом отключены, а бонус за ранний старт почти исчезает.",
+      "rewardMultiplier": 1.28,
+      "matchIncomeMultiplier": 1.0,
+      "enemyHpMultiplier": 1.0,
+      "enemyCountMultiplier": 1.0,
+      "startingCurrencyMultiplier": 0.80,
+      "startingCurrencyFlat": 0,
+      "multiLanePressureMultiplier": 1.0
+    },
+    {
+      "id": "necrotic_mist",
+      "displayName": "Некротический туман",
+      "note": "Чаще приходят некроворы и жрецы, их ауры сильнее, а туман поднимает падаль на уже пройденных отрезках пути.",
+      "rewardMultiplier": 1.36,
+      "matchIncomeMultiplier": 1.0,
+      "enemyHpMultiplier": 1.0,
+      "enemyCountMultiplier": 1.0,
+      "startingCurrencyMultiplier": 1.0,
+      "startingCurrencyFlat": 0,
+      "multiLanePressureMultiplier": 1.0
+    },
+    {
+      "id": "storm_front",
+      "displayName": "Грозовой фронт",
+      "note": "Подготовка между волнами короче, быстрые враги чаще и быстрее, а замедление держит их хуже.",
+      "rewardMultiplier": 1.42,
+      "matchIncomeMultiplier": 1.0,
+      "enemyHpMultiplier": 1.0,
+      "enemyCountMultiplier": 1.0,
+      "startingCurrencyMultiplier": 1.0,
+      "startingCurrencyFlat": 0,
+      "multiLanePressureMultiplier": 1.0
+    }
+  ]
+}

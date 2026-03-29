@@ -1,0 +1,55 @@
+{
+    "TranslationProperties":  {
+                                  "Name":  "Frost Node",
+                                  "Description":  "Click a slot to build or upgrade the Frost Node."
+                              },
+    "Categories":  [
+
+                   ],
+    "Model":  "Items/Consumables/Potions/Potion.blockymodel",
+    "Texture":  "Items/Consumables/Potions/Potion_Textures/Red.png",
+    "Icon":  "Icons/ItemsGenerated/Potion_Health.png",
+    "IconProperties":  {
+                           "Rotation":  [
+                                            22.5,
+                                            45,
+                                            22.5
+                                        ],
+                           "Scale":  0.9,
+                           "Translation":  [
+                                               0,
+                                               -9
+                                           ]
+                       },
+    "PlayerAnimationsId":  "Item",
+    "Scale":  2,
+    "MaxStack":  1,
+    "Interactions":  {
+                         "Primary":  {
+                                         "Cooldown":  {
+                                                          "Id":  "BankDefense_FreezeGate_Primary",
+                                                          "Cooldown":  0.05
+                                                      },
+                                         "Interactions":  [
+                                                              {
+                                                                  "Type":  "Simple"
+                                                              }
+                                                          ]
+                                     },
+                         "Secondary":  {
+                                           "Cooldown":  {
+                                                            "Id":  "BankDefense_FreezeGate_Secondary",
+                                                            "Cooldown":  0.05
+                                                        },
+                                           "Interactions":  [
+                                                                {
+                                                                    "Type":  "Simple"
+                                                                }
+                                                            ]
+                                       }
+                     },
+    "Utility":  {
+                    "Compatible":  true
+                },
+    "Quality":  "Technical"
+}

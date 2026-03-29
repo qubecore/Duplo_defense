@@ -1,0 +1,5 @@
+{
+  "Parent": "Kweebec_Seedling",
+  "Model": "NPC/Intelligent/Kweebec_Seedling/Models/Model.blockymodel",
+  "Texture": "NPC/BankDefense/Towers/Seedling/Kweebec_Seedlingdefault.png"
+}

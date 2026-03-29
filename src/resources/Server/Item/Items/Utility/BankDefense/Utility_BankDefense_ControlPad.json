@@ -1,0 +1,42 @@
+{
+    "TranslationProperties":  {
+                                  "Name":  "Control Panel",
+                                  "Description":  "Click to open the money and reset controls."
+                              },
+    "Categories":  [
+
+                   ],
+    "Model":  "Items/Consumables/Scrolls/Map.blockymodel",
+    "Texture":  "Items/Consumables/Scrolls/Map_Wood.png",
+    "Icon":  "Icons/ItemsGenerated/Tool_Map.png",
+    "PlayerAnimationsId":  "Item",
+    "MaxStack":  1,
+    "Interactions":  {
+                         "Primary":  {
+                                         "Cooldown":  {
+                                                          "Id":  "BankDefense_ControlPad_Primary",
+                                                          "Cooldown":  0.1
+                                                      },
+                                         "Interactions":  [
+                                                              {
+                                                                  "Type":  "Simple"
+                                                              }
+                                                          ]
+                                     },
+                         "Secondary":  {
+                                           "Cooldown":  {
+                                                            "Id":  "BankDefense_ControlPad_Secondary",
+                                                            "Cooldown":  0.1
+                                                        },
+                                           "Interactions":  [
+                                                                {
+                                                                    "Type":  "Simple"
+                                                                }
+                                                            ]
+                                       }
+                     },
+    "Utility":  {
+                    "Compatible":  true
+                },
+    "Quality":  "Technical"
+}

@@ -1,0 +1,264 @@
+$C = "../Common.ui";
+
+$C.@PageOverlay {}
+
+$C.@Container {
+  Anchor: (Width: 1180, Height: 950);
+
+  #Title {
+    Group {
+      LayoutMode: Left;
+
+      $C.@Title #TitleLabel {
+        @Text = "Duplo TD: Hollow upgrades";
+      }
+    }
+  }
+
+  #Content {
+    LayoutMode: Top;
+
+    Label #Subtitle {
+      Anchor: (Bottom: 14);
+      Style: (FontSize: 14, TextColor: #96a9be, Wrap: true);
+      Text: "Five permanent upgrades purchased with hollow shards. Effects apply from the next match onward.";
+    }
+
+    Group {
+      Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+      LayoutMode: Left;
+      Anchor: (Height: 64, Bottom: 12);
+      Padding: (Horizontal: 14, Vertical: 10);
+
+      Label #Cores {
+        Anchor: (Width: 340, Right: 18);
+        Style: (FontSize: 20, RenderBold: true, TextColor: #E8C35B);
+        Text: "Hollow shards: 0";
+      }
+
+      Label #Stats {
+        Anchor: (Width: 700);
+        Style: (FontSize: 15, TextColor: #d5deea, Wrap: true);
+        Text: "Record: 0 | Runs: 0 | Wins: 0";
+      }
+    }
+
+    Group {
+      LayoutMode: Left;
+      Anchor: (Height: 370, Bottom: 12);
+
+      Group #Card01 {
+        Anchor: (Width: 364, Height: 370, Right: 16);
+        Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+        LayoutMode: Top;
+        Padding: (Horizontal: 16, Vertical: 16);
+
+        Group {
+          Anchor: (Width: 176, Height: 176, Left: 78, Bottom: 10);
+          Background: (TexturePath: "ProgressionIcons/economica.png", Border: 8);
+        }
+
+        Label #Card01Title {
+          Anchor: (Bottom: 6);
+          Style: (FontSize: 18, RenderBold: true, TextColor: #ffffff, Wrap: true);
+          Text: "Economy 0/5";
+        }
+
+        Label #Card01Description {
+          Anchor: (Width: 332, Height: 78, Bottom: 10);
+          Style: (FontSize: 13, TextColor: #d5deea, Wrap: true);
+          Text: "Description";
+        }
+
+        Group {
+          Anchor: (Width: 332, Height: 60);
+
+          $C.@TextButton #Card01Button {
+            @Anchor = (Width: 332, Height: 60);
+            @Text = "Upgrade";
+          }
+
+          Group #Card01CostIcon {
+            Anchor: (Width: 72, Height: 72, Top: -3, Left: 170);
+            Background: (TexturePath: "../Hud/HudIcons/hud_cores.png", Border: 8);
+            Visible: false;
+          }
+        }
+      }
+
+      Group #Card02 {
+        Anchor: (Width: 364, Height: 370, Right: 16);
+        Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+        LayoutMode: Top;
+        Padding: (Horizontal: 16, Vertical: 16);
+
+        Group {
+          Anchor: (Width: 176, Height: 176, Left: 78, Bottom: 10);
+          Background: (TexturePath: "ProgressionIcons/hp_duplo.png", Border: 8);
+        }
+
+        Label #Card02Title {
+          Anchor: (Bottom: 6);
+          Style: (FontSize: 18, RenderBold: true, TextColor: #ffffff, Wrap: true);
+          Text: "Hollow Fortitude 0/5";
+        }
+
+        Label #Card02Description {
+          Anchor: (Width: 332, Height: 78, Bottom: 10);
+          Style: (FontSize: 13, TextColor: #d5deea, Wrap: true);
+          Text: "Description";
+        }
+
+        Group {
+          Anchor: (Width: 332, Height: 60);
+
+          $C.@TextButton #Card02Button {
+            @Anchor = (Width: 332, Height: 60);
+            @Text = "Upgrade";
+          }
+
+          Group #Card02CostIcon {
+            Anchor: (Width: 72, Height: 72, Top: -3, Left: 170);
+            Background: (TexturePath: "../Hud/HudIcons/hud_cores.png", Border: 8);
+            Visible: false;
+          }
+        }
+      }
+
+      Group #Card03 {
+        Anchor: (Width: 364, Height: 370);
+        Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+        LayoutMode: Top;
+        Padding: (Horizontal: 16, Vertical: 16);
+
+        Group {
+          Anchor: (Width: 176, Height: 176, Left: 78, Bottom: 10);
+          Background: (TexturePath: "ProgressionIcons/towers.png", Border: 8);
+        }
+
+        Label #Card03Title {
+          Anchor: (Bottom: 6);
+          Style: (FontSize: 18, RenderBold: true, TextColor: #ffffff, Wrap: true);
+          Text: "Towers 0/5";
+        }
+
+        Label #Card03Description {
+          Anchor: (Width: 332, Height: 78, Bottom: 10);
+          Style: (FontSize: 13, TextColor: #d5deea, Wrap: true);
+          Text: "Description";
+        }
+
+        Group {
+          Anchor: (Width: 332, Height: 60);
+
+          $C.@TextButton #Card03Button {
+            @Anchor = (Width: 332, Height: 60);
+            @Text = "Upgrade";
+          }
+
+          Group #Card03CostIcon {
+            Anchor: (Width: 72, Height: 72, Top: -3, Left: 170);
+            Background: (TexturePath: "../Hud/HudIcons/hud_cores.png", Border: 8);
+            Visible: false;
+          }
+        }
+      }
+    }
+
+    Group {
+      LayoutMode: Left;
+      Anchor: (Height: 370, Bottom: 12);
+
+      Group #Card04 {
+        Anchor: (Width: 554, Height: 370, Right: 16);
+        Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+        LayoutMode: Top;
+        Padding: (Horizontal: 16, Vertical: 16);
+
+        Group {
+          Anchor: (Width: 176, Height: 176, Left: 173, Bottom: 10);
+          Background: (TexturePath: "ProgressionIcons/supertowersreactive.png", Border: 8);
+        }
+
+        Label #Card04Title {
+          Anchor: (Bottom: 6);
+          Style: (FontSize: 18, RenderBold: true, TextColor: #ffffff, Wrap: true);
+          Text: "Super towers 0/3";
+        }
+
+        Label #Card04Description {
+          Anchor: (Width: 522, Height: 78, Bottom: 10);
+          Style: (FontSize: 13, TextColor: #d5deea, Wrap: true);
+          Text: "Description";
+        }
+
+        Group {
+          Anchor: (Width: 522, Height: 60);
+
+          $C.@TextButton #Card04Button {
+            @Anchor = (Width: 522, Height: 60);
+            @Text = "Upgrade";
+          }
+
+          Group #Card04CostIcon {
+            Anchor: (Width: 72, Height: 72, Top: -3, Left: 276);
+            Background: (TexturePath: "../Hud/HudIcons/hud_cores.png", Border: 8);
+            Visible: false;
+          }
+        }
+      }
+
+      Group #Card05 {
+        Anchor: (Width: 554, Height: 370);
+        Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+        LayoutMode: Top;
+        Padding: (Horizontal: 16, Vertical: 16);
+
+        Group {
+          Anchor: (Width: 176, Height: 176, Left: 173, Bottom: 10);
+          Background: (TexturePath: "ProgressionIcons/skidkatowers.png", Border: 8);
+        }
+
+        Label #Card05Title {
+          Anchor: (Bottom: 6);
+          Style: (FontSize: 18, RenderBold: true, TextColor: #ffffff, Wrap: true);
+          Text: "Tower discount 0/5";
+        }
+
+        Label #Card05Description {
+          Anchor: (Width: 522, Height: 78, Bottom: 10);
+          Style: (FontSize: 13, TextColor: #d5deea, Wrap: true);
+          Text: "Description";
+        }
+
+        Group {
+          Anchor: (Width: 522, Height: 60);
+
+          $C.@TextButton #Card05Button {
+            @Anchor = (Width: 522, Height: 60);
+            @Text = "Upgrade";
+          }
+
+          Group #Card05CostIcon {
+            Anchor: (Width: 72, Height: 72, Top: -3, Left: 276);
+            Background: (TexturePath: "../Hud/HudIcons/hud_cores.png", Border: 8);
+            Visible: false;
+          }
+        }
+      }
+    }
+
+    Group {
+      Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+      Anchor: (Height: 36);
+      Padding: (Horizontal: 14, Vertical: 8);
+
+      Label #Hint {
+        Style: (FontSize: 11, TextColor: #c9d1d9, Wrap: true);
+        Text: "Hint";
+      }
+    }
+  }
+}
+
+$C.@BackButton {}

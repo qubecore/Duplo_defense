@@ -1,0 +1,232 @@
+$C = "../Common.ui";
+
+$C.@PageOverlay {}
+
+$C.@Container {
+  Anchor: (Width: 1100, Height: 760);
+
+  #Title {
+    Group {
+      LayoutMode: Left;
+
+      $C.@Title #TitleLabel {
+        @Text = "Super slot";
+      }
+    }
+  }
+
+  #Content {
+    LayoutMode: Top;
+
+    Label #Subtitle {
+      Anchor: (Bottom: 12);
+      Style: (FontSize: 13, TextColor: #96a9be, Wrap: true);
+      Text: "Super slot position";
+    }
+
+    Group #SelectionPanel {
+      LayoutMode: Left;
+      Anchor: (Height: 440, Bottom: 12);
+
+      Group #HeartCard {
+        Anchor: (Width: 340, Height: 440, Right: 10);
+        LayoutMode: Top;
+        Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+        Padding: (Horizontal: 14, Vertical: 14);
+
+        Group {
+          Anchor: (Width: 220, Height: 220);
+          Background: (TexturePath: "SuperTowerIcons/korni.png", Border: 8);
+        }
+
+        Label #HeartTitle {
+          Anchor: (Top: 12, Bottom: 10);
+          Style: (FontSize: 24, RenderBold: true, TextColor: #ffffff, Wrap: true);
+          Text: "Heart of Roots";
+        }
+
+        Label #HeartDescription {
+          Anchor: (Bottom: 14);
+          Style: (FontSize: 14, TextColor: #c9d1d9, Wrap: true);
+          Text: "During a wave, grants all towers +30% damage until the wave ends.";
+        }
+
+        $C.@TextButton #HeartBuild {
+          @Text = "Buy";
+        }
+      }
+
+      Group #MonolithCard {
+        Anchor: (Width: 340, Height: 440, Left: 10, Right: 10);
+        LayoutMode: Top;
+        Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+        Padding: (Horizontal: 14, Vertical: 14);
+
+        Group {
+          Anchor: (Width: 220, Height: 220);
+          Background: (TexturePath: "SuperTowerIcons/monolit.png", Border: 8);
+        }
+
+        Label #MonolithTitle {
+          Anchor: (Top: 12, Bottom: 10);
+          Style: (FontSize: 24, RenderBold: true, TextColor: #ffffff, Wrap: true);
+          Text: "Storm Monolith";
+        }
+
+        Label #MonolithDescription {
+          Anchor: (Bottom: 14);
+          Style: (FontSize: 14, TextColor: #c9d1d9, Wrap: true);
+          Text: "Automatically saves the Hollow from a breach and throws the horde back to the spawns.";
+        }
+
+        $C.@TextButton #MonolithBuild {
+          @Text = "Buy";
+        }
+      }
+
+      Group #IdolCard {
+        Anchor: (Width: 340, Height: 440, Left: 10);
+        LayoutMode: Top;
+        Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+        Padding: (Horizontal: 14, Vertical: 14);
+
+        Group {
+          Anchor: (Width: 220, Height: 220);
+          Background: (TexturePath: "SuperTowerIcons/idol.png", Border: 8);
+        }
+
+        Label #IdolTitleSelection {
+          Anchor: (Top: 12, Bottom: 10);
+          Style: (FontSize: 24, RenderBold: true, TextColor: #ffffff, Wrap: true);
+          Text: "Harvest Idol";
+        }
+
+        Label #IdolDescription {
+          Anchor: (Bottom: 14);
+          Style: (FontSize: 14, TextColor: #c9d1d9, Wrap: true);
+          Text: "An economic super tower. After building it, choose its operating mode.";
+        }
+
+        $C.@TextButton #IdolBuild {
+          @Text = "Buy";
+        }
+      }
+    }
+
+    Group #BuiltInfoPanel {
+      Visible: false;
+      LayoutMode: Left;
+      Anchor: (Height: 360, Bottom: 12);
+      Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+      Padding: (Horizontal: 14, Vertical: 14);
+
+      Group {
+        Anchor: (Width: 220, Height: 220, Right: 14);
+
+        Group #BuiltInfoPlaceholder { Anchor: (Width: 220, Height: 220); Background: (TexturePath: "TowerIcons/placeholder_black.png", Border: 8); Visible: false; }
+        Group #BuiltInfoHeartImage { Anchor: (Width: 220, Height: 220); Background: (TexturePath: "SuperTowerIcons/korni.png", Border: 8); Visible: false; }
+        Group #BuiltInfoMonolithImage { Anchor: (Width: 220, Height: 220); Background: (TexturePath: "SuperTowerIcons/monolit.png", Border: 8); Visible: false; }
+        Group #BuiltInfoIdolImage { Anchor: (Width: 220, Height: 220); Background: (TexturePath: "SuperTowerIcons/idol.png", Border: 8); Visible: false; }
+      }
+
+      Group {
+        LayoutMode: Top;
+        Anchor: (Width: 820);
+
+        Label #BuiltInfoTitle { Style: (FontSize: 30, RenderBold: true, TextColor: #ffffff, Wrap: true); Text: "Super tower"; }
+        Label #BuiltInfoText { Anchor: (Top: 12, Bottom: 10); Style: (FontSize: 16, TextColor: #c9d1d9, Wrap: true); Text: ""; }
+        Label #BuiltStatusText { Anchor: (Bottom: 14); Style: (FontSize: 15, TextColor: #96c0ff, Wrap: true); Text: ""; }
+        $C.@TextButton #BuiltPrimaryAction { @Visible = false; @Text = "Activate"; }
+        $C.@TextButton #BuiltSellAction { @Visible = false; @Text = "Sell"; }
+      }
+    }
+
+    Group #IdolModePanel {
+      Visible: false;
+      LayoutMode: Top;
+      Anchor: (Bottom: 12);
+
+      Group {
+        Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+        LayoutMode: Left;
+        Anchor: (Height: 250, Bottom: 12);
+        Padding: (Horizontal: 14, Vertical: 14);
+
+        Group {
+          Anchor: (Width: 220, Height: 220, Right: 14);
+
+          Group #IdolPlaceholder { Anchor: (Width: 220, Height: 220); Background: (TexturePath: "TowerIcons/placeholder_black.png", Border: 8); Visible: false; }
+          Group #IdolHeartImage { Anchor: (Width: 220, Height: 220); Background: (TexturePath: "SuperTowerIcons/korni.png", Border: 8); Visible: false; }
+          Group #IdolMonolithImage { Anchor: (Width: 220, Height: 220); Background: (TexturePath: "SuperTowerIcons/monolit.png", Border: 8); Visible: false; }
+          Group #IdolIdolImage { Anchor: (Width: 220, Height: 220); Background: (TexturePath: "SuperTowerIcons/idol.png", Border: 8); Visible: false; }
+        }
+
+        Group {
+          LayoutMode: Top;
+          Anchor: (Width: 820);
+
+          Label #IdolTitle { Style: (FontSize: 30, RenderBold: true, TextColor: #ffffff, Wrap: true); Text: "Harvest Idol"; }
+          Label #IdolInfoText { Anchor: (Top: 12, Bottom: 10); Style: (FontSize: 16, TextColor: #c9d1d9, Wrap: true); Text: ""; }
+          Label #IdolModeText { Style: (FontSize: 15, TextColor: #96c0ff, Wrap: true); Text: ""; }
+        }
+      }
+
+      Group {
+        LayoutMode: Left;
+        Anchor: (Height: 330);
+
+        Group {
+          Anchor: (Width: 520, Height: 330, Right: 10);
+          LayoutMode: Top;
+          Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+          Padding: (Horizontal: 14, Vertical: 14);
+
+          Group {
+            Anchor: (Width: 180, Height: 180);
+            Background: (TexturePath: "SuperTowerIcons/idol_firstrezhim.png", Border: 8);
+          }
+
+          Label #IdolModeHarvestDescription {
+            Anchor: (Top: 12, Bottom: 12);
+            Style: (FontSize: 14, TextColor: #c9d1d9, Wrap: true);
+            Text: "Permanently boosts all income: all gold you gain is increased by 10%.";
+          }
+
+          $C.@TextButton #IdolModeHarvest {
+            @Text = "Mode: +10% gold";
+          }
+        }
+
+        Group {
+          Anchor: (Width: 520, Height: 330, Left: 10);
+          LayoutMode: Top;
+          Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+          Padding: (Horizontal: 14, Vertical: 14);
+
+          Group {
+            Anchor: (Width: 180, Height: 180);
+            Background: (TexturePath: "SuperTowerIcons/idol_secondrezhim.png", Border: 8);
+          }
+
+          Label #IdolModeWardDescription {
+            Anchor: (Top: 12, Bottom: 12);
+            Style: (FontSize: 14, TextColor: #c9d1d9, Wrap: true);
+            Text: "Stores all income for 4 waves, then pays out 1.5x of the stored amount after the 5th wave.";
+          }
+
+          $C.@TextButton #IdolModeWard {
+            @Text = "Mode: savings";
+          }
+        }
+      }
+    }
+
+    Label #Hint {
+      Anchor: (Bottom: 8);
+      Style: (FontSize: 13, TextColor: #c9d1d9, Wrap: true);
+      Text: "";
+    }
+  }
+}
+
+$C.@BackButton {}

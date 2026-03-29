@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "nodes": [
+    { "id": "economy_1", "displayName": "Экономика I", "note": "+20 стартовых монет.", "branch": "economy", "tier": 1, "cost": 12, "effectType": "starting_currency_flat", "targetId": "global", "value": 20.0, "requires": [] },
+    { "id": "economy_2", "displayName": "Экономика II", "note": "+25 стартовых монет.", "branch": "economy", "tier": 2, "cost": 20, "effectType": "starting_currency_flat", "targetId": "global", "value": 25.0, "requires": ["economy_1"] },
+    { "id": "economy_3", "displayName": "Экономика III", "note": "+30 стартовых монет.", "branch": "economy", "tier": 3, "cost": 30, "effectType": "starting_currency_flat", "targetId": "global", "value": 30.0, "requires": ["economy_2"] },
+    { "id": "economy_4", "displayName": "Экономика IV", "note": "+35 стартовых монет.", "branch": "economy", "tier": 4, "cost": 42, "effectType": "starting_currency_flat", "targetId": "global", "value": 35.0, "requires": ["economy_3"] },
+    { "id": "economy_5", "displayName": "Экономика V", "note": "+40 стартовых монет.", "branch": "economy", "tier": 5, "cost": 56, "effectType": "starting_currency_flat", "targetId": "global", "value": 40.0, "requires": ["economy_4"] },
+
+    { "id": "duplo_hp_1", "displayName": "Крепость дупла I", "note": "+2 к здоровью дупла.", "branch": "duplo", "tier": 1, "cost": 14, "effectType": "bank_hp_flat", "targetId": "duplo", "value": 2.0, "requires": [] },
+    { "id": "duplo_hp_2", "displayName": "Крепость дупла II", "note": "+2 к здоровью дупла.", "branch": "duplo", "tier": 2, "cost": 24, "effectType": "bank_hp_flat", "targetId": "duplo", "value": 2.0, "requires": ["duplo_hp_1"] },
+    { "id": "duplo_hp_3", "displayName": "Крепость дупла III", "note": "+2 к здоровью дупла.", "branch": "duplo", "tier": 3, "cost": 36, "effectType": "bank_hp_flat", "targetId": "duplo", "value": 2.0, "requires": ["duplo_hp_2"] },
+    { "id": "duplo_hp_4", "displayName": "Крепость дупла IV", "note": "+2 к здоровью дупла.", "branch": "duplo", "tier": 4, "cost": 50, "effectType": "bank_hp_flat", "targetId": "duplo", "value": 2.0, "requires": ["duplo_hp_3"] },
+    { "id": "duplo_hp_5", "displayName": "Крепость дупла V", "note": "+2 к здоровью дупла.", "branch": "duplo", "tier": 5, "cost": 66, "effectType": "bank_hp_flat", "targetId": "duplo", "value": 2.0, "requires": ["duplo_hp_4"] },
+
+    { "id": "tower_cap_1", "displayName": "Башни I", "note": "Открывает 6 уровень для всех башен.", "branch": "towers", "tier": 1, "cost": 18, "effectType": "tower_level_cap_branch", "value": 6.0, "requires": [] },
+    { "id": "tower_cap_2", "displayName": "Башни II", "note": "Открывает 7 уровень для всех башен.", "branch": "towers", "tier": 2, "cost": 30, "effectType": "tower_level_cap_branch", "value": 7.0, "requires": ["tower_cap_1"] },
+    { "id": "tower_cap_3", "displayName": "Башни III", "note": "Открывает 8 уровень для всех башен.", "branch": "towers", "tier": 3, "cost": 48, "effectType": "tower_level_cap_branch", "value": 8.0, "requires": ["tower_cap_2"] },
+    { "id": "tower_cap_4", "displayName": "Башни IV", "note": "Открывает 9 уровень для всех башен.", "branch": "towers", "tier": 4, "cost": 72, "effectType": "tower_level_cap_branch", "value": 9.0, "requires": ["tower_cap_3"] },
+    { "id": "tower_cap_5", "displayName": "Башни V", "note": "Открывает 10 уровень для всех башен.", "branch": "towers", "tier": 5, "cost": 104, "effectType": "tower_level_cap_branch", "value": 10.0, "requires": ["tower_cap_4"] },
+
+    { "id": "super_reactivation_1", "displayName": "Супер-башни I", "note": "+1 реактивация для Сердца корней и Штормового монолита.", "branch": "super", "tier": 1, "cost": 28, "effectType": "super_activation_bonus", "value": 1.0, "requires": [] },
+    { "id": "super_reactivation_2", "displayName": "Супер-башни II", "note": "+1 реактивация для Сердца корней и Штормового монолита.", "branch": "super", "tier": 2, "cost": 46, "effectType": "super_activation_bonus", "value": 1.0, "requires": ["super_reactivation_1"] },
+    { "id": "super_reactivation_3", "displayName": "Супер-башни III", "note": "+1 реактивация для Сердца корней и Штормового монолита.", "branch": "super", "tier": 3, "cost": 70, "effectType": "super_activation_bonus", "value": 1.0, "requires": ["super_reactivation_2"] },
+
+    { "id": "super_cost_1", "displayName": "Скидка на башни I", "note": "-2% к стоимости всех башен.", "branch": "discount", "tier": 1, "cost": 12, "effectType": "tower_cost_percent", "targetId": "global", "value": 0.02, "requires": [] },
+    { "id": "super_cost_2", "displayName": "Скидка на башни II", "note": "-2% к стоимости всех башен.", "branch": "discount", "tier": 2, "cost": 22, "effectType": "tower_cost_percent", "targetId": "global", "value": 0.02, "requires": ["super_cost_1"] },
+    { "id": "super_cost_3", "displayName": "Скидка на башни III", "note": "-2% к стоимости всех башен.", "branch": "discount", "tier": 3, "cost": 34, "effectType": "tower_cost_percent", "targetId": "global", "value": 0.02, "requires": ["super_cost_2"] },
+    { "id": "super_cost_4", "displayName": "Скидка на башни IV", "note": "-2% к стоимости всех башен.", "branch": "discount", "tier": 4, "cost": 48, "effectType": "tower_cost_percent", "targetId": "global", "value": 0.02, "requires": ["super_cost_3"] },
+    { "id": "super_cost_5", "displayName": "Скидка на башни V", "note": "-2% к стоимости всех башен.", "branch": "discount", "tier": 5, "cost": 64, "effectType": "tower_cost_percent", "targetId": "global", "value": 0.02, "requires": ["super_cost_4"] }
+  ]
+}

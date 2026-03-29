@@ -1,0 +1,22 @@
+{
+    "Layers":  [
+                   {
+                       "Files":  [
+                                     "Sounds/CreativePlay/Default/Base_Chimes_Stereo.ogg"
+                                 ],
+                       "RandomSettings":  {
+                                              "MinPitch":  -0.04,
+                                              "MaxPitch":  0.04,
+                                              "MinVolume":  0,
+                                              "MaxVolume":  0
+                                          },
+                       "StartDelay":  0,
+                       "Looping":  false,
+                       "Volume":  0
+                   }
+               ],
+    "Volume":  0.9,
+    "PreventSoundInterruption":  true,
+    "MaxInstance":  3,
+    "Parent":  "SFX_Attn_VeryLoud"
+}

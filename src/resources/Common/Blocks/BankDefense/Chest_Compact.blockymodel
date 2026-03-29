@@ -1,0 +1,100 @@
+{
+  "nodes": [
+    {
+      "id": "root",
+      "name": "Root",
+      "children": [
+        {
+          "id": "base",
+          "name": "Base",
+          "position": { "x": 0, "y": 5, "z": 0 },
+          "orientation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+          "shape": {
+            "type": "box",
+            "offset": { "x": 0, "y": 0, "z": 0 },
+            "stretch": { "x": 1, "y": 1, "z": 1 },
+            "settings": {
+              "size": { "x": 22, "y": 10, "z": 14 }
+            },
+            "textureLayout": {
+              "top": { "offset": { "x": 0, "y": 26 }, "mirror": { "x": false, "y": false }, "angle": 270 },
+              "front": { "offset": { "x": 26, "y": 26 }, "mirror": { "x": true, "y": false }, "angle": 0 },
+              "back": { "offset": { "x": 0, "y": 26 }, "mirror": { "x": false, "y": false }, "angle": 0 },
+              "left": { "offset": { "x": 0, "y": 26 }, "mirror": { "x": false, "y": false }, "angle": 0 },
+              "right": { "offset": { "x": 0, "y": 26 }, "mirror": { "x": false, "y": false }, "angle": 0 }
+            },
+            "unwrapMode": "custom",
+            "visible": true,
+            "doubleSided": false,
+            "shadingMode": "standard"
+          }
+        },
+        {
+          "id": "lid",
+          "name": "Lid",
+          "position": { "x": 0, "y": 12, "z": 0 },
+          "orientation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+          "shape": {
+            "type": "box",
+            "offset": { "x": 0, "y": 0, "z": 0 },
+            "stretch": { "x": 1, "y": 1, "z": 1 },
+            "settings": {
+              "size": { "x": 24, "y": 5, "z": 16 }
+            },
+            "textureLayout": {
+              "top": { "offset": { "x": 66, "y": 63 }, "mirror": { "x": false, "y": false }, "angle": 270 },
+              "bottom": { "offset": { "x": 27, "y": 8 }, "mirror": { "x": false, "y": true }, "angle": 90 },
+              "front": { "offset": { "x": 57, "y": 46 }, "mirror": { "x": true, "y": true }, "angle": 0 },
+              "back": { "offset": { "x": 27, "y": -1 }, "mirror": { "x": true, "y": true }, "angle": 180 },
+              "left": { "offset": { "x": 65, "y": 7 }, "mirror": { "x": false, "y": false }, "angle": 90 },
+              "right": { "offset": { "x": 27, "y": 46 }, "mirror": { "x": false, "y": true }, "angle": 0 }
+            },
+            "unwrapMode": "custom",
+            "visible": true,
+            "doubleSided": false,
+            "shadingMode": "standard"
+          }
+        },
+        {
+          "id": "lock",
+          "name": "Lock",
+          "position": { "x": 0, "y": 7, "z": 8 },
+          "orientation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+          "shape": {
+            "type": "box",
+            "offset": { "x": 0, "y": 0, "z": 0 },
+            "stretch": { "x": 1, "y": 1, "z": 1 },
+            "settings": {
+              "size": { "x": 4, "y": 5, "z": 2 }
+            },
+            "textureLayout": {
+              "front": { "offset": { "x": 58, "y": 49 }, "mirror": { "x": false, "y": false }, "angle": 0 },
+              "right": { "offset": { "x": 55, "y": 49 }, "mirror": { "x": false, "y": false }, "angle": 0 },
+              "bottom": { "offset": { "x": 58, "y": 46 }, "mirror": { "x": false, "y": false }, "angle": 0 },
+              "left": { "offset": { "x": 55, "y": 49 }, "mirror": { "x": false, "y": false }, "angle": 0 },
+              "top": { "offset": { "x": 58, "y": 46 }, "mirror": { "x": false, "y": false }, "angle": 0 }
+            },
+            "unwrapMode": "custom",
+            "visible": true,
+            "doubleSided": false,
+            "shadingMode": "standard"
+          }
+        }
+      ],
+      "position": { "x": 0, "y": 0, "z": 0 },
+      "orientation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+      "shape": {
+        "type": "none",
+        "offset": { "x": 0, "y": 0, "z": 0 },
+        "stretch": { "x": 1, "y": 1, "z": 1 },
+        "settings": { "isPiece": true },
+        "visible": true,
+        "doubleSided": false,
+        "shadingMode": "standard",
+        "unwrapMode": "custom",
+        "textureLayout": {}
+      }
+    }
+  ],
+  "lod": "auto"
+}

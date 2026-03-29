@@ -1,0 +1,44 @@
+{
+  "Spawners": [
+    {
+      "SpawnerId": "BankDefense_ForgottenTemplePortalPurple_Spawn"
+    },
+    {
+      "SpawnerId": "BankDefense_ForgottenTemplePortalPurple_Flash"
+    },
+    {
+      "SpawnerId": "BankDefense_ForgottenTemplePortalPurple_CenterCircle"
+    },
+    {
+      "SpawnerId": "BankDefense_ForgottenTemplePortalPurple_Sparks"
+    },
+    {
+      "SpawnerId": "BankDefense_ForgottenTemplePortalPurple_Center",
+      "StartDelay": 0.5
+    },
+    {
+      "SpawnerId": "BankDefense_ForgottenTemplePortalPurple_CenterGlow",
+      "StartDelay": 0.5
+    },
+    {
+      "SpawnerId": "BankDefense_ForgottenTemplePortalPurple_GlowSmoke",
+      "RotationOffset": {
+        "Pitch": 90.0
+      },
+      "PositionOffset": {
+        "X": 0.0
+      }
+    },
+    {
+      "SpawnerId": "BankDefense_ForgottenTemplePortalPurple_OuterCircle",
+      "RotationOffset": {
+        "Pitch": 90.0
+      },
+      "PositionOffset": {
+        "X": 0.0
+      }
+    }
+  ],
+  "CullDistance": 120.0,
+  "IsImportant": true
+}

@@ -1,0 +1,22 @@
+{
+    "Layers":  [
+                   {
+                       "Files":  [
+                                     "Sounds/CreativePlay/Default/Rotate_Pitch_Stereo.ogg"
+                                 ],
+                       "RandomSettings":  {
+                                              "MinPitch":  -0.03,
+                                              "MaxPitch":  0.08,
+                                              "MinVolume":  0,
+                                              "MaxVolume":  0
+                                          },
+                       "StartDelay":  0,
+                       "Looping":  false,
+                       "Volume":  0
+                   }
+               ],
+    "Volume":  -0.5,
+    "PreventSoundInterruption":  true,
+    "MaxInstance":  6,
+    "Parent":  "SFX_Attn_Moderate"
+}

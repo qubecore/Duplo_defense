@@ -1,0 +1,22 @@
+{
+    "Layers":  [
+                   {
+                       "Files":  [
+                                     "Sounds/Items/Chest/Chest_Legendary_LOOP.ogg"
+                                 ],
+                       "RandomSettings":  {
+                                              "MinPitch":  0,
+                                              "MaxPitch":  0,
+                                              "MinVolume":  0,
+                                              "MaxVolume":  0
+                                          },
+                       "StartDelay":  0,
+                       "Looping":  false,
+                       "Volume":  0
+                   }
+               ],
+    "Volume":  -2.2,
+    "PreventSoundInterruption":  false,
+    "MaxInstance":  8,
+    "Parent":  "SFX_Attn_Moderate"
+}

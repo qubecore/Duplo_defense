@@ -1,0 +1,54 @@
+{
+    "TranslationProperties":  {
+                                  "Name":  "Guard Post",
+                                  "Description":  "Click a slot to build or upgrade the Guard Post."
+                              },
+    "Categories":  [
+
+                   ],
+    "Model":  "Items/Hypixel/Minigames/GunPvP/Weapons/Handguns/Handgun.blockymodel",
+    "Texture":  "Items/Hypixel/Minigames/GunPvP/Weapons/Handguns/Handgun_Texture.png",
+    "Icon":  "Icons/ItemsGenerated/Weapon_Handgun.png",
+    "IconProperties":  {
+                           "Scale":  0.67,
+                           "Translation":  [
+                                               0.69,
+                                               -10.11
+                                           ],
+                           "Rotation":  [
+                                            315,
+                                            90,
+                                            0
+                                        ]
+                       },
+    "PlayerAnimationsId":  "Item",
+    "MaxStack":  1,
+    "Interactions":  {
+                         "Primary":  {
+                                         "Cooldown":  {
+                                                          "Id":  "BankDefense_GuardPost_Primary",
+                                                          "Cooldown":  0.05
+                                                      },
+                                         "Interactions":  [
+                                                              {
+                                                                  "Type":  "Simple"
+                                                              }
+                                                          ]
+                                     },
+                         "Secondary":  {
+                                           "Cooldown":  {
+                                                            "Id":  "BankDefense_GuardPost_Secondary",
+                                                            "Cooldown":  0.05
+                                                        },
+                                           "Interactions":  [
+                                                                {
+                                                                    "Type":  "Simple"
+                                                                }
+                                                            ]
+                                       }
+                     },
+    "Utility":  {
+                    "Compatible":  true
+                },
+    "Quality":  "Technical"
+}

@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1100" viewBox="0 0 1800 1100">
+  <defs>
+    <style>
+      .bg { fill: #0d1726; }
+      .frame { fill: #11243a; stroke: #355377; stroke-width: 8; rx: 26; }
+      .grid { stroke: #1d314d; stroke-width: 1; opacity: 0.34; }
+      .title { fill: #edf3fb; font-family: Segoe UI, Arial, sans-serif; font-size: 30px; font-weight: 800; }
+      .subtitle { fill: #b8c9de; font-family: Segoe UI, Arial, sans-serif; font-size: 18px; }
+      .blueBar { fill: #1f63eb; stroke: #7db3ff; stroke-width: 3; rx: 28; }
+      .greenBar { fill: #1ce160; stroke: #8fffac; stroke-width: 3; rx: 28; }
+      .zoneBlue { fill: #1f63eb; fill-opacity: 0.10; stroke: #7db3ff; stroke-width: 2; rx: 24; }
+      .zoneGreen { fill: #1ce160; fill-opacity: 0.10; stroke: #8fffac; stroke-width: 2; rx: 24; }
+      .zoneShared { fill: #d7bb86; fill-opacity: 0.08; stroke: #d9b978; stroke-width: 2; rx: 24; }
+      .zoneFinal { fill: #284b31; fill-opacity: 0.12; stroke: #7ed68f; stroke-width: 3; rx: 24; }
+      .pathOuter { fill: none; stroke: #6b5733; stroke-width: 68; stroke-linecap: round; stroke-linejoin: round; }
+      .pathInner { fill: none; stroke: #d7bb86; stroke-width: 50; stroke-linecap: round; stroke-linejoin: round; }
+      .blueSlot { fill: #2b79ff; stroke: #eef7ff; stroke-width: 3; }
+      .greenSlot { fill: #26d767; stroke: #eefdf0; stroke-width: 3; }
+      .blueTrap { fill: #60a7ff; stroke: #eef7ff; stroke-width: 3; }
+      .greenTrap { fill: #6ee38c; stroke: #eefdf0; stroke-width: 3; }
+      .super { fill: #ff9a54; stroke: #fff0d8; stroke-width: 3; }
+      .chest { fill: #c98d31; stroke: #ffe9a8; stroke-width: 3; rx: 8; }
+      .spawn { fill: #ff7070; stroke: #ffe2e2; stroke-width: 4; }
+      .hollowRing { fill: #25492f; stroke: #7dd48d; stroke-width: 5; rx: 24; }
+      .hollowCore { fill: #9dff9a; fill-opacity: 0.18; stroke: #d8ffba; stroke-width: 4; rx: 18; }
+      .text { fill: #edf3fb; font-family: Segoe UI, Arial, sans-serif; font-size: 24px; font-weight: 700; }
+      .small { fill: #b7c9df; font-family: Segoe UI, Arial, sans-serif; font-size: 18px; }
+      .note { fill: #dbe7f5; font-family: Segoe UI, Arial, sans-serif; font-size: 16px; }
+      .mono { fill: #f0f6ff; font-family: Consolas, monospace; font-size: 14px; font-weight: 700; text-anchor: middle; dominant-baseline: middle; }
+      .legend { fill: #102033; stroke: #3a5c83; stroke-width: 3; rx: 16; }
+      .arrowBlue { fill: #8fc2ff; }
+      .arrowGreen { fill: #9afab3; }
+      .arrowShared { fill: #ffe6ae; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1800" height="1100"/>
+  <rect class="frame" x="36" y="36" width="1728" height="1028"/>
+
+  <g opacity="0.82">
+    <path class="grid" d="M96 90V1010 M176 90V1010 M256 90V1010 M336 90V1010 M416 90V1010 M496 90V1010 M576 90V1010 M656 90V1010 M736 90V1010 M816 90V1010 M896 90V1010 M976 90V1010 M1056 90V1010 M1136 90V1010 M1216 90V1010 M1296 90V1010 M1376 90V1010 M1456 90V1010 M1536 90V1010 M1616 90V1010 M1696 90V1010"/>
+    <path class="grid" d="M80 130H1720 M80 210H1720 M80 290H1720 M80 370H1720 M80 450H1720 M80 530H1720 M80 610H1720 M80 690H1720 M80 770H1720 M80 850H1720 M80 930H1720"/>
+  </g>
+
+  <text class="title" x="84" y="100">DUPLO TD - DUO MODE BLUEPRINT</text>
+  <text class="subtitle" x="84" y="130">Locked to the approved flow: blue/green start lanes, one shared lane, split again into two lanes, then one final merged lane into the Hollow.</text>
+
+  <rect class="blueBar" x="114" y="118" width="42" height="366" rx="21"/>
+  <rect class="greenBar" x="114" y="614" width="42" height="366" rx="21"/>
+
+  <rect class="zoneBlue" x="184" y="134" width="688" height="304" rx="24"/>
+  <rect class="zoneGreen" x="184" y="662" width="688" height="304" rx="24"/>
+  <rect class="zoneShared" x="354" y="456" width="334" height="184" rx="24"/>
+  <rect class="zoneBlue" x="716" y="172" width="284" height="236" rx="24"/>
+  <rect class="zoneGreen" x="716" y="692" width="284" height="236" rx="24"/>
+  <rect class="zoneFinal" x="1068" y="432" width="316" height="236" rx="24"/>
+
+  <text class="text" x="206" y="184">BLUE START STRIP</text>
+  <text class="small" x="206" y="212">Blue player early route and first personal tower arc.</text>
+
+  <text class="text" x="206" y="712">GREEN START STRIP</text>
+  <text class="small" x="206" y="740">Green player early route and first personal tower arc.</text>
+
+  <text class="text" x="384" y="500">SHARED MID LANE</text>
+  <text class="small" x="384" y="528">Both flows compress here before splitting again.</text>
+
+  <text class="text" x="734" y="222">BLUE SECOND STRIP</text>
+  <text class="small" x="734" y="250">Upper branch after the shared lane.</text>
+
+  <text class="text" x="734" y="742">GREEN SECOND STRIP</text>
+  <text class="small" x="734" y="770">Lower branch after the shared lane.</text>
+
+  <text class="text" x="1098" y="478">FINAL SHARED LANE</text>
+  <text class="small" x="1098" y="506">Last stand zone with shared supers.</text>
+
+  <path class="pathOuter" d="M156 162 L156 548 L364 548"/>
+  <path class="pathInner" d="M156 162 L156 548 L364 548"/>
+  <path class="pathOuter" d="M156 936 L156 548 L364 548"/>
+  <path class="pathInner" d="M156 936 L156 548 L364 548"/>
+
+  <path class="pathOuter" d="M364 548 L716 548"/>
+  <path class="pathInner" d="M364 548 L716 548"/>
+
+  <path class="pathOuter" d="M716 548 L716 286 L1012 286 L1012 548"/>
+  <path class="pathInner" d="M716 548 L716 286 L1012 286 L1012 548"/>
+
+  <path class="pathOuter" d="M716 548 L716 810 L1012 810 L1012 548"/>
+  <path class="pathInner" d="M716 548 L716 810 L1012 810 L1012 548"/>
+
+  <path class="pathOuter" d="M1012 548 L1290 548"/>
+  <path class="pathInner" d="M1012 548 L1290 548"/>
+
+  <circle class="spawn" cx="156" cy="162" r="22"/>
+  <circle class="spawn" cx="156" cy="936" r="22"/>
+  <text class="text" x="94" y="118">BLUE SPAWN</text>
+  <text class="text" x="82" y="998">GREEN SPAWN</text>
+
+  <polygon class="arrowBlue" points="156,300 140,330 172,330"/>
+  <polygon class="arrowBlue" points="276,548 246,532 246,564"/>
+  <polygon class="arrowShared" points="520,548 490,532 490,564"/>
+  <polygon class="arrowBlue" points="716,438 700,408 732,408"/>
+  <polygon class="arrowBlue" points="868,286 838,270 838,302"/>
+  <polygon class="arrowBlue" points="1012,438 996,408 1028,408"/>
+  <polygon class="arrowGreen" points="156,798 140,768 172,768"/>
+  <polygon class="arrowGreen" points="716,658 700,688 732,688"/>
+  <polygon class="arrowGreen" points="868,810 838,794 838,826"/>
+  <polygon class="arrowGreen" points="1012,658 996,688 1028,688"/>
+  <polygon class="arrowShared" points="1154,548 1124,532 1124,564"/>
+
+  <rect class="hollowRing" x="1408" y="432" width="244" height="232" rx="24"/>
+  <text class="text" x="1468" y="480">HOLLOW</text>
+  <rect class="hollowCore" x="1478" y="520" width="104" height="68" rx="16"/>
+  <text class="small" x="1440" y="626">Shared win / loss state</text>
+
+  <g>
+    <circle class="blueSlot" cx="246" cy="236" r="18"/><text class="mono" x="246" y="236">B01</text>
+    <circle class="blueSlot" cx="246" cy="332" r="18"/><text class="mono" x="246" y="332">B02</text>
+    <circle class="blueSlot" cx="246" cy="428" r="18"/><text class="mono" x="246" y="428">B03</text>
+    <circle class="blueSlot" cx="314" cy="510" r="18"/><text class="mono" x="314" y="510">B04</text>
+    <circle class="blueSlot" cx="430" cy="474" r="18"/><text class="mono" x="430" y="474">B05</text>
+    <circle class="blueSlot" cx="430" cy="622" r="18"/><text class="mono" x="430" y="622">B06</text>
+    <circle class="blueSlot" cx="642" cy="474" r="18"/><text class="mono" x="642" y="474">B07</text>
+    <circle class="blueSlot" cx="792" cy="214" r="18"/><text class="mono" x="792" y="214">B08</text>
+    <circle class="blueSlot" cx="900" cy="214" r="18"/><text class="mono" x="900" y="214">B09</text>
+    <circle class="blueSlot" cx="792" cy="362" r="18"/><text class="mono" x="792" y="362">B10</text>
+    <circle class="blueSlot" cx="900" cy="362" r="18"/><text class="mono" x="900" y="362">B11</text>
+    <circle class="blueSlot" cx="1058" cy="462" r="18"/><text class="mono" x="1058" y="462">B12</text>
+  </g>
+
+  <g>
+    <circle class="greenSlot" cx="246" cy="862" r="18"/><text class="mono" x="246" y="862">G01</text>
+    <circle class="greenSlot" cx="246" cy="766" r="18"/><text class="mono" x="246" y="766">G02</text>
+    <circle class="greenSlot" cx="246" cy="670" r="18"/><text class="mono" x="246" y="670">G03</text>
+    <circle class="greenSlot" cx="314" cy="586" r="18"/><text class="mono" x="314" y="586">G04</text>
+    <circle class="greenSlot" cx="642" cy="622" r="18"/><text class="mono" x="642" y="622">G05</text>
+    <circle class="greenSlot" cx="792" cy="734" r="18"/><text class="mono" x="792" y="734">G06</text>
+    <circle class="greenSlot" cx="900" cy="734" r="18"/><text class="mono" x="900" y="734">G07</text>
+    <circle class="greenSlot" cx="792" cy="882" r="18"/><text class="mono" x="792" y="882">G08</text>
+    <circle class="greenSlot" cx="900" cy="882" r="18"/><text class="mono" x="900" y="882">G09</text>
+    <circle class="greenSlot" cx="1058" cy="634" r="18"/><text class="mono" x="1058" y="634">G10</text>
+    <circle class="greenSlot" cx="1162" cy="634" r="18"/><text class="mono" x="1162" y="634">G11</text>
+    <circle class="greenSlot" cx="1162" cy="462" r="18"/><text class="mono" x="1162" y="462">G12</text>
+  </g>
+
+  <g>
+    <polygon class="blueTrap" points="190,496 208,520 190,544 172,520"/><text class="mono" x="190" y="520">BT1</text>
+    <polygon class="blueTrap" points="550,452 568,476 550,500 532,476"/><text class="mono" x="550" y="476">BT2</text>
+    <polygon class="blueTrap" points="716,354 734,378 716,402 698,378"/><text class="mono" x="716" y="378">BT3</text>
+    <polygon class="blueTrap" points="1012,354 1030,378 1012,402 994,378"/><text class="mono" x="1012" y="378">BT4</text>
+
+    <polygon class="greenTrap" points="190,576 208,600 190,624 172,600"/><text class="mono" x="190" y="600">GT1</text>
+    <polygon class="greenTrap" points="550,596 568,620 550,644 532,620"/><text class="mono" x="550" y="620">GT2</text>
+    <polygon class="greenTrap" points="716,698 734,722 716,746 698,722"/><text class="mono" x="716" y="722">GT3</text>
+    <polygon class="greenTrap" points="1012,698 1030,722 1012,746 994,722"/><text class="mono" x="1012" y="722">GT4</text>
+  </g>
+
+  <g>
+    <rect class="super" x="1188" y="466" width="42" height="42" rx="10"/><text class="mono" x="1209" y="487">S1</text>
+    <rect class="super" x="1188" y="588" width="42" height="42" rx="10"/><text class="mono" x="1209" y="609">S2</text>
+    <rect class="super" x="1300" y="526" width="42" height="42" rx="10"/><text class="mono" x="1321" y="547">S3</text>
+  </g>
+
+  <g>
+    <rect class="chest" x="280" y="146" width="34" height="28" rx="7"/><text class="mono" x="297" y="160">C1</text>
+    <rect class="chest" x="280" y="924" width="34" height="28" rx="7"/><text class="mono" x="297" y="938">C2</text>
+    <rect class="chest" x="562" y="510" width="34" height="28" rx="7"/><text class="mono" x="579" y="524">CM</text>
+  </g>
+
+  <g>
+    <rect class="legend" x="84" y="968" width="1038" height="78" rx="16"/>
+    <text class="note" x="108" y="996">Shards stay shared for the whole team, same progression rules as solo. Super towers are fully shared: both players can buy, use, upgrade, or sell them.</text>
+    <text class="note" x="108" y="1018">Traps are now split 4/4: BT1-BT4 belong to Blue player, GT1-GT4 belong to Green player. One chest open rewards both players. Disconnect = automatic defeat.</text>
+  </g>
+
+  <g>
+    <rect class="legend" x="1128" y="128" width="530" height="162" rx="18"/>
+    <text class="text" x="1156" y="168">BOSS LOGIC FIT</text>
+    <text class="small" x="1156" y="204">Rift Twins work on the first split and the second split without confusing the final shared lane.</text>
+    <text class="small" x="1156" y="232">Node Arbiter can side-swap on the second split, then become a forward respawn boss once it enters the final lane.</text>
+    <text class="small" x="1156" y="260">Seal Master can disable one colored branch while the ally answers from the opposite branch.</text>
+  </g>
+</svg>

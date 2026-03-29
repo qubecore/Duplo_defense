@@ -1,0 +1,54 @@
+{
+    "TranslationProperties":  {
+                                  "Name":  "Sniper Post",
+                                  "Description":  "Click a slot to build or upgrade the Sniper Post."
+                              },
+    "Categories":  [
+
+                   ],
+    "Model":  "Items/Hypixel/Minigames/GunPvP/Weapons/Assault_Rifles/Assault_Rifle.blockymodel",
+    "Texture":  "Items/Hypixel/Minigames/GunPvP/Weapons/Assault_Rifles/Assault_Rifle_Texture.png",
+    "Icon":  "Icons/ItemsGenerated/Weapon_Assault_Rifle.png",
+    "IconProperties":  {
+                           "Scale":  0.37,
+                           "Translation":  [
+                                               -3.6,
+                                               -20.4
+                                           ],
+                           "Rotation":  [
+                                            315,
+                                            90,
+                                            0
+                                        ]
+                       },
+    "PlayerAnimationsId":  "Item",
+    "MaxStack":  1,
+    "Interactions":  {
+                         "Primary":  {
+                                         "Cooldown":  {
+                                                          "Id":  "BankDefense_SniperDesk_Primary",
+                                                          "Cooldown":  0.05
+                                                      },
+                                         "Interactions":  [
+                                                              {
+                                                                  "Type":  "Simple"
+                                                              }
+                                                          ]
+                                     },
+                         "Secondary":  {
+                                           "Cooldown":  {
+                                                            "Id":  "BankDefense_SniperDesk_Secondary",
+                                                            "Cooldown":  0.05
+                                                        },
+                                           "Interactions":  [
+                                                                {
+                                                                    "Type":  "Simple"
+                                                                }
+                                                            ]
+                                       }
+                     },
+    "Utility":  {
+                    "Compatible":  true
+                },
+    "Quality":  "Technical"
+}

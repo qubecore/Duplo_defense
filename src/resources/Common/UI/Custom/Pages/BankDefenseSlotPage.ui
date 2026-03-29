@@ -1,0 +1,479 @@
+$C = "../Common.ui";
+
+$C.@PageOverlay {}
+
+$C.@Container {
+  Anchor: (Width: 1100, Height: 940);
+
+  #Title {
+    Group {
+      LayoutMode: Left;
+
+      $C.@Title #TitleLabel {
+        @Text = "Tower slot";
+      }
+    }
+  }
+
+  #Content {
+    LayoutMode: Top;
+
+    Label #Subtitle {
+      Anchor: (Bottom: 12);
+      Style: (FontSize: 13, TextColor: #96a9be, Wrap: true);
+      Text: "Slot position";
+    }
+
+    Group #SummaryPanel {
+      Visible: false;
+      LayoutMode: Top;
+      Anchor: (Height: 0, Bottom: 0);
+      Padding: (Horizontal: 0, Vertical: 0);
+
+      Label #Wave { Text: ""; }
+      Label #Balance { Text: ""; }
+      Label #Bank { Text: ""; }
+      Label #SlotState { Text: ""; }
+      Label #RewardHint { Text: ""; }
+    }
+
+    Group #SelectionPanel {
+      LayoutMode: Top;
+      Anchor: (Bottom: 12);
+
+      Label #BuildHeader {
+        Anchor: (Bottom: 8);
+        Style: (FontSize: 13, RenderBold: true, RenderUppercase: true, TextColor: #878e9c);
+        Text: "Towers";
+      }
+
+      Group {
+        LayoutMode: Left;
+        Anchor: (Height: 320, Bottom: 12);
+
+        Group #GuardPostCard {
+          Anchor: (Width: 340, Height: 320, Right: 10);
+          LayoutMode: Top;
+          Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+          Padding: (Horizontal: 12, Vertical: 12);
+
+          Group #GuardPostTowerImage {
+            Anchor: (Width: 180, Height: 180);
+            Background: (TexturePath: "TowerIcons/guard_post.png", Border: 8);
+          }
+
+          Group #GuardPostTrapImage {
+            Anchor: (Width: 180, Height: 180);
+            Background: (TexturePath: "TowerIcons/root_snare.png", Border: 8);
+            Visible: false;
+          }
+
+          Label #GuardPostTitle {
+            Anchor: (Top: 10, Bottom: 8);
+            Style: (FontSize: 19, RenderBold: true, TextColor: #ffffff, Wrap: true);
+            Text: "Archer";
+          }
+
+          $C.@TextButton #GuardPost {
+            @Text = "Place";
+          }
+        }
+
+        Group #SniperDeskCard {
+          Anchor: (Width: 340, Height: 320, Left: 10, Right: 10);
+          LayoutMode: Top;
+          Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+          Padding: (Horizontal: 12, Vertical: 12);
+
+          Group #SniperDeskTowerImage {
+            Anchor: (Width: 180, Height: 180);
+            Background: (TexturePath: "TowerIcons/sniper_desk.png", Border: 8);
+          }
+
+          Group #SniperDeskTrapImage {
+            Anchor: (Width: 180, Height: 180);
+            Background: (TexturePath: "TowerIcons/spore_mine.png", Border: 8);
+            Visible: false;
+          }
+
+          Label #SniperDeskTitle {
+            Anchor: (Top: 10, Bottom: 8);
+            Style: (FontSize: 19, RenderBold: true, TextColor: #ffffff, Wrap: true);
+            Text: "Crossbow";
+          }
+
+          $C.@TextButton #SniperDesk {
+            @Text = "Place";
+          }
+        }
+
+        Group #RapidSecurityCard {
+          Anchor: (Width: 340, Height: 320, Left: 10);
+          LayoutMode: Top;
+          Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+          Padding: (Horizontal: 12, Vertical: 12);
+
+          Group #RapidSecurityTowerImage {
+            Anchor: (Width: 180, Height: 180);
+            Background: (TexturePath: "TowerIcons/rapid_security.png", Border: 8);
+          }
+
+          Group #RapidSecurityTrapImage {
+            Anchor: (Width: 180, Height: 180);
+            Background: (TexturePath: "TowerIcons/frost_seal.png", Border: 8);
+            Visible: false;
+          }
+
+          Label #RapidSecurityTitle {
+            Anchor: (Top: 10, Bottom: 8);
+            Style: (FontSize: 19, RenderBold: true, TextColor: #ffffff, Wrap: true);
+            Text: "Dart launcher";
+          }
+
+          $C.@TextButton #RapidSecurity {
+            @Text = "Place";
+          }
+        }
+      }
+
+      Group {
+        LayoutMode: Left;
+        Anchor: (Height: 320);
+
+        Group #FreezeGateCard {
+          Anchor: (Width: 340, Height: 320, Right: 10);
+          LayoutMode: Top;
+          Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+          Padding: (Horizontal: 12, Vertical: 12);
+
+          Group {
+            Anchor: (Width: 180, Height: 180);
+            Background: (TexturePath: "TowerIcons/freeze_gate.png", Border: 8);
+          }
+
+          Label #FreezeGateTitle {
+            Anchor: (Top: 10, Bottom: 8);
+            Style: (FontSize: 19, RenderBold: true, TextColor: #ffffff, Wrap: true);
+            Text: "Ice totem";
+          }
+
+          $C.@TextButton #FreezeGate {
+            @Text = "Place";
+          }
+        }
+
+        Group #ShockRelayCard {
+          Anchor: (Width: 340, Height: 320, Left: 10, Right: 10);
+          LayoutMode: Top;
+          Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+          Padding: (Horizontal: 12, Vertical: 12);
+
+          Group {
+            Anchor: (Width: 180, Height: 180);
+            Background: (TexturePath: "TowerIcons/shock_relay.png", Border: 8);
+          }
+
+          Label #ShockRelayTitle {
+            Anchor: (Top: 10, Bottom: 8);
+            Style: (FontSize: 19, RenderBold: true, TextColor: #ffffff, Wrap: true);
+            Text: "Electric Sloth";
+          }
+
+          $C.@TextButton #ShockRelay {
+            @Text = "Place";
+          }
+        }
+
+        Group #ArmorDrillCard {
+          Anchor: (Width: 340, Height: 320, Left: 10);
+          LayoutMode: Top;
+          Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+          Padding: (Horizontal: 12, Vertical: 12);
+
+          Group {
+            Anchor: (Width: 180, Height: 180);
+            Background: (TexturePath: "TowerIcons/armor_drill.png", Border: 8);
+          }
+
+          Label #ArmorDrillTitle {
+            Anchor: (Top: 10, Bottom: 8);
+            Style: (FontSize: 19, RenderBold: true, TextColor: #ffffff, Wrap: true);
+            Text: "Rootspitter";
+          }
+
+          $C.@TextButton #ArmorDrill {
+            @Text = "Place";
+          }
+        }
+      }
+    }
+
+    Group #PlacedPanel {
+      LayoutMode: Top;
+      Anchor: (Bottom: 12);
+      Visible: false;
+
+      Label {
+        Anchor: (Bottom: 8);
+        Style: (FontSize: 13, RenderBold: true, RenderUppercase: true, TextColor: #878e9c);
+        Text: "Current tower";
+      }
+
+      Group {
+        Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+        LayoutMode: Left;
+        Anchor: (Height: 180, Bottom: 12);
+        Padding: (Horizontal: 12, Vertical: 12);
+
+        Group #CurrentTowerImage {
+          Anchor: (Width: 140, Height: 140, Right: 14);
+
+          Group #CurrentTowerPlaceholder {
+            Anchor: (Width: 140, Height: 140);
+            Background: (TexturePath: "TowerIcons/placeholder_black.png", Border: 8);
+          }
+
+          Group #CurrentTowerGuardPostImage {
+            Anchor: (Width: 140, Height: 140);
+            Background: (TexturePath: "TowerIcons/guard_post.png", Border: 8);
+            Visible: false;
+          }
+
+          Group #CurrentTowerSniperDeskImage {
+            Anchor: (Width: 140, Height: 140);
+            Background: (TexturePath: "TowerIcons/sniper_desk.png", Border: 8);
+            Visible: false;
+          }
+
+          Group #CurrentTowerRapidSecurityImage {
+            Anchor: (Width: 140, Height: 140);
+            Background: (TexturePath: "TowerIcons/rapid_security.png", Border: 8);
+            Visible: false;
+          }
+
+          Group #CurrentTowerFreezeGateImage {
+            Anchor: (Width: 140, Height: 140);
+            Background: (TexturePath: "TowerIcons/freeze_gate.png", Border: 8);
+            Visible: false;
+          }
+
+          Group #CurrentTowerShockRelayImage {
+            Anchor: (Width: 140, Height: 140);
+            Background: (TexturePath: "TowerIcons/shock_relay.png", Border: 8);
+            Visible: false;
+          }
+
+          Group #CurrentTowerArmorDrillImage {
+            Anchor: (Width: 140, Height: 140);
+            Background: (TexturePath: "TowerIcons/armor_drill.png", Border: 8);
+            Visible: false;
+          }
+
+          Group #CurrentTowerRootSnareImage {
+            Anchor: (Width: 140, Height: 140);
+            Background: (TexturePath: "TowerIcons/root_snare.png", Border: 8);
+            Visible: false;
+          }
+
+          Group #CurrentTowerSporeMineImage {
+            Anchor: (Width: 140, Height: 140);
+            Background: (TexturePath: "TowerIcons/spore_mine.png", Border: 8);
+            Visible: false;
+          }
+
+          Group #CurrentTowerFrostSealImage {
+            Anchor: (Width: 140, Height: 140);
+            Background: (TexturePath: "TowerIcons/frost_seal.png", Border: 8);
+            Visible: false;
+          }
+        }
+
+        Group {
+          LayoutMode: Top;
+          Anchor: (Width: 888);
+
+          Label #CurrentTowerTitle {
+            Style: (FontSize: 20, RenderBold: true, TextColor: #ffffff, Wrap: true);
+            Text: "Tower";
+          }
+
+          Label #CurrentTowerMeta {
+            Anchor: (Top: 8);
+            Style: (FontSize: 14, TextColor: #c9d1d9, Wrap: true);
+            Text: "";
+          }
+
+          Label #CurrentTowerModule {
+            Anchor: (Top: 8);
+            Style: (FontSize: 14, TextColor: #9bc3ff, Wrap: true);
+            Text: "Module: empty";
+          }
+
+          Group {
+            LayoutMode: Left;
+            Anchor: (Top: 12);
+
+            $C.@TextButton #UpgradeTower {
+              @Anchor = (Width: 250, Right: 10);
+              @Text = "Upgrade";
+            }
+
+            $C.@CancelTextButton #SellTower {
+              @Anchor = (Width: 250, Left: 10);
+              @Text = "Sell";
+            }
+          }
+        }
+      }
+
+      Group #ModulesPanel {
+        LayoutMode: Top;
+        Anchor: (Bottom: 12);
+
+        Label #ModulesHeader {
+          Anchor: (Bottom: 8);
+          Style: (FontSize: 13, RenderBold: true, RenderUppercase: true, TextColor: #878e9c);
+          Text: "Modules";
+        }
+
+        Group {
+          LayoutMode: Left;
+          Anchor: (Height: 156, Bottom: 10);
+
+          Group #ModuleCard01 {
+            Anchor: (Width: 340, Height: 156, Right: 10);
+            LayoutMode: Top;
+            Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+            Padding: (Horizontal: 10, Vertical: 10);
+
+            Group { Anchor: (Width: 96, Height: 96); Background: (TexturePath: "ModuleIcons/overload.png", Border: 8); }
+            $C.@SecondaryTextButton #Module01 { @Text = "Overload"; }
+          }
+
+          Group #ModuleCard02 {
+            Anchor: (Width: 340, Height: 156, Left: 10, Right: 10);
+            LayoutMode: Top;
+            Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+            Padding: (Horizontal: 10, Vertical: 10);
+
+            Group { Anchor: (Width: 96, Height: 96); Background: (TexturePath: "ModuleIcons/heavy_caliber.png", Border: 8); }
+            $C.@SecondaryTextButton #Module02 { @Text = "Caliber"; }
+          }
+
+          Group #ModuleCard03 {
+            Anchor: (Width: 340, Height: 156, Left: 10);
+            LayoutMode: Top;
+            Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+            Padding: (Horizontal: 10, Vertical: 10);
+
+            Group { Anchor: (Width: 96, Height: 96); Background: (TexturePath: "ModuleIcons/long_optics.png", Border: 8); }
+            $C.@SecondaryTextButton #Module03 { @Text = "Optics"; }
+          }
+        }
+
+        Group {
+          LayoutMode: Left;
+          Anchor: (Height: 156, Bottom: 10);
+
+          Group #ModuleCard04 {
+            Anchor: (Width: 340, Height: 156, Right: 10);
+            LayoutMode: Top;
+            Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+            Padding: (Horizontal: 10, Vertical: 10);
+
+            Group { Anchor: (Width: 96, Height: 96); Background: (TexturePath: "ModuleIcons/cryo_capsule.png", Border: 8); }
+            $C.@SecondaryTextButton #Module04 { @Text = "Cryo"; }
+          }
+
+          Group #ModuleCard05 {
+            Anchor: (Width: 340, Height: 156, Left: 10, Right: 10);
+            LayoutMode: Top;
+            Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+            Padding: (Horizontal: 10, Vertical: 10);
+
+            Group { Anchor: (Width: 96, Height: 96); Background: (TexturePath: "ModuleIcons/fragment_charge.png", Border: 8); }
+            $C.@SecondaryTextButton #Module05 { @Text = "Fragments"; }
+          }
+
+          Group #ModuleCard06 {
+            Anchor: (Width: 340, Height: 156, Left: 10);
+            LayoutMode: Top;
+            Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+            Padding: (Horizontal: 10, Vertical: 10);
+
+            Group { Anchor: (Width: 96, Height: 96); Background: (TexturePath: "ModuleIcons/armor_scanner.png", Border: 8); }
+            $C.@SecondaryTextButton #Module06 { @Text = "Armor scan"; }
+          }
+        }
+
+        Group {
+          LayoutMode: Left;
+          Anchor: (Height: 156);
+
+          Group #ModuleCard07 {
+            Anchor: (Width: 340, Height: 156, Right: 10);
+            LayoutMode: Top;
+            Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+            Padding: (Horizontal: 10, Vertical: 10);
+
+            Group { Anchor: (Width: 96, Height: 96); Background: (TexturePath: "ModuleIcons/arc_splitter.png", Border: 8); }
+            $C.@SecondaryTextButton #Module07 { @Text = "Arc"; }
+          }
+
+          Group #ModuleCard08 {
+            Anchor: (Width: 340, Height: 156, Left: 10, Right: 10);
+            LayoutMode: Top;
+            Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+            Padding: (Horizontal: 10, Vertical: 10);
+
+            Group { Anchor: (Width: 96, Height: 96); Background: (TexturePath: "ModuleIcons/dual_camera.png", Border: 8); }
+            $C.@SecondaryTextButton #Module08 { @Text = "Dual cam"; }
+          }
+
+          Group #ModuleCard09 {
+            Anchor: (Width: 340, Height: 156, Left: 10);
+            LayoutMode: Top;
+            Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+            Padding: (Horizontal: 10, Vertical: 10);
+
+            Group { Anchor: (Width: 96, Height: 96); Background: (TexturePath: "ModuleIcons/reserve_capacitor.png", Border: 8); }
+            $C.@SecondaryTextButton #Module09 { @Text = "Capacitor"; }
+          }
+        }
+      }
+
+      Label #ModuleUnavailable {
+        Anchor: (Bottom: 12);
+        Style: (FontSize: 13, TextColor: #96a9be, Wrap: true);
+        Text: "Modules are unavailable for this object.";
+        Visible: false;
+      }
+
+      Group {
+        LayoutMode: Left;
+        Anchor: (Height: 48, Bottom: 8);
+
+        Group {
+          Anchor: (Width: 380, Height: 1, Right: 10);
+        }
+
+        $C.@SecondaryTextButton #RemoveModule {
+          @Anchor = (Width: 340);
+          @Text = "Remove module";
+        }
+
+        Group {
+          Anchor: (Width: 380, Height: 1, Left: 10);
+        }
+      }
+    }
+
+    Label #Hint {
+      Anchor: (Bottom: 12);
+      Style: (FontSize: 13, TextColor: #c9d1d9, Wrap: true);
+      Text: "Hint";
+    }
+  }
+}
+
+$C.@BackButton {}

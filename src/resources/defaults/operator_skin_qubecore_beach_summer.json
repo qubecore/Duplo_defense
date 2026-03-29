@@ -1,0 +1,22 @@
+{
+  "bodyCharacteristic": "Muscular.05",
+  "underwear": "Suit.Purple",
+  "face": "Face_Sunken",
+  "ears": "Default",
+  "mouth": "Mouth_Default",
+  "haircut": "ThickBraid.GreyPurple",
+  "facialHair": "PirateGoatee.GreyPurple",
+  "eyebrows": "Medium.GreyPurple",
+  "eyes": "Large_Eyes.Purple",
+  "pants": "StripedPants.Brown",
+  "overpants": null,
+  "undertop": "PastelFade.Black",
+  "overtop": null,
+  "shoes": "Gem_Shoes.Black",
+  "headAccessory": "WitchHat.Lime",
+  "faceAccessory": "BandageBlindfold.Black.Thin",
+  "earAccessory": "SimpleEarring.Brass_Purple.Both",
+  "skinFeature": null,
+  "gloves": null,
+  "cape": null
+}

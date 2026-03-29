@@ -1,0 +1,23 @@
+{
+    "Layers":  [
+                   {
+                       "Files":  [
+                                     "Sounds/Items/Chest/Chest_Legendary_Open_Player_Stereo_01.ogg",
+                                     "Sounds/Items/Chest/Chest_Legendary_Open_Stereo_01.ogg"
+                                 ],
+                       "RandomSettings":  {
+                                              "MinPitch":  -0.04,
+                                              "MaxPitch":  0.06,
+                                              "MinVolume":  0,
+                                              "MaxVolume":  0
+                                          },
+                       "StartDelay":  0,
+                       "Looping":  false,
+                       "Volume":  0
+                   }
+               ],
+    "Volume":  -2.6,
+    "PreventSoundInterruption":  true,
+    "MaxInstance":  8,
+    "Parent":  "SFX_Attn_Quiet"
+}

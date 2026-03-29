@@ -1,0 +1,65 @@
+{
+  "Spawners": [
+    {
+      "SpawnerId": "BankDefense_ForgottenTemplePortalRed_Spawn"
+    },
+    {
+      "SpawnerId": "BankDefense_ForgottenTemplePortalRed_Flash"
+    },
+    {
+      "SpawnerId": "BankDefense_ForgottenTemplePortalRed_CenterCircle"
+    },
+    {
+      "SpawnerId": "BankDefense_ForgottenTemplePortalRed_SmokeAlpha",
+      "StartDelay": 0,
+      "PositionOffset": {
+        "Y": 0.2,
+        "X": 0.0
+      }
+    },
+    {
+      "SpawnerId": "BankDefense_ForgottenTemplePortalRed_Sparks"
+    },
+    {
+      "SpawnerId": "BankDefense_ForgottenTemplePortalRed_Center",
+      "StartDelay": 0.5
+    },
+    {
+      "SpawnerId": "BankDefense_ForgottenTemplePortalRed_CenterGlow",
+      "StartDelay": 0.5
+    },
+    {
+      "SpawnerId": "BankDefense_ForgottenTemplePortalRed_SmokeMiddle",
+      "RotationOffset": {
+        "Pitch": 90.0
+      }
+    },
+    {
+      "SpawnerId": "BankDefense_ForgottenTemplePortalRed_GlowSmoke",
+      "RotationOffset": {
+        "Pitch": 90.0
+      },
+      "PositionOffset": {
+        "X": 0.0
+      }
+    },
+    {
+      "SpawnerId": "BankDefense_ForgottenTemplePortalRed_GlowCenterIntense",
+      "PositionOffset": {
+        "Y": 0.0,
+        "X": 0.0
+      }
+    },
+    {
+      "SpawnerId": "BankDefense_ForgottenTemplePortalRed_OuterCircle",
+      "RotationOffset": {
+        "Pitch": 90.0
+      },
+      "PositionOffset": {
+        "X": 0.0
+      }
+    }
+  ],
+  "CullDistance": 120.0,
+  "IsImportant": true
+}

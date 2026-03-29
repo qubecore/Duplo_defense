@@ -1,0 +1,22 @@
+{
+    "Layers":  [
+                   {
+                       "Files":  [
+                                     "Sounds/Blocks/Generic/Block_Break_Success_01.ogg"
+                                 ],
+                       "RandomSettings":  {
+                                              "MinPitch":  -0.35,
+                                              "MaxPitch":  0.42,
+                                              "MinVolume":  0,
+                                              "MaxVolume":  0
+                                          },
+                       "StartDelay":  0,
+                       "Looping":  false,
+                       "Volume":  0
+                   }
+               ],
+    "Volume":  0,
+    "PreventSoundInterruption":  true,
+    "MaxInstance":  24,
+    "Parent":  "SFX_Attn_Loud"
+}

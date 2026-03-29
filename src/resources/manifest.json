@@ -1,0 +1,15 @@
+{
+  "Group": "QubeCore",
+  "Name": "BankDefense",
+  "Version": "0.2.1",
+  "Description": "Duplo TD by QubeCore. A custom solo tower defense mode for Hytale.",
+  "Authors": [
+    {
+      "Name": "QubeCore"
+    }
+  ],
+  "Main": "com.qubecore.bankdefense.BankDefensePlugin",
+  "ServerVersion": "2026.03.26-89796e57b",
+  "DisabledByDefault": true,
+  "IncludesAssetPack": true
+}

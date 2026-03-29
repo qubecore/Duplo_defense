@@ -1,0 +1,5 @@
+{
+  "Parent": "Objective_Location_Marker",
+  "Model": "NPC/BankDefense/Towers/SuperStatues/Model.blockymodel",
+  "Texture": "NPC/BankDefense/Towers/SuperStatues/Texture_Idol.png"
+}

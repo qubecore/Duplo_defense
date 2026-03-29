@@ -1,0 +1,43 @@
+# Build output
+build/
+dist/
+
+# Local exports
+exports/
+exported_assets/
+
+# Local backups
+backups/
+install_backups/
+
+# Local tools and caches
+tools/
+.vs/
+.vscode/
+.idea/
+
+# Local logs and reports
+SETUP_LOG.md
+*.log
+
+# Generated local text dumps
+LOCALIZATION_FULL_LIST.txt
+localization_audit_report.txt
+BANK_DEFENSE_COMMANDS.txt
+PROJECT_STATE_COMPACT.md
+STABILIZATION_PLAN.md
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Large local packages
+*.zip
+*.rar
+*.7z
+
+# Runtime / temporary files
+*.tmp
+*.bak
+*.backup-*
+

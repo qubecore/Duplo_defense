@@ -1,0 +1,25 @@
+{
+    "Layers":  [
+                   {
+                       "Files":  [
+                                     "Sounds/NPC/Void/Spawn_Void/Spawn_Void_Death_01.ogg",
+                                     "Sounds/NPC/Void/Spawn_Void/Spawn_Void_Death_02.ogg",
+                                     "Sounds/NPC/Void/Spawn_Void/Spawn_Void_Death_03.ogg",
+                                     "Sounds/NPC/Void/Spawn_Void/Spawn_Void_Death_04.ogg"
+                                 ],
+                       "RandomSettings":  {
+                                              "MinPitch":  -0.08,
+                                              "MaxPitch":  0.08,
+                                              "MinVolume":  0,
+                                              "MaxVolume":  0
+                                          },
+                       "StartDelay":  0,
+                       "Looping":  false,
+                       "Volume":  0
+                   }
+               ],
+    "Volume":  -0.1,
+    "PreventSoundInterruption":  true,
+    "MaxInstance":  10,
+    "Parent":  "SFX_Attn_Moderate"
+}

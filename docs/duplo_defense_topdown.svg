@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <defs>
+    <style>
+      .bg { fill: #0f1724; }
+      .frame { fill: #132238; stroke: #2f4a69; stroke-width: 8; rx: 24; }
+      .grid { stroke: #1b2d45; stroke-width: 1; opacity: 0.65; }
+      .path { fill: none; stroke: #d6b47d; stroke-width: 72; stroke-linecap: round; stroke-linejoin: round; }
+      .path-outline { fill: none; stroke: #6a5432; stroke-width: 84; stroke-linecap: round; stroke-linejoin: round; opacity: 0.9; }
+      .keep { fill: #294d33; stroke: #7cc56e; stroke-width: 5; rx: 22; }
+      .core { fill: #86f08d; fill-opacity: 0.15; stroke: #b8ff8d; stroke-width: 4; rx: 16; }
+      .slot-line { stroke: #8ea0b8; stroke-width: 2; }
+      .slot-early { fill: #69d17a; stroke: #e8fff0; stroke-width: 3; }
+      .slot-shock { fill: #f3cf4e; stroke: #fff6c7; stroke-width: 3; }
+      .slot-range { fill: #71aaf7; stroke: #e6f2ff; stroke-width: 3; }
+      .slot-frost { fill: #77e8ff; stroke: #e2fbff; stroke-width: 3; }
+      .slot-final { fill: #ff8f7c; stroke: #ffe1da; stroke-width: 3; }
+      .spawn { fill: #ff6b6b; stroke: #ffd4d4; stroke-width: 4; }
+      .operator { fill: #b89cff; stroke: #efe5ff; stroke-width: 3; }
+      .label { fill: #e9f0f7; font-family: Segoe UI, Arial, sans-serif; font-size: 24px; font-weight: 700; }
+      .small { fill: #b5c6da; font-family: Segoe UI, Arial, sans-serif; font-size: 18px; }
+      .micro { fill: #dfe9f4; font-family: Consolas, monospace; font-size: 16px; font-weight: 700; }
+      .legend-box { fill: #102033; stroke: #38577a; stroke-width: 3; rx: 18; }
+      .zone { fill: #e8f1ff; font-family: Segoe UI, Arial, sans-serif; font-size: 20px; font-weight: 700; opacity: 0.9; }
+      .arrow { fill: #ffe6ae; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1600" height="1000"/>
+  <rect class="frame" x="48" y="48" width="1504" height="904"/>
+
+  <g opacity="0.9">
+    <path class="grid" d="M120 80V920 M220 80V920 M320 80V920 M420 80V920 M520 80V920 M620 80V920 M720 80V920 M820 80V920 M920 80V920 M1020 80V920 M1120 80V920 M1220 80V920 M1320 80V920 M1420 80V920"/>
+    <path class="grid" d="M80 140H1520 M80 240H1520 M80 340H1520 M80 440H1520 M80 540H1520 M80 640H1520 M80 740H1520 M80 840H1520"/>
+  </g>
+
+  <text class="label" x="92" y="104">DUPLO DEFENSE - IDEAL TOP VIEW</text>
+  <text class="small" x="92" y="132">One main route, 3 kill zones, 24 tower slots, final ring around the Duplo core</text>
+
+  <rect class="keep" x="1140" y="150" width="320" height="500"/>
+  <text class="label" x="1210" y="190">DUPLO KEEP</text>
+  <rect class="core" x="1260" y="250" width="140" height="150"/>
+  <text class="label" x="1280" y="320">CORE</text>
+  <text class="small" x="1210" y="610">Final defense court</text>
+
+  <path class="path-outline" d="M125 270 L360 270 L360 460 L660 460 L660 170 L980 170 L980 540 L1180 540 L1180 330 L1300 330 L1300 315"/>
+  <path class="path" d="M125 270 L360 270 L360 460 L660 460 L660 170 L980 170 L980 540 L1180 540 L1180 330 L1300 330 L1300 315"/>
+
+  <polygon class="arrow" points="130,270 95,250 95,290"/>
+  <polygon class="arrow" points="360,460 340,495 380,495"/>
+  <polygon class="arrow" points="660,170 640,135 680,135"/>
+  <polygon class="arrow" points="980,540 960,575 1000,575"/>
+  <polygon class="arrow" points="1300,315 1335,315 1315,280"/>
+
+  <circle class="spawn" cx="125" cy="270" r="22"/>
+  <text class="label" x="74" y="226">SPAWN</text>
+  <text class="small" x="66" y="250">zombies enter</text>
+
+  <circle class="operator" cx="1215" cy="705" r="18"/>
+  <text class="small" x="1245" y="712">operator / match npc</text>
+
+  <text class="zone" x="210" y="205">KILL ZONE A</text>
+  <text class="zone" x="585" y="395">KILL ZONE B</text>
+  <text class="zone" x="1030" y="485">KILL ZONE C</text>
+  <text class="zone" x="1175" y="445">FINAL RING</text>
+
+  <g>
+    <line class="slot-line" x1="170" y1="190" x2="170" y2="230"/><circle class="slot-early" cx="170" cy="180" r="18"/><text class="micro" x="162" y="186">1</text>
+    <line class="slot-line" x1="255" y1="190" x2="255" y2="230"/><circle class="slot-early" cx="255" cy="180" r="18"/><text class="micro" x="247" y="186">2</text>
+    <line class="slot-line" x1="255" y1="350" x2="255" y2="310"/><circle class="slot-early" cx="255" cy="360" r="18"/><text class="micro" x="247" y="366">3</text>
+    <line class="slot-line" x1="430" y1="210" x2="390" y2="250"/><circle class="slot-early" cx="440" cy="200" r="18"/><text class="micro" x="432" y="206">4</text>
+    <line class="slot-line" x1="430" y1="520" x2="390" y2="480"/><circle class="slot-early" cx="440" cy="530" r="18"/><text class="micro" x="432" y="536">5</text>
+    <line class="slot-line" x1="560" y1="520" x2="590" y2="480"/><circle class="slot-early" cx="550" cy="530" r="18"/><text class="micro" x="542" y="536">6</text>
+  </g>
+
+  <g>
+    <line class="slot-line" x1="735" y1="385" x2="700" y2="430"/><circle class="slot-shock" cx="745" cy="375" r="18"/><text class="micro" x="737" y="381">7</text>
+    <line class="slot-line" x1="800" y1="325" x2="760" y2="360"/><circle class="slot-shock" cx="810" cy="315" r="18"/><text class="micro" x="802" y="321">8</text>
+    <line class="slot-line" x1="725" y1="95" x2="685" y2="140"/><circle class="slot-shock" cx="735" cy="85" r="18"/><text class="micro" x="727" y="91">9</text>
+    <line class="slot-line" x1="845" y1="95" x2="805" y2="140"/><circle class="slot-shock" cx="855" cy="85" r="18"/><text class="micro" x="843" y="91">10</text>
+  </g>
+
+  <g>
+    <line class="slot-line" x1="610" y1="110" x2="645" y2="155"/><circle class="slot-range" cx="600" cy="100" r="18"/><text class="micro" x="588" y="106">11</text>
+    <line class="slot-line" x1="1005" y1="105" x2="980" y2="150"/><circle class="slot-range" cx="1015" cy="95" r="18"/><text class="micro" x="1003" y="101">12</text>
+    <line class="slot-line" x1="1080" y1="255" x2="1015" y2="190"/><circle class="slot-range" cx="1095" cy="270" r="18"/><text class="micro" x="1083" y="276">13</text>
+    <line class="slot-line" x1="1080" y1="625" x2="1015" y2="560"/><circle class="slot-range" cx="1095" cy="640" r="18"/><text class="micro" x="1083" y="646">14</text>
+  </g>
+
+  <g>
+    <line class="slot-line" x1="905" y1="470" x2="960" y2="520"/><circle class="slot-frost" cx="890" cy="455" r="18"/><text class="micro" x="878" y="461">15</text>
+    <line class="slot-line" x1="905" y1="610" x2="960" y2="560"/><circle class="slot-frost" cx="890" cy="625" r="18"/><text class="micro" x="878" y="631">16</text>
+    <line class="slot-line" x1="1160" y1="615" x2="1180" y2="560"/><circle class="slot-frost" cx="1155" cy="635" r="18"/><text class="micro" x="1143" y="641">17</text>
+    <line class="slot-line" x1="1260" y1="615" x2="1185" y2="545"/><circle class="slot-frost" cx="1275" cy="630" r="18"/><text class="micro" x="1263" y="636">18</text>
+  </g>
+
+  <g>
+    <line class="slot-line" x1="1130" y1="280" x2="1170" y2="325"/><circle class="slot-final" cx="1115" cy="265" r="18"/><text class="micro" x="1103" y="271">19</text>
+    <line class="slot-line" x1="1130" y1="390" x2="1170" y2="340"/><circle class="slot-final" cx="1115" cy="405" r="18"/><text class="micro" x="1103" y="411">20</text>
+    <line class="slot-line" x1="1225" y1="245" x2="1265" y2="280"/><circle class="slot-final" cx="1210" cy="230" r="18"/><text class="micro" x="1198" y="236">21</text>
+    <line class="slot-line" x1="1225" y1="425" x2="1265" y2="390"/><circle class="slot-final" cx="1210" cy="440" r="18"/><text class="micro" x="1198" y="446">22</text>
+    <line class="slot-line" x1="1420" y1="245" x2="1390" y2="280"/><circle class="slot-final" cx="1435" cy="230" r="18"/><text class="micro" x="1423" y="236">23</text>
+    <line class="slot-line" x1="1420" y1="425" x2="1390" y2="390"/><circle class="slot-final" cx="1435" cy="440" r="18"/><text class="micro" x="1423" y="446">24</text>
+  </g>
+
+  <g>
+    <rect class="legend-box" x="82" y="770" width="620" height="140"/>
+    <text class="label" x="106" y="810">LEGEND</text>
+    <circle class="slot-early" cx="115" cy="845" r="14"/><text class="small" x="145" y="852">Early lane: Archer / Dart Thrower</text>
+    <circle class="slot-shock" cx="115" cy="885" r="14"/><text class="small" x="145" y="892">Mid pressure: Shock Relay</text>
+    <circle class="slot-range" cx="430" cy="845" r="14"/><text class="small" x="460" y="852">High range: Crossbow / Drill</text>
+    <circle class="slot-frost" cx="430" cy="885" r="14"/><text class="small" x="460" y="892">Control: Frost Totem</text>
+    <circle class="slot-final" cx="645" cy="845" r="14"/><text class="small" x="675" y="852">Final ring: heavy defense</text>
+  </g>
+
+  <g>
+    <rect class="legend-box" x="1105" y="730" width="355" height="180"/>
+    <text class="label" x="1130" y="770">INTENDED FLOW</text>
+    <text class="small" x="1130" y="812">1. Thin early trash on slots 1-6</text>
+    <text class="small" x="1130" y="846">2. Shock chain in the middle bends</text>
+    <text class="small" x="1130" y="880">3. Frost slows before the keep gate</text>
+    <text class="small" x="1130" y="914">4. Final ring protects the core</text>
+  </g>
+</svg>

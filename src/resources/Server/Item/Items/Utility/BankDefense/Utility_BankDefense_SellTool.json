@@ -1,0 +1,42 @@
+{
+    "TranslationProperties":  {
+                                  "Name":  "Tower Selling",
+                                  "Description":  "Click a tower to sell it and refund 75% of the invested gold."
+                              },
+    "Categories":  [
+
+                   ],
+    "Model":  "Items/Tools/Brush/Brush.blockymodel",
+    "Texture":  "Items/Tools/Brush/Brush_Texture.png",
+    "Icon":  "Icons/Items/EditorTools/Line.png",
+    "PlayerAnimationsId":  "Item",
+    "MaxStack":  1,
+    "Interactions":  {
+                         "Primary":  {
+                                         "Cooldown":  {
+                                                          "Id":  "BankDefense_SellTool_Primary",
+                                                          "Cooldown":  0.05
+                                                      },
+                                         "Interactions":  [
+                                                              {
+                                                                  "Type":  "Simple"
+                                                              }
+                                                          ]
+                                     },
+                         "Secondary":  {
+                                           "Cooldown":  {
+                                                            "Id":  "BankDefense_SellTool_Secondary",
+                                                            "Cooldown":  0.05
+                                                        },
+                                           "Interactions":  [
+                                                                {
+                                                                    "Type":  "Simple"
+                                                                }
+                                                            ]
+                                       }
+                     },
+    "Utility":  {
+                    "Compatible":  true
+                },
+    "Quality":  "Technical"
+}

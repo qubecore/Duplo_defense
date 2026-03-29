@@ -1,0 +1,22 @@
+{
+    "Layers":  [
+                   {
+                       "Files":  [
+                                     "Sounds/Blocks/Tombstone/Tombstone_Break_01.ogg"
+                                 ],
+                       "RandomSettings":  {
+                                              "MinPitch":  -0.08,
+                                              "MaxPitch":  0.06,
+                                              "MinVolume":  0,
+                                              "MaxVolume":  0
+                                          },
+                       "StartDelay":  0,
+                       "Looping":  false,
+                       "Volume":  0
+                   }
+               ],
+    "Volume":  0.3,
+    "PreventSoundInterruption":  true,
+    "MaxInstance":  4,
+    "Parent":  "SFX_Attn_VeryLoud"
+}

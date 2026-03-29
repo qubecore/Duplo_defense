@@ -1,0 +1,63 @@
+{
+    "TranslationProperties":  {
+                                  "Name":  "Temple Portal",
+                                  "Description":  "A copy of the Forgotten Temple portal without the lower platform."
+                              },
+    "Icon":  "Icons/ItemsGenerated/Portal_Return.png",
+    "Categories":  [
+                       "Blocks.Portals"
+                   ],
+    "BlockType":  {
+                      "AmbientSoundEventId":  "SFX_Portal_Neutral",
+                      "DrawType":  "Model",
+                      "Material":  "Solid",
+                      "Opacity":  "Transparent",
+                      "CustomModel":  "Blocks/BankDefense/ForgottenTemplePortal_Stand.blockymodel",
+                      "CustomModelTexture":  [
+                                                 {
+                                                     "Texture":  "Blocks/BankDefense/ForgottenTemplePortal_RedPad.png",
+                                                     "Weight":  1
+                                                 }
+                                             ],
+                      "HitboxType":  "Full",
+                      "BlockParticleSetId":  "Stone",
+                      "BlockSoundSetId":  "Stone",
+                      "VariantRotation":  "NESW",
+                      "Particles":  [
+                                        {
+                                            "SystemId":  "BankDefense_ForgottenTemplePortalRed",
+                                            "PositionOffset":  {
+                                                                   "Y":  2.5
+                                                               }
+                                        }
+                                    ],
+                      "Light":  {
+                                    "Color":  "#c53a3a"
+                                },
+                      "Gathering":  {
+                                        "Breaking":  {
+                                                         "GatherType":  "Unbreakable"
+                                                     }
+                                    }
+                  },
+    "PlayerAnimationsId":  "Block",
+    "Tags":  {
+                 "Type":  [
+                              "Portal"
+                          ]
+             },
+    "Quality":  "Developer",
+    "IconProperties":  {
+                           "Scale":  0.35,
+                           "Rotation":  [
+                                            22.5,
+                                            45.0,
+                                            22.5
+                                        ],
+                           "Translation":  [
+                                               0.0,
+                                               -13.5
+                                           ]
+                       },
+    "ItemSoundSetId":  "ISS_Blocks_Stone"
+}

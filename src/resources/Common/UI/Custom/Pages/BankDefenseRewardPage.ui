@@ -1,0 +1,218 @@
+$C = "../Common.ui";
+
+$C.@PageOverlay {}
+
+$C.@Container {
+  Anchor: (Width: 1120, Height: 730);
+
+  #Title {
+    Group {
+      LayoutMode: Left;
+
+      $C.@Title #TitleLabel {
+        @Text = "Duplo TD: module reward";
+      }
+    }
+  }
+
+  #Content {
+    LayoutMode: Top;
+
+    Label #Subtitle {
+      Anchor: (Bottom: 12);
+      Style: (FontSize: 13, TextColor: #96a9be, Wrap: true);
+      Text: "Choose one module. It will go into your reserve and can be inserted into a tower during preparation.";
+    }
+
+    Group {
+      Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+      LayoutMode: Top;
+      Anchor: (Bottom: 16);
+      Padding: (Horizontal: 14, Vertical: 12);
+
+      Label #Wave {
+        Style: (FontSize: 16, RenderBold: true, TextColor: #ffffff);
+        Text: "Wave";
+      }
+
+      Label #Balance {
+        Anchor: (Top: 6);
+        Style: (FontSize: 16, RenderBold: true, TextColor: #E8A93B);
+        Text: "Funds";
+      }
+
+      Label #Bank {
+        Anchor: (Top: 6);
+        Style: (FontSize: 15, RenderBold: true, TextColor: #ffffff);
+        Text: "Hollow Health";
+      }
+    }
+
+    Label #ChoiceHeader {
+      Anchor: (Bottom: 10);
+      Style: (FontSize: 13, RenderBold: true, RenderUppercase: true, TextColor: #878e9c);
+      Text: "Module Selection";
+    }
+
+    Label #Phase {
+      Anchor: (Bottom: 6);
+      Style: (FontSize: 13, RenderBold: true, TextColor: #96c0ff, Wrap: true);
+      Text: "";
+    }
+
+    Label #AllyPick {
+      Anchor: (Bottom: 10);
+      Style: (FontSize: 13, TextColor: #c9d1d9, Wrap: true);
+      Text: "";
+    }
+
+    Group {
+      Anchor: (Height: 390, Bottom: 16);
+      LayoutMode: Left;
+
+      Group {
+        Anchor: (Width: 250, Height: 390, Right: 10);
+        LayoutMode: Top;
+        Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+        Padding: (Horizontal: 12, Vertical: 12);
+
+        Group #ChoiceAImagePlaceholder { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/placeholder.png", Border: 8); }
+        Group #ChoiceAImageOverload { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/overload.png", Border: 8); }
+        Group #ChoiceAImageHeavyCaliber { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/heavy_caliber.png", Border: 8); }
+        Group #ChoiceAImageLongOptics { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/long_optics.png", Border: 8); }
+        Group #ChoiceAImageCryoCapsule { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/cryo_capsule.png", Border: 8); }
+        Group #ChoiceAImageFragmentCharge { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/fragment_charge.png", Border: 8); }
+        Group #ChoiceAImageArmorScanner { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/armor_scanner.png", Border: 8); }
+        Group #ChoiceAImageArcSplitter { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/arc_splitter.png", Border: 8); }
+        Group #ChoiceAImageDualCamera { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/dual_camera.png", Border: 8); }
+        Group #ChoiceAImageReserveCapacitor { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/reserve_capacitor.png", Border: 8); }
+
+        Label #ChoiceATitle {
+          Anchor: (Top: 10, Bottom: 6);
+          Style: (FontSize: 20, RenderBold: true, TextColor: #ffffff, Wrap: true);
+          Text: "Module A";
+        }
+
+        Label #ChoiceANote {
+          Anchor: (Bottom: 12);
+          Style: (FontSize: 13, TextColor: #c9d1d9, Wrap: true);
+          Text: "Module description.";
+        }
+
+        $C.@TextButton #ChoiceAButton {
+          @Text = "Select";
+        }
+      }
+
+      Group {
+        Anchor: (Width: 250, Height: 390, Left: 10, Right: 10);
+        LayoutMode: Top;
+        Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+        Padding: (Horizontal: 12, Vertical: 12);
+
+        Group #ChoiceBImagePlaceholder { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/placeholder.png", Border: 8); }
+        Group #ChoiceBImageOverload { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/overload.png", Border: 8); }
+        Group #ChoiceBImageHeavyCaliber { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/heavy_caliber.png", Border: 8); }
+        Group #ChoiceBImageLongOptics { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/long_optics.png", Border: 8); }
+        Group #ChoiceBImageCryoCapsule { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/cryo_capsule.png", Border: 8); }
+        Group #ChoiceBImageFragmentCharge { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/fragment_charge.png", Border: 8); }
+        Group #ChoiceBImageArmorScanner { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/armor_scanner.png", Border: 8); }
+        Group #ChoiceBImageArcSplitter { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/arc_splitter.png", Border: 8); }
+        Group #ChoiceBImageDualCamera { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/dual_camera.png", Border: 8); }
+        Group #ChoiceBImageReserveCapacitor { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/reserve_capacitor.png", Border: 8); }
+
+        Label #ChoiceBTitle {
+          Anchor: (Top: 10, Bottom: 6);
+          Style: (FontSize: 20, RenderBold: true, TextColor: #ffffff, Wrap: true);
+          Text: "Module B";
+        }
+
+        Label #ChoiceBNote {
+          Anchor: (Bottom: 12);
+          Style: (FontSize: 13, TextColor: #c9d1d9, Wrap: true);
+          Text: "Module description.";
+        }
+
+        $C.@TextButton #ChoiceBButton {
+          @Text = "Select";
+        }
+      }
+
+      Group {
+        Anchor: (Width: 250, Height: 390, Left: 10, Right: 10);
+        LayoutMode: Top;
+        Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+        Padding: (Horizontal: 12, Vertical: 12);
+
+        Group #ChoiceCImagePlaceholder { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/placeholder.png", Border: 8); }
+        Group #ChoiceCImageOverload { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/overload.png", Border: 8); }
+        Group #ChoiceCImageHeavyCaliber { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/heavy_caliber.png", Border: 8); }
+        Group #ChoiceCImageLongOptics { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/long_optics.png", Border: 8); }
+        Group #ChoiceCImageCryoCapsule { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/cryo_capsule.png", Border: 8); }
+        Group #ChoiceCImageFragmentCharge { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/fragment_charge.png", Border: 8); }
+        Group #ChoiceCImageArmorScanner { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/armor_scanner.png", Border: 8); }
+        Group #ChoiceCImageArcSplitter { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/arc_splitter.png", Border: 8); }
+        Group #ChoiceCImageDualCamera { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/dual_camera.png", Border: 8); }
+        Group #ChoiceCImageReserveCapacitor { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/reserve_capacitor.png", Border: 8); }
+
+        Label #ChoiceCTitle {
+          Anchor: (Top: 10, Bottom: 6);
+          Style: (FontSize: 20, RenderBold: true, TextColor: #ffffff, Wrap: true);
+          Text: "Module C";
+        }
+
+        Label #ChoiceCNote {
+          Anchor: (Bottom: 12);
+          Style: (FontSize: 13, TextColor: #c9d1d9, Wrap: true);
+          Text: "Module description.";
+        }
+
+        $C.@TextButton #ChoiceCButton {
+          @Text = "Select";
+        }
+      }
+
+      Group {
+        Anchor: (Width: 250, Height: 390, Left: 10);
+        LayoutMode: Top;
+        Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+        Padding: (Horizontal: 12, Vertical: 12);
+
+        Group #ChoiceDImagePlaceholder { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/placeholder.png", Border: 8); }
+        Group #ChoiceDImageOverload { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/overload.png", Border: 8); }
+        Group #ChoiceDImageHeavyCaliber { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/heavy_caliber.png", Border: 8); }
+        Group #ChoiceDImageLongOptics { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/long_optics.png", Border: 8); }
+        Group #ChoiceDImageCryoCapsule { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/cryo_capsule.png", Border: 8); }
+        Group #ChoiceDImageFragmentCharge { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/fragment_charge.png", Border: 8); }
+        Group #ChoiceDImageArmorScanner { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/armor_scanner.png", Border: 8); }
+        Group #ChoiceDImageArcSplitter { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/arc_splitter.png", Border: 8); }
+        Group #ChoiceDImageDualCamera { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/dual_camera.png", Border: 8); }
+        Group #ChoiceDImageReserveCapacitor { Anchor: (Width: 226, Height: 190); Background: (TexturePath: "ModuleIcons/reserve_capacitor.png", Border: 8); }
+
+        Label #ChoiceDTitle {
+          Anchor: (Top: 10, Bottom: 6);
+          Style: (FontSize: 20, RenderBold: true, TextColor: #ffffff, Wrap: true);
+          Text: "Module D";
+        }
+
+        Label #ChoiceDNote {
+          Anchor: (Bottom: 12);
+          Style: (FontSize: 13, TextColor: #c9d1d9, Wrap: true);
+          Text: "Module description.";
+        }
+
+        $C.@TextButton #ChoiceDButton {
+          @Text = "Select";
+        }
+      }
+    }
+
+    Label #Hint {
+      Anchor: (Bottom: 12);
+      Style: (FontSize: 13, TextColor: #c9d1d9, Wrap: true);
+      Text: "";
+    }
+  }
+}
+
+$C.@BackButton {}

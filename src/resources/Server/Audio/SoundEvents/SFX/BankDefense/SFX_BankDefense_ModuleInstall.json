@@ -1,0 +1,22 @@
+{
+    "Layers":  [
+                   {
+                       "Files":  [
+                                     "Sounds/CreativePlay/Default/Rotate_Yaw_Stereo.ogg"
+                                 ],
+                       "RandomSettings":  {
+                                              "MinPitch":  -0.02,
+                                              "MaxPitch":  0.08,
+                                              "MinVolume":  0,
+                                              "MaxVolume":  0
+                                          },
+                       "StartDelay":  0,
+                       "Looping":  false,
+                       "Volume":  0
+                   }
+               ],
+    "Volume":  -0.4,
+    "PreventSoundInterruption":  true,
+    "MaxInstance":  10,
+    "Parent":  "SFX_Attn_Moderate"
+}

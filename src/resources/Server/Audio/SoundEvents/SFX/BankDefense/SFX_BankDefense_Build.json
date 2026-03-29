@@ -1,0 +1,22 @@
+{
+    "Layers":  [
+                   {
+                       "Files":  [
+                                     "Sounds/Blocks/Building/Destruct_1.ogg"
+                                 ],
+                       "RandomSettings":  {
+                                              "MinPitch":  -0.1,
+                                              "MaxPitch":  0.16,
+                                              "MinVolume":  0,
+                                              "MaxVolume":  0
+                                          },
+                       "StartDelay":  0,
+                       "Looping":  false,
+                       "Volume":  0
+                   }
+               ],
+    "Volume":  1.4,
+    "PreventSoundInterruption":  true,
+    "MaxInstance":  10,
+    "Parent":  "SFX_Attn_Loud"
+}

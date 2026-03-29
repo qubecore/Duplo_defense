@@ -1,0 +1,24 @@
+{
+    "Layers":  [
+                   {
+                       "Files":  [
+                                     "Sounds/Blocks/Metal/Metal_Hit_01.ogg",
+                                     "Sounds/Blocks/Metal/Metal_Hit_02.ogg",
+                                     "Sounds/Blocks/Metal/Metal_Hit_03.ogg"
+                                 ],
+                       "RandomSettings":  {
+                                              "MinPitch":  -0.08,
+                                              "MaxPitch":  0.06,
+                                              "MinVolume":  0,
+                                              "MaxVolume":  0
+                                          },
+                       "StartDelay":  0,
+                       "Looping":  false,
+                       "Volume":  0
+                   }
+               ],
+    "Volume":  0.2,
+    "PreventSoundInterruption":  true,
+    "MaxInstance":  18,
+    "Parent":  "SFX_Attn_Loud"
+}

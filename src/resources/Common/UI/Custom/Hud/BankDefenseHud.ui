@@ -1,0 +1,923 @@
+Group #BankDefenseHud {
+  Group #TopLeft {
+    Anchor: (Width: 324, Height: 176, Top: 18, Left: 18);
+    LayoutMode: Top;
+    Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+    Padding: (Horizontal: 14, Vertical: 14);
+
+    Label #Title {
+      Style: (FontSize: 22, TextColor: #f4d06f, RenderBold: true);
+      Text: "Duplo TD";
+    }
+
+    Label #Creator {
+      Anchor: (Top: 2);
+      Style: (FontSize: 12, TextColor: #8ea7bf, RenderBold: true);
+      Text: "By QubeCore";
+    }
+
+    Label #Wave {
+      Anchor: (Top: 8);
+      Style: (FontSize: 28, TextColor: #ffffff, RenderBold: true);
+      Text: "Wave 1";
+    }
+
+    Group #StatusPill {
+      Anchor: (Width: 168, Height: 24, Top: 8);
+      Background: #12324c(0.96);
+
+      Label #Status {
+        Anchor: (Top: 4, Left: 10, Right: 10);
+        Style: (FontSize: 12, TextColor: #98d8ff, RenderBold: true, RenderUppercase: true);
+        Text: "Loading";
+      }
+    }
+
+    Label #Prompt {
+      Anchor: (Width: 286, Height: 28, Top: 10);
+      Style: (FontSize: 13, TextColor: #d6e1ed, Wrap: true);
+      Text: "Preparing hollow systems.";
+    }
+    Group #SuperMiniPanel {
+      Anchor: (Width: 292, Height: 102, Top: 20);
+      LayoutMode: Left;
+      Visible: false;
+
+      Group #SuperHeartMini {
+        Anchor: (Width: 92, Height: 102, Right: 8);
+        Background: #0b1927(0.72);
+
+        Group #SuperHeartMiniInactive {
+          Anchor: (Width: 4, Left: 0, Top: 0, Bottom: 0);
+          Background: #6b7480(0.96);
+        }
+
+        Group #SuperHeartMiniReady {
+          Anchor: (Width: 4, Left: 0, Top: 0, Bottom: 0);
+          Background: #5bc178(0.96);
+          Visible: false;
+        }
+
+        Group #SuperHeartMiniSpent {
+          Anchor: (Width: 4, Left: 0, Top: 0, Bottom: 0);
+          Background: #d48a3f(0.96);
+          Visible: false;
+        }
+
+        Group {
+          Anchor: (Width: 72, Height: 72, Top: 8, Left: 10);
+          Background: #1e1215(0.92);
+        }
+
+        Group #SuperHeartMiniIcon {
+          Anchor: (Width: 66, Height: 66, Top: 11, Left: 13);
+          Background: (TexturePath: "../Pages/SuperTowerIcons/korni.png", Border: 8);
+        }
+
+        Label #SuperHeartMiniLabel {
+          Anchor: (Width: 72, Top: 82, Left: 10);
+          Style: (FontSize: 14, TextColor: #ffffff, RenderBold: true);
+          Text: "-";
+        }
+      }
+
+      Group #SuperMonolithMini {
+        Anchor: (Width: 92, Height: 102, Right: 8);
+        Background: #0b1927(0.72);
+
+        Group #SuperMonolithMiniInactive {
+          Anchor: (Width: 4, Left: 0, Top: 0, Bottom: 0);
+          Background: #6b7480(0.96);
+        }
+
+        Group #SuperMonolithMiniReady {
+          Anchor: (Width: 4, Left: 0, Top: 0, Bottom: 0);
+          Background: #5bc178(0.96);
+          Visible: false;
+        }
+
+        Group #SuperMonolithMiniSpent {
+          Anchor: (Width: 4, Left: 0, Top: 0, Bottom: 0);
+          Background: #d48a3f(0.96);
+          Visible: false;
+        }
+
+        Group {
+          Anchor: (Width: 72, Height: 72, Top: 8, Left: 10);
+          Background: #111c2a(0.92);
+        }
+
+        Group #SuperMonolithMiniIcon {
+          Anchor: (Width: 66, Height: 66, Top: 11, Left: 13);
+          Background: (TexturePath: "../Pages/SuperTowerIcons/monolit.png", Border: 8);
+        }
+
+        Label #SuperMonolithMiniLabel {
+          Anchor: (Width: 72, Top: 82, Left: 10);
+          Style: (FontSize: 14, TextColor: #ffffff, RenderBold: true);
+          Text: "-";
+        }
+      }
+
+      Group #SuperIdolMini {
+        Anchor: (Width: 92, Height: 102);
+        Background: #0b1927(0.72);
+
+        Group #SuperIdolMiniInactive {
+          Anchor: (Width: 4, Left: 0, Top: 0, Bottom: 0);
+          Background: #6b7480(0.96);
+        }
+
+        Group #SuperIdolMiniHarvest {
+          Anchor: (Width: 4, Left: 0, Top: 0, Bottom: 0);
+          Background: #d9b85b(0.96);
+          Visible: false;
+        }
+
+        Group #SuperIdolMiniWard {
+          Anchor: (Width: 4, Left: 0, Top: 0, Bottom: 0);
+          Background: #58d8ff(0.96);
+          Visible: false;
+        }
+
+        Group {
+          Anchor: (Width: 72, Height: 72, Top: 8, Left: 10);
+          Background: #2a210e(0.92);
+        }
+
+        Group #SuperIdolMiniIcon {
+          Anchor: (Width: 66, Height: 66, Top: 11, Left: 13);
+          Background: (TexturePath: "../Pages/SuperTowerIcons/idol.png", Border: 8);
+        }
+
+        Label #SuperIdolMiniLabel {
+          Anchor: (Width: 72, Top: 82, Left: 10);
+          Style: (FontSize: 14, TextColor: #ffffff, RenderBold: true);
+          Text: "-";
+        }
+      }
+    }
+  }
+
+  Group #SuperStatusPanel {
+    Anchor: (Width: 324, Height: 322, Top: 206, Left: 18);
+    Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+    Visible: false;
+
+    Label #SuperStatusCaption {
+      Style: (FontSize: 12, TextColor: #96c0ff, RenderBold: true, RenderUppercase: true);
+      Text: "Super Towers";
+    }
+
+    Group #SuperHeartRow {
+      Anchor: (Width: 300, Height: 84, Top: 38, Left: 12);
+      Background: #0b1927(0.74);
+      Visible: false;
+
+      Group {
+        Anchor: (Width: 68, Height: 68, Top: 2, Left: 6);
+        Background: #1e1215(0.92);
+      }
+
+      Group #SuperHeartIconHeart {
+        Anchor: (Width: 60, Height: 60, Top: 6, Left: 10);
+        Background: (TexturePath: "../Pages/SuperTowerIcons/korni.png", Border: 8);
+      }
+
+      Group #SuperHeartIconMonolith {
+        Anchor: (Width: 60, Height: 60, Top: 6, Left: 10);
+        Background: (TexturePath: "../Pages/SuperTowerIcons/monolit.png", Border: 8);
+        Visible: false;
+      }
+
+      Group #SuperHeartIconIdol {
+        Anchor: (Width: 60, Height: 60, Top: 6, Left: 10);
+        Background: (TexturePath: "../Pages/SuperTowerIcons/idol.png", Border: 8);
+        Visible: false;
+      }
+
+      Group {
+        LayoutMode: Top;
+        Anchor: (Width: 208, Top: 10, Left: 84);
+
+        Label #SuperHeartName {
+          Style: (FontSize: 15, TextColor: #ffffff, RenderBold: true);
+          Text: "Heart of Roots";
+        }
+
+        Label #SuperHeartState {
+          Anchor: (Top: 2);
+          Style: (FontSize: 13, TextColor: #c8d5e3, RenderBold: true, Wrap: true);
+          Text: "inactive";
+        }
+      }
+    }
+
+    Group #SuperMonolithRow {
+      Anchor: (Width: 300, Height: 84, Top: 128, Left: 12);
+      Background: #0b1927(0.74);
+      Visible: false;
+
+      Group {
+        Anchor: (Width: 68, Height: 68, Top: 2, Left: 6);
+        Background: #111c2a(0.92);
+      }
+
+      Group #SuperMonolithIconHeart {
+        Anchor: (Width: 60, Height: 60, Top: 6, Left: 10);
+        Background: (TexturePath: "../Pages/SuperTowerIcons/korni.png", Border: 8);
+        Visible: false;
+      }
+
+      Group #SuperMonolithIconMonolith {
+        Anchor: (Width: 60, Height: 60, Top: 6, Left: 10);
+        Background: (TexturePath: "../Pages/SuperTowerIcons/monolit.png", Border: 8);
+      }
+
+      Group #SuperMonolithIconIdol {
+        Anchor: (Width: 60, Height: 60, Top: 6, Left: 10);
+        Background: (TexturePath: "../Pages/SuperTowerIcons/idol.png", Border: 8);
+        Visible: false;
+      }
+
+      Group {
+        LayoutMode: Top;
+        Anchor: (Width: 208, Top: 10, Left: 84);
+
+        Label #SuperMonolithName {
+          Style: (FontSize: 15, TextColor: #ffffff, RenderBold: true);
+          Text: "Storm Monolith";
+        }
+
+        Label #SuperMonolithState {
+          Anchor: (Top: 2);
+          Style: (FontSize: 13, TextColor: #c8d5e3, RenderBold: true, Wrap: true);
+          Text: "inactive";
+        }
+      }
+    }
+
+    Group #SuperIdolRow {
+      Anchor: (Width: 300, Height: 84, Top: 218, Left: 12);
+      Background: #0b1927(0.74);
+      Visible: false;
+
+      Group {
+        Anchor: (Width: 68, Height: 68, Top: 2, Left: 6);
+        Background: #2a210e(0.92);
+      }
+
+      Group #SuperIdolIconHeart {
+        Anchor: (Width: 60, Height: 60, Top: 6, Left: 10);
+        Background: (TexturePath: "../Pages/SuperTowerIcons/korni.png", Border: 8);
+        Visible: false;
+      }
+
+      Group #SuperIdolIconMonolith {
+        Anchor: (Width: 60, Height: 60, Top: 6, Left: 10);
+        Background: (TexturePath: "../Pages/SuperTowerIcons/monolit.png", Border: 8);
+        Visible: false;
+      }
+
+      Group #SuperIdolIconIdol {
+        Anchor: (Width: 60, Height: 60, Top: 6, Left: 10);
+        Background: (TexturePath: "../Pages/SuperTowerIcons/idol.png", Border: 8);
+      }
+
+      Group {
+        LayoutMode: Top;
+        Anchor: (Width: 208, Top: 10, Left: 84);
+
+        Label #SuperIdolName {
+          Style: (FontSize: 15, TextColor: #ffffff, RenderBold: true);
+          Text: "Harvest Idol";
+        }
+
+        Label #SuperIdolState {
+          Anchor: (Top: 2);
+          Style: (FontSize: 13, TextColor: #c8d5e3, RenderBold: true, Wrap: true);
+          Text: "inactive";
+        }
+      }
+    }
+  }
+
+  Group #TutorialQuestPanel {
+    Anchor: (Width: 700, Height: 78, Top: 164, Left: 610);
+    LayoutMode: Top;
+    Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+    Padding: (Horizontal: 16, Vertical: 12);
+    Visible: false;
+
+    Label #TutorialQuestLabel {
+      Style: (FontSize: 13, TextColor: #96c0ff, RenderBold: true, RenderUppercase: true);
+      Text: "Tutorial Objective";
+    }
+
+    Label #TutorialQuestText {
+      Anchor: (Top: 6);
+      Style: (FontSize: 18, TextColor: #ffffff, RenderBold: true, Wrap: true);
+      Text: "";
+    }
+  }
+
+  Group #NextWavePanel {
+    Anchor: (Width: 520, Height: 132, Top: 18, Left: 700);
+    Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+    Visible: false;
+
+    Group {
+      Anchor: (Width: 6, Top: 10, Bottom: 10, Left: 10);
+      Background: #f4d06f(0.95);
+    }
+
+    Label #NextWaveCaption {
+      Anchor: (Top: 12, Left: 28, Right: 120);
+      Style: (FontSize: 12, TextColor: #96c0ff, RenderBold: true, RenderUppercase: true);
+      Text: "Preparation";
+    }
+
+    Label #NextWaveText {
+      Anchor: (Top: 34, Left: 28, Right: 120);
+      Style: (FontSize: 30, TextColor: #f4d06f, RenderBold: true);
+      Text: "Wave -";
+    }
+
+    Label #CountdownText {
+      Anchor: (Top: 74, Left: 28, Right: 120);
+      Style: (FontSize: 18, TextColor: #ffffff, RenderBold: true);
+      Text: "Starts in -";
+    }
+
+    Label #DifficultyText {
+      Anchor: (Top: 102, Left: 28, Right: 120);
+      Style: (FontSize: 13, TextColor: #8ea7bf, RenderBold: true);
+      Text: "Wave Threat";
+    }
+
+    Group #WaveDifficultySlot {
+      Anchor: (Width: 76, Height: 76, Top: 28, Right: 22);
+
+      Group #WaveDifficultyLevel1 {
+        Anchor: (Width: 76, Height: 76);
+        Background: (TexturePath: "HudIcons/wave_diff_1.png", Border: 8);
+      }
+
+      Group #WaveDifficultyLevel2 {
+        Anchor: (Width: 76, Height: 76);
+        Background: (TexturePath: "HudIcons/wave_diff_2.png", Border: 8);
+        Visible: false;
+      }
+
+      Group #WaveDifficultyLevel3 {
+        Anchor: (Width: 76, Height: 76);
+        Background: (TexturePath: "HudIcons/wave_diff_3.png", Border: 8);
+        Visible: false;
+      }
+    }
+  }
+
+  Group #InteractionPrompt {
+    Anchor: (Width: 480, Height: 62, Bottom: 156, Left: 720);
+    LayoutMode: Left;
+    Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+    Padding: (Horizontal: 12, Vertical: 10);
+    Visible: false;
+
+    Group #InteractionKeyPill {
+      Anchor: (Width: 40, Height: 40, Right: 12);
+      Background: #f4d06f(0.94);
+
+      Label #InteractionKeyText {
+        Anchor: (Top: 8, Left: 12);
+        Style: (FontSize: 20, TextColor: #142234, RenderBold: true);
+        Text: "F";
+      }
+    }
+
+    Label #InteractionPromptText {
+      Anchor: (Width: 396, Top: 8);
+      Style: (FontSize: 18, TextColor: #f3f7ff, RenderBold: true, Wrap: true);
+      Text: "";
+    }
+  }
+
+  Group #RightStats {
+    Anchor: (Height: 128, Left: 218, Right: 218, Bottom: 16);
+    LayoutMode: Left;
+    Background: #06131f(0.0);
+    Padding: (Horizontal: 12, Vertical: 12);
+
+    Group #MoneyRow {
+      Anchor: (Width: 348, Height: 100, Right: 12);
+      Background: #0f2032(0.86);
+
+      Group #MoneyFlashStage1 {
+        Anchor: (Left: 0, Right: 0, Top: 0, Bottom: 0);
+        Background: #d8ab3d(0.12);
+        Visible: false;
+      }
+
+      Group #MoneyFlashStage2 {
+        Anchor: (Left: 0, Right: 0, Top: 0, Bottom: 0);
+        Background: #d8ab3d(0.24);
+        Visible: false;
+      }
+
+      Group #MoneyInterwaveShade {
+        Anchor: (Left: 0, Right: 0, Top: 0, Bottom: 0);
+        Background: #08111b(0.18);
+        Visible: false;
+      }
+
+      Group {
+        Anchor: (Width: 6, Top: 0, Bottom: 0, Left: 0);
+        Background: #d8ab3d(0.96);
+      }
+
+      Group {
+        Anchor: (Width: 72, Height: 72, Top: 14, Left: 16);
+        Background: #302312(0.92);
+      }
+
+      Group #MoneyIconGold {
+        Anchor: (Width: 60, Height: 60, Top: 20, Left: 22);
+        Background: (TexturePath: "HudIcons/hud_money.png", Border: 8);
+      }
+
+      Group #MoneyIconGray {
+        Anchor: (Width: 60, Height: 60, Top: 20, Left: 22);
+        Background: (TexturePath: "HudIcons/hud_money_paused.png", Border: 8);
+        Visible: false;
+      }
+
+      Label #MoneyHeading {
+        Anchor: (Top: 12, Left: 102, Right: 16);
+        Style: (FontSize: 12, TextColor: #f4d06f, RenderBold: true, RenderUppercase: true);
+        Text: "Gold";
+      }
+
+      Label #MoneyActive {
+        Anchor: (Top: 34, Left: 102, Right: 16);
+        Style: (FontSize: 28, TextColor: #f4d06f, RenderBold: true);
+        Text: "0";
+      }
+
+      Label #MoneyPaused {
+        Anchor: (Top: 34, Left: 102, Right: 16);
+        Style: (FontSize: 28, TextColor: #b7bec9, RenderBold: true);
+        Text: "0";
+        Visible: false;
+      }
+
+      Label #MoneyPausedNote {
+        Anchor: (Top: 72, Left: 102, Right: 16);
+        Style: (FontSize: 12, TextColor: #929aa4, RenderBold: true);
+        Text: "Paused";
+        Visible: false;
+      }
+    }
+
+    Group #CoresRow {
+      Anchor: (Width: 270, Height: 100, Right: 12);
+      Background: #0e1f30(0.82);
+
+      Group #CoresFlashStage1 {
+        Anchor: (Left: 0, Right: 0, Top: 0, Bottom: 0);
+        Background: #58d8ff(0.10);
+        Visible: false;
+      }
+
+      Group #CoresFlashStage2 {
+        Anchor: (Left: 0, Right: 0, Top: 0, Bottom: 0);
+        Background: #58d8ff(0.18);
+        Visible: false;
+      }
+
+      Group #CoresInterwaveShade {
+        Anchor: (Left: 0, Right: 0, Top: 0, Bottom: 0);
+        Background: #08111b(0.18);
+        Visible: false;
+      }
+
+      Group {
+        Anchor: (Width: 6, Top: 0, Bottom: 0, Left: 0);
+        Background: #58d8ff(0.92);
+      }
+
+      Group {
+        Anchor: (Width: 72, Height: 72, Top: 14, Left: 16);
+        Background: #102b33(0.92);
+      }
+
+      Group #CoresIcon {
+        Anchor: (Width: 60, Height: 60, Top: 20, Left: 22);
+        Background: (TexturePath: "HudIcons/hud_cores.png", Border: 8);
+      }
+
+      Label #CoresHeading {
+        Anchor: (Top: 12, Left: 102, Right: 16);
+        Style: (FontSize: 12, TextColor: #8fe6ff, RenderBold: true, RenderUppercase: true);
+        Text: "Shards";
+      }
+
+      Label #CoresValue {
+        Anchor: (Top: 34, Left: 102, Right: 16);
+        Style: (FontSize: 28, TextColor: #8fe6ff, RenderBold: true);
+        Text: "0";
+      }
+    }
+
+    Group #BankRow {
+      Anchor: (Width: 348, Height: 100, Right: 12);
+      Background: #102033(0.86);
+
+      Group #BankDangerSoft {
+        Anchor: (Left: 0, Right: 0, Top: 0, Bottom: 0);
+        Background: #d17a1f(0.10);
+        Visible: false;
+      }
+
+      Group #BankDangerHard {
+        Anchor: (Left: 0, Right: 0, Top: 0, Bottom: 0);
+        Background: #a31522(0.18);
+        Visible: false;
+      }
+
+      Group #BankFlashStage1 {
+        Anchor: (Left: 0, Right: 0, Top: 0, Bottom: 0);
+        Background: #ff5f5f(0.10);
+        Visible: false;
+      }
+
+      Group #BankFlashStage2 {
+        Anchor: (Left: 0, Right: 0, Top: 0, Bottom: 0);
+        Background: #ff5f5f(0.18);
+        Visible: false;
+      }
+
+      Group #BankInterwaveShade {
+        Anchor: (Left: 0, Right: 0, Top: 0, Bottom: 0);
+        Background: #08111b(0.18);
+        Visible: false;
+      }
+
+      Group {
+        Anchor: (Width: 6, Top: 0, Bottom: 0, Left: 0);
+        Background: #d64242(0.92);
+      }
+
+      Group {
+        Anchor: (Width: 72, Height: 72, Top: 14, Left: 16);
+        Background: #33151a(0.92);
+      }
+
+      Group #BankIcon {
+        Anchor: (Width: 60, Height: 60, Top: 20, Left: 22);
+        Background: (TexturePath: "HudIcons/hud_bank_hp.png", Border: 8);
+      }
+
+      Label #BankHeading {
+        Anchor: (Top: 12, Left: 102, Right: 16);
+        Style: (FontSize: 12, TextColor: #ffb3b3, RenderBold: true, RenderUppercase: true);
+        Text: "Hollow Health";
+      }
+
+      Label #BankValue {
+        Anchor: (Top: 34, Left: 102, Right: 16);
+        Style: (FontSize: 24, TextColor: #ffffff, RenderBold: true);
+        Text: "20 / 20";
+      }
+
+      Label #BankState {
+        Anchor: (Top: 72, Left: 102, Right: 16);
+        Style: (FontSize: 12, TextColor: #f0b8b8, RenderBold: true);
+        Text: "Stable";
+      }
+    }
+
+    Group #EnemiesRow {
+      Anchor: (Width: 284, Height: 100);
+      Background: #0e1d2c(0.82);
+
+      Group #EnemiesPressureLow {
+        Anchor: (Left: 0, Right: 0, Top: 0, Bottom: 0);
+        Background: #496b86(0.08);
+        Visible: false;
+      }
+
+      Group #EnemiesPressureMid {
+        Anchor: (Left: 0, Right: 0, Top: 0, Bottom: 0);
+        Background: #b88934(0.10);
+        Visible: false;
+      }
+
+      Group #EnemiesPressureHigh {
+        Anchor: (Left: 0, Right: 0, Top: 0, Bottom: 0);
+        Background: #b04c36(0.14);
+        Visible: false;
+      }
+
+      Group #EnemiesInterwaveShade {
+        Anchor: (Left: 0, Right: 0, Top: 0, Bottom: 0);
+        Background: #08111b(0.18);
+        Visible: false;
+      }
+
+      Group {
+        Anchor: (Width: 6, Top: 0, Bottom: 0, Left: 0);
+        Background: #d8c39a(0.92);
+      }
+
+      Group {
+        Anchor: (Width: 72, Height: 72, Top: 14, Left: 16);
+        Background: #27211d(0.92);
+      }
+
+      Group #EnemiesIcon {
+        Anchor: (Width: 60, Height: 60, Top: 20, Left: 22);
+        Background: (TexturePath: "HudIcons/hud_enemies.png", Border: 8);
+      }
+
+      Label #EnemiesHeading {
+        Anchor: (Top: 12, Left: 102, Right: 16);
+        Style: (FontSize: 12, TextColor: #d7deea, RenderBold: true, RenderUppercase: true);
+        Text: "Wave Enemies";
+      }
+
+      Label #EnemiesValue {
+        Anchor: (Top: 34, Left: 102, Right: 16);
+        Style: (FontSize: 26, TextColor: #ffffff, RenderBold: true);
+        Text: "0 / 0";
+      }
+
+      Label #EnemiesState {
+        Anchor: (Top: 72, Left: 102, Right: 16);
+        Style: (FontSize: 12, TextColor: #b8c3d4, RenderBold: true);
+        Text: "Waiting for wave";
+      }
+    }
+  }
+
+  Group #DuoInfoPanel {
+    Anchor: (Width: 188, Height: 106, Right: 18, Bottom: 16);
+    Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+    Visible: false;
+
+    Group #DuoTeamRow {
+      Anchor: (Width: 164, Height: 42, Top: 10, Left: 12);
+      Background: #0f2032(0.86);
+
+      Group {
+        Anchor: (Width: 32, Height: 32, Top: 5, Left: 8);
+        Background: #172a3a(0.92);
+      }
+
+      Group #DuoTeamCoinBlue {
+        Anchor: (Width: 26, Height: 26, Top: 8, Left: 11);
+        Background: (TexturePath: "../Pages/DuoTeamIcons/bluemonetka.png", Border: 8);
+        Visible: false;
+      }
+
+      Group #DuoTeamCoinGreen {
+        Anchor: (Width: 26, Height: 26, Top: 8, Left: 11);
+        Background: (TexturePath: "../Pages/DuoTeamIcons/greenmonetka.png", Border: 8);
+        Visible: false;
+      }
+
+      Label #DuoTeamHeading {
+        Anchor: (Top: 4, Left: 48, Right: 8);
+        Style: (FontSize: 10, TextColor: #8ea7bf, RenderBold: true, RenderUppercase: true);
+        Text: "Your side";
+      }
+
+      Label #DuoTeamValue {
+        Anchor: (Top: 18, Left: 48, Right: 8);
+        Style: (FontSize: 13, TextColor: #ffffff, RenderBold: true, Wrap: true);
+        Text: "Blue side";
+      }
+    }
+
+    Group #DuoPartnerRow {
+      Anchor: (Width: 164, Height: 42, Top: 56, Left: 12);
+      Background: #0f2032(0.86);
+
+      Group {
+        Anchor: (Width: 32, Height: 32, Top: 5, Left: 8);
+        Background: #302312(0.92);
+      }
+
+      Group {
+        Anchor: (Width: 26, Height: 26, Top: 8, Left: 11);
+        Background: (TexturePath: "HudIcons/hud_money.png", Border: 8);
+      }
+
+      Label #DuoPartnerHeading {
+        Anchor: (Top: 4, Left: 48, Right: 8);
+        Style: (FontSize: 10, TextColor: #f4d06f, RenderBold: true, RenderUppercase: true);
+        Text: "Ally gold";
+      }
+
+      Label #DuoPartnerValue {
+        Anchor: (Top: 18, Left: 48, Right: 8);
+        Style: (FontSize: 15, TextColor: #f4d06f, RenderBold: true);
+        Text: "-";
+      }
+    }
+  }
+
+  Group #CursePanel {
+    Anchor: (Width: 420, Height: 128, Top: 116, Right: 18);
+    Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+    Visible: false;
+
+    Group {
+      Anchor: (Width: 6, Left: 0, Top: 0, Bottom: 0);
+      Background: #b95c88(0.96);
+    }
+
+    Group {
+      Anchor: (Left: 0, Right: 0, Top: 0, Bottom: 0);
+      Background: #101a29(0.84);
+    }
+
+    Label #CursePanelTitle {
+      Anchor: (Top: 12, Left: 18, Right: 18);
+      Style: (FontSize: 13, TextColor: #ffbfd7, RenderBold: true, RenderUppercase: true);
+      Text: "";
+    }
+
+    Label #CurseLine1 {
+      Anchor: (Top: 38, Left: 18, Right: 18);
+      Style: (FontSize: 13, TextColor: #f3f7ff, RenderBold: true, Wrap: true);
+      Text: "";
+      Visible: false;
+    }
+
+    Label #CurseLine2 {
+      Anchor: (Top: 64, Left: 18, Right: 18);
+      Style: (FontSize: 13, TextColor: #f3f7ff, RenderBold: true, Wrap: true);
+      Text: "";
+      Visible: false;
+    }
+
+    Label #CurseLine3 {
+      Anchor: (Top: 90, Left: 18, Right: 18);
+      Style: (FontSize: 13, TextColor: #f3f7ff, RenderBold: true, Wrap: true);
+      Text: "";
+      Visible: false;
+    }
+  }
+
+  Group #IdolToastStage1 {
+    Anchor: (Width: 468, Height: 84, Top: 18, Right: 18);
+    Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+    Visible: false;
+
+    Group {
+      Anchor: (Width: 48, Height: 48, Top: 18, Left: 14);
+      Background: #302312(0.90);
+    }
+
+    Group #EventToastMoneyIcon1 {
+      Anchor: (Width: 40, Height: 40, Top: 22, Left: 18);
+      Background: (TexturePath: "HudIcons/hud_money.png", Border: 8);
+    }
+
+    Group #EventToastCoresIcon1 {
+      Anchor: (Width: 40, Height: 40, Top: 22, Left: 18);
+      Background: (TexturePath: "HudIcons/hud_cores.png", Border: 8);
+      Visible: false;
+    }
+
+    Group #EventToastAlertIcon1 {
+      Anchor: (Width: 40, Height: 40, Top: 22, Left: 18);
+      Background: (TexturePath: "HudIcons/hud_enemies.png", Border: 8);
+      Visible: false;
+    }
+
+    Label #IdolToastText1 {
+      Anchor: (Top: 18, Left: 76, Right: 18);
+      Style: (FontSize: 16, TextColor: #f3f7ff, RenderBold: true, Wrap: true);
+      Text: "";
+    }
+  }
+
+  Group #IdolToastStage2 {
+    Anchor: (Width: 468, Height: 84, Top: 18, Right: 18);
+    Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+    Visible: false;
+
+    Group {
+      Anchor: (Left: 0, Right: 0, Top: 0, Bottom: 0);
+      Background: #102033(0.20);
+    }
+
+    Group {
+      Anchor: (Width: 48, Height: 48, Top: 18, Left: 14);
+      Background: #302312(0.90);
+    }
+
+    Group #EventToastMoneyIcon2 {
+      Anchor: (Width: 40, Height: 40, Top: 22, Left: 18);
+      Background: (TexturePath: "HudIcons/hud_money.png", Border: 8);
+    }
+
+    Group #EventToastCoresIcon2 {
+      Anchor: (Width: 40, Height: 40, Top: 22, Left: 18);
+      Background: (TexturePath: "HudIcons/hud_cores.png", Border: 8);
+      Visible: false;
+    }
+
+    Group #EventToastAlertIcon2 {
+      Anchor: (Width: 40, Height: 40, Top: 22, Left: 18);
+      Background: (TexturePath: "HudIcons/hud_enemies.png", Border: 8);
+      Visible: false;
+    }
+
+    Label #IdolToastText2 {
+      Anchor: (Top: 18, Left: 76, Right: 18);
+      Style: (FontSize: 16, TextColor: #f3f7ff, RenderBold: true, Wrap: true);
+      Text: "";
+    }
+  }
+
+  Group #IdolToastStage3 {
+    Anchor: (Width: 468, Height: 84, Top: 18, Right: 18);
+    Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+    Visible: false;
+
+    Group {
+      Anchor: (Left: 0, Right: 0, Top: 0, Bottom: 0);
+      Background: #102033(0.34);
+    }
+
+    Group {
+      Anchor: (Width: 48, Height: 48, Top: 18, Left: 14);
+      Background: #302312(0.90);
+    }
+
+    Group #EventToastMoneyIcon3 {
+      Anchor: (Width: 40, Height: 40, Top: 22, Left: 18);
+      Background: (TexturePath: "HudIcons/hud_money.png", Border: 8);
+    }
+
+    Group #EventToastCoresIcon3 {
+      Anchor: (Width: 40, Height: 40, Top: 22, Left: 18);
+      Background: (TexturePath: "HudIcons/hud_cores.png", Border: 8);
+      Visible: false;
+    }
+
+    Group #EventToastAlertIcon3 {
+      Anchor: (Width: 40, Height: 40, Top: 22, Left: 18);
+      Background: (TexturePath: "HudIcons/hud_enemies.png", Border: 8);
+      Visible: false;
+    }
+
+    Label #IdolToastText3 {
+      Anchor: (Top: 18, Left: 76, Right: 18);
+      Style: (FontSize: 16, TextColor: #f3f7ff, RenderBold: true, Wrap: true);
+      Text: "";
+    }
+  }
+
+  Group #DefeatBanner {
+    Anchor: (Height: 166, Top: 196, Left: 320, Right: 320);
+    Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+    Visible: false;
+
+    Label #DefeatText {
+      Anchor: (Width: 920, Top: 16, Left: 100);
+      Style: (FontSize: 42, TextColor: #ff2b2b, RenderBold: true, Wrap: false);
+      Text: "THE HOLLOW HAS FALLEN";
+    }
+
+    Label #DefeatHint {
+      Anchor: (Width: 620, Top: 78, Left: 210);
+      Style: (FontSize: 14, TextColor: #c9d1d9, RenderBold: true, Wrap: true);
+      Text: "Start a new match with the operator";
+    }
+
+    Group {
+      Anchor: (Width: 56, Height: 56, Top: 96, Left: 286);
+      Background: #102b33(0.92);
+    }
+
+    Group #DefeatShardIcon {
+      Anchor: (Width: 46, Height: 46, Top: 101, Left: 291);
+      Background: (TexturePath: "HudIcons/hud_cores.png", Border: 8);
+    }
+
+    Label #DefeatShardHeading {
+      Anchor: (Width: 340, Top: 96, Left: 356);
+      Style: (FontSize: 12, TextColor: #8fe6ff, RenderBold: true, RenderUppercase: true);
+      Text: "Your shards";
+    }
+
+    Label #DefeatShardValue {
+      Anchor: (Width: 200, Top: 116, Left: 356);
+      Style: (FontSize: 28, TextColor: #8fe6ff, RenderBold: true);
+      Text: "0";
+    }
+  }
+}
