@@ -129,9 +129,12 @@ public final class BankDefenseMatchControlPage extends InteractiveCustomUIPage<B
                 player.sendMessage(Message.raw(BankDefenseLocalization.translateFreeform(this.viewerRef, result.message)));
             }
             boolean closeAfterPrepare = result.success && (data.action.startsWith("contract:") || (data.action.startsWith("difficulty:") && this.runtime.isDuoGameplayMode(player.getWorld())));
-            boolean closeAfterRewardOpen = result.success && "match:reward".equals(data.action);
-            if (closeAfterPrepare || closeAfterRewardOpen) {
+            boolean openRewardPage = result.success && "match:reward".equals(data.action);
+            if (closeAfterPrepare) {
                 this.close();
+                return;
+            }
+            if (openRewardPage) {
                 return;
             }
         } catch (IOException e) {
@@ -157,6 +160,7 @@ public final class BankDefenseMatchControlPage extends InteractiveCustomUIPage<B
         this.bindAction(eventBuilder, "#RewardButton", "match:reward");
         this.bindAction(eventBuilder, "#StartWave", "match:start_wave");
         this.bindAction(eventBuilder, "#AutoStartToggle", "match:auto_toggle");
+        this.bindAction(eventBuilder, "#PauseToggle", "match:pause_toggle");
         this.bindAction(eventBuilder, "#ResetMatch", "match:end");
     }
 
@@ -181,6 +185,7 @@ public final class BankDefenseMatchControlPage extends InteractiveCustomUIPage<B
         String bankText = BankDefenseLocalization.tr(this.viewerRef, "label.bank.none");
         String statusText = BankDefenseLocalization.tr(this.viewerRef, "label.status.none");
         String autoStartText = BankDefenseLocalization.tr(this.viewerRef, "page.match.auto_start_off");
+        String pauseText = BankDefenseLocalization.tr(this.viewerRef, "page.match.pause_game");
 
         if (world != null) {
             try {
@@ -199,6 +204,7 @@ public final class BankDefenseMatchControlPage extends InteractiveCustomUIPage<B
                     bankText = BankDefenseLocalization.tr(this.viewerRef, "label.bank", match.bankHp + " / " + match.maxBankHp);
                     statusText = BankDefenseLocalization.tr(this.viewerRef, "label.status", this.describeMatchState(match));
                     autoStartText = BankDefenseLocalization.tr(this.viewerRef, match.instantAutoStart ? "page.match.auto_start_on" : "page.match.auto_start_off");
+                    pauseText = BankDefenseLocalization.tr(this.viewerRef, match.paused ? "page.match.resume_game" : "page.match.pause_game");
                 }
             } catch (IOException e) {
                 this.hint = BankDefenseLocalization.tr(this.viewerRef, "page.match.read_error", e.getMessage());
@@ -213,6 +219,13 @@ public final class BankDefenseMatchControlPage extends InteractiveCustomUIPage<B
         boolean showContract = !tutorialActive && !matchPrepared && !duoMode && STAGE_CONTRACT.equals(this.stage);
         boolean showControl = tutorialActive || STAGE_CONTROL.equals(this.stage);
         boolean rewardButtonVisible = showControl && !tutorialActive && rewardState != null && rewardState.rewardPending && this.viewerCanChooseReward(rewardState);
+        boolean pauseButtonVisible = showControl
+            && !tutorialActive
+            && status != null
+            && status.matchState != null
+            && status.matchState.gameStarted
+            && status.matchState.gameState != BankDefenseRuntime.GameState.Defeat
+            && status.matchState.gameState != BankDefenseRuntime.GameState.Victory;
 
         commandBuilder.set("#TitleLabel.Text", BankDefenseLocalization.tr(this.viewerRef, tutorialActive ? "page.match.title.tutorial" : "page.match.title"));
         commandBuilder.set("#SetupPanel.Visible", !tutorialActive && !showControl);
@@ -253,8 +266,10 @@ public final class BankDefenseMatchControlPage extends InteractiveCustomUIPage<B
         commandBuilder.set("#RewardButton.Visible", rewardButtonVisible);
         commandBuilder.set("#StartWave.Text", BankDefenseLocalization.tr(this.viewerRef, "page.match.start_wave"));
         commandBuilder.set("#AutoStartToggle.Text", autoStartText);
+        commandBuilder.set("#PauseToggle.Text", pauseText);
         commandBuilder.set("#ResetMatch.Text", BankDefenseLocalization.tr(this.viewerRef, "page.match.end_match"));
         commandBuilder.set("#AutoStartToggle.Visible", !tutorialActive);
+        commandBuilder.set("#PauseToggle.Visible", pauseButtonVisible);
         commandBuilder.set("#ResetMatch.Visible", !tutorialActive);
     }
 
@@ -317,6 +332,9 @@ public final class BankDefenseMatchControlPage extends InteractiveCustomUIPage<B
         if (match.gameState == BankDefenseRuntime.GameState.Ready && !match.gameStarted) {
             return BankDefenseLocalization.tr(this.viewerRef, "page.match.start_waiting");
         }
+        if (match.paused) {
+            return BankDefenseLocalization.tr(this.viewerRef, "page.match.status.paused");
+        }
         if (match.gameState == BankDefenseRuntime.GameState.Ready && match.preparationRemainingSeconds > 0.0) {
             return BankDefenseLocalization.tr(this.viewerRef, "hud.preparation_s", (int)Math.ceil(match.preparationRemainingSeconds));
         }
@@ -347,6 +365,7 @@ public final class BankDefenseMatchControlPage extends InteractiveCustomUIPage<B
             return switch (action) {
                 case "match:start_wave" -> this.runtime.startNextWave(world);
                 case "match:auto_toggle" -> ActionResult.fail(BankDefenseLocalization.tr(this.viewerRef, "page.match.tutorial.auto_disabled"));
+                case "match:pause_toggle" -> ActionResult.fail(BankDefenseLocalization.tr(this.viewerRef, "page.match.tutorial.pause_unavailable"));
                 case "match:end" -> ActionResult.fail(BankDefenseLocalization.tr(this.viewerRef, "page.match.tutorial.end_unavailable"));
                 default -> ActionResult.fail(BankDefenseLocalization.tr(this.viewerRef, "page.match.tutorial.only_start_available"));
             };
@@ -384,9 +403,10 @@ public final class BankDefenseMatchControlPage extends InteractiveCustomUIPage<B
             return this.runtime.prepareMatch(world, this.selectedDifficultyId, state.contracts.get(index).contractId);
         }
         return switch (action) {
-            case "match:reward" -> this.runtime.reopenPendingRewardPage(world, this.viewerRef);
+            case "match:reward" -> this.runtime.schedulePendingRewardPageOpen(world, this.viewerRef, 0.12);
             case "match:start_wave" -> this.runtime.startPreparedWave(world);
             case "match:auto_toggle" -> this.runtime.toggleInstantAutoStart(world);
+            case "match:pause_toggle" -> this.runtime.toggleMatchPause(world, this.viewerRef);
             case "match:end" -> {
                 this.stage = STAGE_DIFFICULTY;
                 yield this.runtime.endMatchAsDefeat(world);

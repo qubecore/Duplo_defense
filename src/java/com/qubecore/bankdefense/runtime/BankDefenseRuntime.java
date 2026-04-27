@@ -1,4 +1,4 @@
-package com.qubecore.bankdefense.runtime;
+﻿package com.qubecore.bankdefense.runtime;
 
 import com.hypixel.hytale.component.AddReason;
 import com.hypixel.hytale.component.Holder;
@@ -95,6 +95,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -106,6 +107,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public final class BankDefenseRuntime {
@@ -114,6 +116,9 @@ public final class BankDefenseRuntime {
     private static final double PATH_SPEED_SCALE = 4.0;
     private static final double VISUAL_REFRESH_ACTIVE_SECONDS = 0.1;
     private static final double VISUAL_REFRESH_IDLE_SECONDS = 0.5;
+    private static final double REALTIME_ENEMY_VISUAL_SYNC_SECONDS = 0.05;
+    private static final double REALTIME_TOWER_VISUAL_SYNC_SECONDS = 0.10;
+    private static final double REALTIME_RANGE_PREVIEW_SYNC_SECONDS = 0.30;
     private static final double COMBAT_VISUAL_RETURN_REBUILD_RADIUS = 220.0;
     private static final double ENEMY_VISUAL_GARBAGE_SWEEP_SECONDS = 0.5;
     private static final double ROUTE_MARKER_STEP = 12.0;
@@ -220,9 +225,9 @@ public final class BankDefenseRuntime {
     private static final String SOUND_DUO_REWARD_BURN = "SFX_BankDefense_DuoRewardBurn";
     private static final String SOUND_ACID_STORM_THUNDER = "SFX_BankDefense_AcidStormThunder";
     private static final String SOUND_ACID_STORM_OMEN = "SFX_BankDefense_AcidStormOmen";
-    private static final String SOUND_BOSS_CAST_VAULT_BREAKER = SOUND_MONOLITH_BURST;
-    private static final String SOUND_BOSS_CAST_NECRO_KING = SOUND_TUTORIAL_WARP;
-    private static final String SOUND_BOSS_CAST_GOBLIN = SOUND_ALERT;
+    private static final String SOUND_BOSS_CAST_VAULT_BREAKER = SOUND_FIRE_SHOCK;
+    private static final String SOUND_BOSS_CAST_NECRO_KING = SOUND_SEAL_MASTER_CAST;
+    private static final String SOUND_BOSS_CAST_GOBLIN = SOUND_ENEMY_SPAWN_GOBLIN;
     private static final String WEATHER_ACID_STORM = "BankDefense_AcidStorm";
     private static final String WEATHER_CRIMSON_STORM = "BankDefense_CrimsonStorm";
     private static final String PARTICLE_ACID_STORM_LIGHTNING = "Lightning";
@@ -255,6 +260,8 @@ public final class BankDefenseRuntime {
     private static final double BOSS_CAST_VAULT_BREAKER_SECONDS = 1.35;
     private static final double BOSS_CAST_NECRO_KING_SECONDS = 1.85;
     private static final double BOSS_CAST_GOBLIN_SECONDS = 1.15;
+    private static final double VAULT_BREAKER_DISABLE_INTERVAL_SECONDS = 12.0;
+    private static final double VAULT_BREAKER_DISABLE_DURATION_SECONDS = 3.0;
     private static final double BOSS_CAST_AURA_SCALE_MULTIPLIER = 1.75;
     private static final String VISUAL_MAX_HP_MODIFIER = "QubeCore_BankDefense_VisualMaxHp";
     private static final double ENEMY_DEATH_LINGER_SECONDS = 0.55;
@@ -263,6 +270,9 @@ public final class BankDefenseRuntime {
     private static final double ENEMY_VISUAL_STATE_DYING_INTERVAL_SECONDS = 0.08;
     private static final double ENEMY_AURA_INTERVAL_SECONDS = 0.16;
     private static final double ENEMY_AURA_CAST_INTERVAL_SECONDS = 0.08;
+    private static final double WORLD_INTERACTION_SYNC_SECONDS = 0.25;
+    private static final double PINNED_SPAWN_CHUNK_SYNC_SECONDS = 0.50;
+    private static final double DUO_PLAYER_COUNT_CHECK_SECONDS = 0.25;
     private static final double SPAWN_CHUNK_KEEP_LOADED_ROUTE_DISTANCE = 96.0;
     private static final double VISUAL_RESPAWN_GRACE_SECONDS = 2.5;
     private static final double VISUAL_RESPAWN_RETRY_SECONDS = 0.25;
@@ -402,12 +412,14 @@ public final class BankDefenseRuntime {
     private final Map<String, TutorialState> tutorialStatesByWorld = new ConcurrentHashMap<>();
     private final Map<String, Integer> soundIndexCache = new ConcurrentHashMap<>();
     private final Map<String, Set<Long>> pinnedSpawnChunkIndexesByWorld = new ConcurrentHashMap<>();
+    private final Map<String, Double> pinnedSpawnChunkSyncAccumulatedSecondsByWorld = new ConcurrentHashMap<>();
     private final Set<String> loggedNpcVisualSuccess = ConcurrentHashMap.newKeySet();
     private final Set<String> loggedNpcVisualFailure = ConcurrentHashMap.newKeySet();
     private final PlayerSkin controlNpcSkin = this.defaultControlNpcSkin();
     private final PlayerSkin vendorNpcSkin = this.defaultVendorNpcSkin();
     private final PlayerSkin tutorialWizardNpcSkin = this.defaultTutorialWizardNpcSkin();
     private final PlayerSkin duoNpcSkin = this.defaultDuoNpcSkin();
+    private final PlayerSkin duoTeamNpcSkin = this.defaultDuoTeamNpcSkin();
     private final PlayerSkin statsNpcSkin = this.defaultStatsNpcSkin();
     public BankDefenseRuntime(BankDefenseRepository repository) {
         this.repository = repository;
@@ -662,12 +674,12 @@ public final class BankDefenseRuntime {
             return "";
         }
         if (!this.hasChosenDuoSide(world, playerRef)) {
-            return this.choose(playerRef, "РЎРЅР°С‡Р°Р»Р° РІС‹Р±РµСЂРё СЃС‚РѕСЂРѕРЅСѓ.", "Choose a side first.");
+            return this.choose(playerRef, "Сначала выберите сторону.", "Choose a side first.");
         }
         if (this.isDuoTeamSelectionComplete(world) || this.isDuoSoloTestEnabled(world)) {
             return "";
         }
-        return this.choose(playerRef, "Р–РґС‘Рј РІС‚РѕСЂРѕРіРѕ РёРіСЂРѕРєР°: РѕРЅ РґРѕР»Р¶РµРЅ РІС‹Р±СЂР°С‚СЊ РґСЂСѓРіСѓСЋ СЃС‚РѕСЂРѕРЅСѓ.", "Waiting for the second player: they must choose the other side.");
+        return this.choose(playerRef, "Ждём второго игрока: он должен выбрать другую сторону.", "Waiting for the second player: they must choose the other side.");
     }
 
     private void sendPlayerMessage(World world, PlayerRef playerRef, String text) {
@@ -680,6 +692,27 @@ public final class BankDefenseRuntime {
             }
             player.sendMessage(Message.raw(BankDefenseLocalization.translateFreeform(playerRef, text)));
             return;
+        }
+    }
+
+    private void sendLocalizedWorldMessage(World world, String russian, String english) {
+        this.sendLocalizedWorldMessage(world, playerRef -> this.choose(playerRef, russian, english));
+    }
+
+    private void sendLocalizedWorldMessage(World world, Function<PlayerRef, String> messageFactory) {
+        if (world == null || messageFactory == null) {
+            return;
+        }
+        for (Player player : world.getPlayers()) {
+            if (player == null || player.getPlayerRef() == null) {
+                continue;
+            }
+            PlayerRef playerRef = player.getPlayerRef();
+            String text = messageFactory.apply(playerRef);
+            if (text == null || text.isBlank()) {
+                continue;
+            }
+            player.sendMessage(Message.raw(BankDefenseLocalization.translateFreeform(playerRef, text)));
         }
     }
 
@@ -715,7 +748,7 @@ public final class BankDefenseRuntime {
         if (slot == null || this.isSuperSlot(slot) || this.isTrapSlot(slot) || context.placedTowers.containsKey(slotId)) {
             return "";
         }
-        return this.choose(playerRef, "РЎРЅР°С‡Р°Р»Р° РЅР°С‡РЅРё РёРіСЂСѓ Сѓ РѕРїРµСЂР°С‚РѕСЂР°.", "Start the game with the operator first.");
+        return this.choose(playerRef, "Сначала начни игру у оператора.", "Start the game with the operator first.");
     }
 
     public void playUiActionFeedback(World world, PlayerRef playerRef, ActionResult result) {
@@ -765,8 +798,8 @@ public final class BankDefenseRuntime {
         }
         this.refreshVisualizationIfEnabled(world);
         return ActionResult.ok(enabled
-            ? this.choose(world, "Duo solo-test: Р’РљР›. РћРґРёРЅ РёРіСЂРѕРє РјРѕР¶РµС‚ РІС‹Р±СЂР°С‚СЊ СЃС‚РѕСЂРѕРЅСѓ Рё Р·Р°РїСѓСЃРєР°С‚СЊ С‚РµСЃС‚С‹ РІ РѕРґРёРЅРѕС‡РєСѓ.", "Duo solo test: ON. One player can pick a side and run Duo tests alone.")
-            : this.choose(world, "Duo solo-test: Р’Р«РљР›. Р РµР¶РёРј СЃРЅРѕРІР° С‚СЂРµР±СѓРµС‚ РґРІСѓС… РёРіСЂРѕРєРѕРІ.", "Duo solo test: OFF. Duo requires two players again."));
+            ? this.choose(world, "Duo solo-test: ВКЛ. Один игрок может выбрать сторону и запускать тесты в одиночку.", "Duo solo test: ON. One player can pick a side and run Duo tests alone.")
+            : this.choose(world, "Duo solo-test: ВЫКЛ. Режим снова требует двух игроков.", "Duo solo test: OFF. Duo requires two players again."));
     }
 
     private Set<UUID> hiddenHudPlayers(World world) {
@@ -785,10 +818,10 @@ public final class BankDefenseRuntime {
 
     public ActionResult setCustomHudHidden(World world, PlayerRef playerRef, boolean hidden) {
         if (world == null) {
-            return ActionResult.fail(this.choose(playerRef, "РњРёСЂ РЅРµРґРѕСЃС‚СѓРїРµРЅ.", "World is unavailable."));
+            return ActionResult.fail(this.choose(playerRef, "Мир недоступен.", "World is unavailable."));
         }
         if (playerRef == null || playerRef.getUuid() == null) {
-            return ActionResult.fail(this.choose((PlayerRef)null, "РРіСЂРѕРє РЅРµРґРѕСЃС‚СѓРїРµРЅ.", "The player is unavailable."));
+            return ActionResult.fail(this.choose((PlayerRef)null, "Игрок недоступен.", "The player is unavailable."));
         }
         Set<UUID> hiddenPlayers = this.hiddenHudPlayers(world);
         if (hidden) {
@@ -798,8 +831,8 @@ public final class BankDefenseRuntime {
         }
         this.applyCustomHudVisibility(world, playerRef);
         return ActionResult.ok(hidden
-            ? this.choose(playerRef, "РљР°СЃС‚РѕРјРЅС‹Р№ HUD СЃРєСЂС‹С‚.", "Custom HUD hidden.")
-            : this.choose(playerRef, "РљР°СЃС‚РѕРјРЅС‹Р№ HUD РїРѕРєР°Р·Р°РЅ.", "Custom HUD shown."));
+            ? this.choose(playerRef, "Кастомный HUD скрыт.", "Custom HUD hidden.")
+            : this.choose(playerRef, "Кастомный HUD показан.", "Custom HUD shown."));
     }
 
     public ActionResult toggleCustomHud(World world, PlayerRef playerRef) {
@@ -840,11 +873,11 @@ public final class BankDefenseRuntime {
 
     public ActionResult fillDuoPadsWithMaxTowers(World world, PlayerRef actor) throws IOException {
         if (world == null) {
-            return ActionResult.fail(this.choose(actor, "РњРёСЂ РЅРµРґРѕСЃС‚СѓРїРµРЅ.", "World is unavailable."));
+            return ActionResult.fail(this.choose(actor, "Мир недоступен.", "World is unavailable."));
         }
         MatchContext context = this.getOrCreateContext(world);
         if (context.snapshot == null || context.snapshot.buildSlots == null || context.snapshot.buildSlots.slots == null) {
-            return ActionResult.fail(this.choose(actor, "РЎР»РѕС‚С‹ РєР°СЂС‚С‹ РЅРµ Р·Р°РіСЂСѓР¶РµРЅС‹.", "Map slots are not loaded."));
+            return ActionResult.fail(this.choose(actor, "Слоты карты не загружены.", "Map slots are not loaded."));
         }
         Vec3i objectiveAnchor = this.duoBuildObjectiveAnchor(context);
         int totalDuoSlots = 0;
@@ -894,21 +927,21 @@ public final class BankDefenseRuntime {
             context.placedTowers.put(slot.id, instance);
         }
         if (totalDuoSlots <= 0) {
-            return ActionResult.fail(this.choose(actor, "РќР° СЌС‚РѕР№ РєР°СЂС‚Рµ РЅРµ РЅР°Р№РґРµРЅРѕ duo-РїР°РґРѕРІ.", "No Duo pads were found on this map."));
+            return ActionResult.fail(this.choose(actor, "На этой карте не найдено duo-падов.", "No Duo pads were found on this map."));
         }
         this.refreshVisualizationIfEnabled(world);
         return ActionResult.ok(
-            this.choose(actor, "РўРµСЃС‚РѕРІР°СЏ СЂР°СЃСЃС‚Р°РЅРѕРІРєР° Duo РіРѕС‚РѕРІР°. Р—Р°РїРѕР»РЅРµРЅРѕ: ", "Duo test fill complete. Filled: ")
+            this.choose(actor, "Тестовая расстановка Duo готова. Заполнено: ", "Duo test fill complete. Filled: ")
                 + placed
-                + this.choose(actor, ", Р·Р°РјРµРЅРµРЅРѕ: ", ", replaced: ")
+                + this.choose(actor, ", заменено: ", ", replaced: ")
                 + replaced
-                + this.choose(actor, ", РїСЂРѕРїСѓС‰РµРЅРѕ: ", ", skipped: ")
+                + this.choose(actor, ", пропущено: ", ", skipped: ")
                 + skipped
-                + this.choose(actor, ". Р‘Р°С€РЅРё: standard=", ". Towers: standard=")
+                + this.choose(actor, ". Башни: standard=", ". Towers: standard=")
                 + (standardTowerId == null || standardTowerId.isBlank() ? "-" : standardTowerId)
                 + ", trap=" + (trapTowerId == null || trapTowerId.isBlank() ? "-" : trapTowerId)
                 + ", super=" + (superTowerId == null || superTowerId.isBlank() ? "-" : superTowerId)
-                + this.choose(actor, ". Р’СЃРµ duo-РїР°РґС‹ РІС‹СЃС‚Р°РІР»РµРЅС‹ РІ РјР°РєСЃРёРјР°Р»СЊРЅС‹Р№ СѓСЂРѕРІРµРЅСЊ РґР»СЏ С‚РµСЃС‚РѕРІ.", ". All Duo pads were set to their maximum test level.")
+                + this.choose(actor, ". Все duo-пады выставлены в максимальный уровень для тестов.", ". All Duo pads were set to their maximum test level.")
         );
     }
 
@@ -930,14 +963,14 @@ public final class BankDefenseRuntime {
 
     public ActionResult selectDuoTeam(World world, PlayerRef playerRef, String teamId) throws IOException {
         if (world == null || playerRef == null || playerRef.getUuid() == null) {
-            return ActionResult.fail(this.choose((PlayerRef)null, "РРіСЂРѕРє РЅРµРґРѕСЃС‚СѓРїРµРЅ.", "The player is unavailable."));
+            return ActionResult.fail(this.choose((PlayerRef)null, "Игрок недоступен.", "The player is unavailable."));
         }
         if (!this.isDuoGameplayMode(world)) {
-            return ActionResult.fail(this.choose(playerRef, "Р’С‹Р±РѕСЂ СЃС‚РѕСЂРѕРЅС‹ РґРѕСЃС‚СѓРїРµРЅ С‚РѕР»СЊРєРѕ РІ Duo СЂРµР¶РёРјРµ.", "Side selection is only available in Duo mode."));
+            return ActionResult.fail(this.choose(playerRef, "Выбор стороны доступен только в Duo режиме.", "Side selection is only available in Duo mode."));
         }
         String normalizedTeam = this.normalizeTeam(teamId);
         if (!TEAM_BLUE.equals(normalizedTeam) && !TEAM_GREEN.equals(normalizedTeam)) {
-            return ActionResult.fail(this.choose(playerRef, "РќРµРёР·РІРµСЃС‚РЅР°СЏ РєРѕРјР°РЅРґР°.", "Unknown team."));
+            return ActionResult.fail(this.choose(playerRef, "Неизвестная команда.", "Unknown team."));
         }
 
         this.cleanupDuoTeamSelections(world);
@@ -949,8 +982,8 @@ public final class BankDefenseRuntime {
             if (!entry.getKey().equals(playerRef.getUuid()) && normalizedTeam.equals(this.normalizeTeam(entry.getValue()))) {
                 return ActionResult.fail(
                     TEAM_BLUE.equals(normalizedTeam)
-                        ? this.choose(playerRef, "РЎРёРЅСЏСЏ РєРѕРјР°РЅРґР° СѓР¶Рµ Р·Р°РЅСЏС‚Р°.", "Blue team is already taken.")
-                        : this.choose(playerRef, "Р—РµР»С‘РЅР°СЏ РєРѕРјР°РЅРґР° СѓР¶Рµ Р·Р°РЅСЏС‚Р°.", "Green team is already taken.")
+                        ? this.choose(playerRef, "Синяя команда уже занята.", "Blue team is already taken.")
+                        : this.choose(playerRef, "Зелёная команда уже занята.", "Green team is already taken.")
                 );
             }
         }
@@ -961,21 +994,22 @@ public final class BankDefenseRuntime {
             this.assignDuoTeams(world, context);
         }
         this.refreshVisualizationIfEnabled(world);
+        this.playUiSoundForPlayer(world, playerRef, SOUND_ALERT);
 
         if (this.isDuoTeamSelectionComplete(world)) {
-            return ActionResult.ok(this.choose(playerRef, "РЎС‚РѕСЂРѕРЅС‹ РІС‹Р±СЂР°РЅС‹. РћСЃС‚Р°Р»СЊРЅС‹Рµ NPC СЂР°Р·Р±Р»РѕРєРёСЂРѕРІР°РЅС‹.", "Sides locked in. The other NPCs are now available."));
+            return ActionResult.ok(this.choose(playerRef, "Стороны выбраны. Остальные NPC разблокированы.", "Sides locked in. The other NPCs are now available."));
         }
         if (this.isDuoSoloTestEnabled(world)) {
             return ActionResult.ok(
                 TEAM_BLUE.equals(normalizedTeam)
-                    ? this.choose(playerRef, "РўС‹ РІС‹Р±СЂР°Р» СЃРёРЅСЋСЋ СЃС‚РѕСЂРѕРЅСѓ. Duo solo-test Р°РєС‚РёРІРµРЅ: РјРѕР¶РЅРѕ С‚РµСЃС‚РёСЂРѕРІР°С‚СЊ РѕРґРЅРѕРјСѓ.", "You picked the blue side. Duo solo test is active, so you can test alone.")
-                    : this.choose(playerRef, "РўС‹ РІС‹Р±СЂР°Р» Р·РµР»С‘РЅСѓСЋ СЃС‚РѕСЂРѕРЅСѓ. Duo solo-test Р°РєС‚РёРІРµРЅ: РјРѕР¶РЅРѕ С‚РµСЃС‚РёСЂРѕРІР°С‚СЊ РѕРґРЅРѕРјСѓ.", "You picked the green side. Duo solo test is active, so you can test alone.")
+                    ? this.choose(playerRef, "Ты выбрал синюю сторону. Duo solo-test активен: можно тестировать одному.", "You picked the blue side. Duo solo test is active, so you can test alone.")
+                    : this.choose(playerRef, "Ты выбрал зелёную сторону. Duo solo-test активен: можно тестировать одному.", "You picked the green side. Duo solo test is active, so you can test alone.")
             );
         }
         return ActionResult.ok(
             TEAM_BLUE.equals(normalizedTeam)
-                ? this.choose(playerRef, "РўС‹ РІС‹Р±СЂР°Р» СЃРёРЅСЋСЋ СЃС‚РѕСЂРѕРЅСѓ. Р–РґС‘Рј РІС‚РѕСЂРѕРіРѕ РёРіСЂРѕРєР°.", "You picked the blue side. Waiting for the second player.")
-                : this.choose(playerRef, "РўС‹ РІС‹Р±СЂР°Р» Р·РµР»С‘РЅСѓСЋ СЃС‚РѕСЂРѕРЅСѓ. Р–РґС‘Рј РІС‚РѕСЂРѕРіРѕ РёРіСЂРѕРєР°.", "You picked the green side. Waiting for the second player.")
+                ? this.choose(playerRef, "Ты выбрал синюю сторону. Ждём второго игрока.", "You picked the blue side. Waiting for the second player.")
+                : this.choose(playerRef, "Ты выбрал зелёную сторону. Ждём второго игрока.", "You picked the green side. Waiting for the second player.")
         );
     }
 
@@ -1000,13 +1034,16 @@ public final class BankDefenseRuntime {
         if (world == null || context == null) {
             return 0;
         }
+        Set<UUID> onlinePlayerUuids = new HashSet<>();
+        for (PlayerRef playerRef : world.getPlayerRefs()) {
+            if (playerRef != null && playerRef.getUuid() != null) {
+                onlinePlayerUuids.add(playerRef.getUuid());
+            }
+        }
         int count = 0;
         for (UUID uuid : context.teamByPlayerUuid.keySet()) {
-            for (PlayerRef playerRef : world.getPlayerRefs()) {
-                if (playerRef != null && uuid.equals(playerRef.getUuid())) {
-                    count++;
-                    break;
-                }
+            if (uuid != null && onlinePlayerUuids.contains(uuid)) {
+                count++;
             }
         }
         return count;
@@ -1150,11 +1187,15 @@ public final class BankDefenseRuntime {
     }
 
     private String deniedSlotAccessMessage(World world, BuildSlot slot) {
+        return this.deniedSlotAccessMessage(this.primaryPlayerRef(world), slot);
+    }
+
+    private String deniedSlotAccessMessage(PlayerRef playerRef, BuildSlot slot) {
         String ownerTeam = this.slotOwnerTeam(slot);
         return switch (ownerTeam) {
-            case TEAM_BLUE -> this.choose(world, "Р­С‚РѕС‚ СЃР»РѕС‚ РїСЂРёРЅР°РґР»РµР¶РёС‚ СЃРёРЅРµРјСѓ С„СЂРѕРЅС‚Сѓ.", "This slot belongs to the blue front.");
-            case TEAM_GREEN -> this.choose(world, "Р­С‚РѕС‚ СЃР»РѕС‚ РїСЂРёРЅР°РґР»РµР¶РёС‚ Р·РµР»С‘РЅРѕРјСѓ С„СЂРѕРЅС‚Сѓ.", "This slot belongs to the green front.");
-            default -> this.choose(world, "Р­С‚РѕС‚ СЃР»РѕС‚ СЃРµР№С‡Р°СЃ РЅРµРґРѕСЃС‚СѓРїРµРЅ.", "This slot is unavailable right now.");
+            case TEAM_BLUE -> this.choose(playerRef, "Этот слот принадлежит синему фронту.", "This slot belongs to the blue front.");
+            case TEAM_GREEN -> this.choose(playerRef, "Этот слот принадлежит зелёному фронту.", "This slot belongs to the green front.");
+            default -> this.choose(playerRef, "Этот слот сейчас недоступен.", "This slot is unavailable right now.");
         };
     }
 
@@ -1909,6 +1950,14 @@ public final class BankDefenseRuntime {
         return slot == null || slot.id == null ? "" : slot.id;
     }
 
+    private String slotDisplayName(BuildSlot slot) {
+        if (slot == null) {
+            return "";
+        }
+        String label = slot.label == null || slot.label.isBlank() ? slot.id : slot.label;
+        return label == null ? "" : this.text(label);
+    }
+
     private String tutorialTrapLaneId(MatchContext context, int sequenceIndex) {
         if (sequenceIndex == 1 && this.hasLaneRoute(context, "b")) {
             return "b";
@@ -1966,10 +2015,10 @@ public final class BankDefenseRuntime {
         TutorialState tutorial = this.tutorialState(world);
         if (this.isSuperSlot(slot)) {
             if (tutorial.stage != TutorialStage.PlaceMonolith && tutorial.stage != TutorialStage.WaitBossWaveFinish) {
-                return ActionResult.fail(this.choose(world, "РЎСѓРїРµСЂ-Р±Р°С€РЅСЏ РІ РѕР±СѓС‡РµРЅРёРё РїРѕРЅР°РґРѕР±РёС‚СЃСЏ С‡СѓС‚СЊ РїРѕР·Р¶Рµ.", "The super tower will be needed a little later in the tutorial."));
+                return ActionResult.fail(this.choose(world, "Супер-башня в обучении понадобится чуть позже.", "The super tower will be needed a little later in the tutorial."));
             }
             if (!"storm_monolith".equals(tower.id)) {
-                return ActionResult.fail(this.choose(world, "Р’ РѕР±СѓС‡РµРЅРёРё РЅР° Р·РѕР»РѕС‚РѕР№ РїР»РѕС‰Р°РґРєРµ СЃРµР№С‡Р°СЃ РґРѕСЃС‚СѓРїРµРЅ С‚РѕР»СЊРєРѕ РњРѕРЅРѕР»РёС‚.", "Only the Monolith is available on the golden pad during the tutorial."));
+                return ActionResult.fail(this.choose(world, "В обучении на золотой площадке сейчас доступен только Монолит.", "Only the Monolith is available on the golden pad during the tutorial."));
             }
             return null;
         }
@@ -1986,48 +2035,48 @@ public final class BankDefenseRuntime {
                         }
                     }
                     if (slotIndex < 0 || slotIndex >= 3) {
-                        yield ActionResult.fail(this.choose(world, "РЎРµР№С‡Р°СЃ РёСЃРїРѕР»СЊР·СѓР№ С‚РѕР»СЊРєРѕ 3 СѓС‡РµР±РЅС‹Рµ Р»РѕРІСѓС€РєРё РЅР° РјР°СЂС€СЂСѓС‚Рµ.", "Use only the 3 training trap pads on the route right now."));
+                        yield ActionResult.fail(this.choose(world, "Сейчас используй только 3 учебные ловушки на маршруте.", "Use only the 3 training trap pads on the route right now."));
                     }
                     if (context.placedTowers.containsKey(slot.id)) {
-                        yield ActionResult.fail(this.choose(world, "РќР° СЌС‚РѕР№ Р»РѕРІСѓС€РµС‡РЅРѕР№ РїР»РѕС‰Р°РґРєРµ СѓР¶Рµ СЃС‚РѕРёС‚ Р»РѕРІСѓС€РєР°.", "There is already a trap on this pad."));
+                        yield ActionResult.fail(this.choose(world, "На этой ловушечной площадке уже стоит ловушка.", "There is already a trap on this pad."));
                     }
                     if (this.hasTutorialTrapTower(context, tower.id)) {
-                        yield ActionResult.fail(this.choose(world, "Р’ РѕР±СѓС‡РµРЅРёРё СЃРµР№С‡Р°СЃ РЅСѓР¶РЅС‹ 3 СЂР°Р·РЅС‹Рµ Р»РѕРІСѓС€РєРё Р±РµР· РїРѕРІС‚РѕСЂРѕРІ.", "The tutorial now needs 3 different traps with no duplicates."));
+                        yield ActionResult.fail(this.choose(world, "В обучении сейчас нужны 3 разные ловушки без повторов.", "The tutorial now needs 3 different traps with no duplicates."));
                     }
                     yield null;
                 }
-                default -> ActionResult.fail(this.choose(world, "Р›РѕРІСѓС€РєРё РІ РѕР±СѓС‡РµРЅРёРё РїРѕРЅР°РґРѕР±СЏС‚СЃСЏ С‡СѓС‚СЊ РїРѕР·Р¶Рµ.", "Traps will be needed a little later in the tutorial."));
+                default -> ActionResult.fail(this.choose(world, "Ловушки в обучении понадобятся чуть позже.", "Traps will be needed a little later in the tutorial."));
             };
         }
         return switch (tutorial.stage) {
             case PlaceFirstTower -> {
                 if (!"guard_post".equals(tower.id)) {
-                    yield ActionResult.fail(this.choose(world, "РќР° РїРµСЂРІРѕРј С€Р°РіРµ РѕР±СѓС‡РµРЅРёСЏ РґРѕСЃС‚СѓРїРЅР° С‚РѕР»СЊРєРѕ Р±Р°Р·РѕРІР°СЏ Р±Р°С€РЅСЏ Р·Р° 80 РјРѕРЅРµС‚.", "Only the basic 80-gold tower is available on the first tutorial step."));
+                    yield ActionResult.fail(this.choose(world, "На первом шаге обучения доступна только базовая башня за 80 монет.", "Only the basic 80-gold tower is available on the first tutorial step."));
                 }
                 yield null;
             }
             case BuildSecondTower -> {
                 if (context.placedTowers.containsKey(slot.id)) {
-                    yield ActionResult.fail(this.choose(world, "РЎРµР№С‡Р°СЃ РЅСѓР¶РЅР° РЅРѕРІР°СЏ Р±Р°С€РЅСЏ РЅР° СЃРІРѕР±РѕРґРЅРѕР№ РїР»РѕС‰Р°РґРєРµ.", "Place a new tower on an empty pad now."));
+                    yield ActionResult.fail(this.choose(world, "Сейчас нужна новая башня на свободной площадке.", "Place a new tower on an empty pad now."));
                 }
                 if (tutorial.secondTowerSlotId != null && !tutorial.secondTowerSlotId.isBlank()) {
-                    yield ActionResult.fail(this.choose(world, "Р’С‚РѕСЂР°СЏ Р±Р°С€РЅСЏ СѓР¶Рµ РїРѕСЃС‚Р°РІР»РµРЅР°. РўРµРїРµСЂСЊ СѓР»СѓС‡С€Рё РµС‘ РґРѕ 3 СѓСЂРѕРІРЅСЏ.", "The second tower is already placed. Upgrade it to level 3 now."));
+                    yield ActionResult.fail(this.choose(world, "Вторая башня уже поставлена. Теперь улучши её до 3 уровня.", "The second tower is already placed. Upgrade it to level 3 now."));
                 }
                 if ("guard_post".equals(tower.id)) {
-                    yield ActionResult.fail(this.choose(world, "РЎРµР№С‡Р°СЃ РЅСѓР¶РЅР° РґСЂСѓРіР°СЏ Р±Р°С€РЅСЏ, РЅРµ Р»СѓС‡РЅРёРє.", "You need a different tower now, not the archer."));
+                    yield ActionResult.fail(this.choose(world, "Сейчас нужна другая башня, не лучник.", "You need a different tower now, not the archer."));
                 }
                 yield null;
             }
             case FillAllSlots, WaitTwoLaneWaveFinish -> {
                 if (context.placedTowers.containsKey(slot.id)) {
-                    yield ActionResult.fail(this.choose(world, "Р­С‚Р° РїР»РѕС‰Р°РґРєР° СѓР¶Рµ Р·Р°РЅСЏС‚Р°. РўРµРїРµСЂСЊ СѓР»СѓС‡С€Р°Р№ Р±Р°С€РЅРё РёР»Рё РІС‹Р±РёСЂР°Р№ РїСѓСЃС‚РѕР№ РїР°Рґ.", "That pad is already occupied. Upgrade towers or choose an empty pad."));
+                    yield ActionResult.fail(this.choose(world, "Эта площадка уже занята. Теперь улучшай башни или выбирай пустой пад.", "That pad is already occupied. Upgrade towers or choose an empty pad."));
                 }
                 if (this.hasTutorialStandardTower(context, tower.id)) {
-                    yield ActionResult.fail(this.choose(world, "Р’ РѕР±СѓС‡РµРЅРёРё СЃРµР№С‡Р°СЃ РЅСѓР¶РЅРѕ СЃРѕР±СЂР°С‚СЊ РїРѕ РѕРґРЅРѕР№ Р±Р°С€РЅРµ РєР°Р¶РґРѕРіРѕ С‚РёРїР° Р±РµР· РїРѕРІС‚РѕСЂРѕРІ.", "In the tutorial you now need one tower of each type, with no duplicates."));
+                    yield ActionResult.fail(this.choose(world, "В обучении сейчас нужно собрать по одной башне каждого типа без повторов.", "In the tutorial you now need one tower of each type, with no duplicates."));
                 }
                 yield null;
             }
-            default -> ActionResult.fail(this.choose(world, "РЎРµР№С‡Р°СЃ РљРІРёР±РµРє Р¶РґС‘С‚ РґСЂСѓРіРѕРµ РґРµР№СЃС‚РІРёРµ.", "Kweebec is waiting for a different action right now."));
+            default -> ActionResult.fail(this.choose(world, "Сейчас Квибек ждёт другое действие.", "Kweebec is waiting for a different action right now."));
         };
     }
 
@@ -2039,13 +2088,13 @@ public final class BankDefenseRuntime {
         return switch (tutorial.stage) {
             case BuildSecondTower -> {
                 if (tutorial.secondTowerSlotId == null || tutorial.secondTowerSlotId.isBlank() || !tutorial.secondTowerSlotId.equals(instance.slot.id)) {
-                    yield ActionResult.fail(this.choose(world, "РЎРµР№С‡Р°СЃ РЅСѓР¶РЅРѕ СѓР»СѓС‡С€Р°С‚СЊ С‚РѕР»СЊРєРѕ РІС‚РѕСЂСѓСЋ Р±Р°С€РЅСЋ.", "Only the second tower can be upgraded right now."));
+                    yield ActionResult.fail(this.choose(world, "Сейчас нужно улучшать только вторую башню.", "Only the second tower can be upgraded right now."));
                 }
                 yield null;
             }
             case FillAllSlots, WaitTwoLaneWaveFinish -> null;
             default -> context.placedTowers.containsKey(instance.slot.id)
-                ? ActionResult.fail(this.choose(world, "РЎРµР№С‡Р°СЃ РљРІРёР±РµРє Р¶РґС‘С‚ РґСЂСѓРіРѕРµ РґРµР№СЃС‚РІРёРµ.", "Kweebec is waiting for a different action right now."))
+                ? ActionResult.fail(this.choose(world, "Сейчас Квибек ждёт другое действие.", "Kweebec is waiting for a different action right now."))
                 : null;
         };
     }
@@ -2068,15 +2117,15 @@ public final class BankDefenseRuntime {
 
     private String tutorialLaunchFailureMessage(World world, TutorialState tutorial) {
         if (tutorial == null) {
-            return this.choose(world, "РЎРµР№С‡Р°СЃ РЅРµР»СЊР·СЏ Р·Р°РїСѓСЃРєР°С‚СЊ РІРѕР»РЅСѓ РѕР±СѓС‡РµРЅРёСЏ.", "The tutorial wave cannot be started right now.");
+            return this.choose(world, "Сейчас нельзя запускать волну обучения.", "The tutorial wave cannot be started right now.");
         }
         return switch (tutorial.stage) {
-            case BuildSecondTower -> this.choose(world, "РЎРЅР°С‡Р°Р»Р° РїРѕСЃС‚Р°РІСЊ РІС‚РѕСЂСѓСЋ Р±Р°С€РЅСЋ Рё СѓР»СѓС‡С€Рё РµС‘ РґРѕ 3 СѓСЂРѕРІРЅСЏ.", "Place the second tower and upgrade it to level 3 first.");
-            case CollectTutorialChest -> this.choose(world, "РЎРЅР°С‡Р°Р»Р° РѕС‚РєСЂРѕР№ СЃСѓРЅРґСѓРє Р“Р°Р№Рё СЃР»РµРІР° РѕС‚ РљРІРёР±РµРєР°.", "Open Gaia's chest to Kweebec's left first.");
-            case FillAllSlots -> this.choose(world, "РЎРЅР°С‡Р°Р»Р° РІСЃС‚Р°РІСЊ РјРѕРґСѓР»СЊ, Р·Р°РїРѕР»РЅРё РІСЃРµ РїР»РѕС‰Р°РґРєРё Рё РґРѕРІРµРґРё Р±Р°С€РЅРё РґРѕ 5 СѓСЂРѕРІРЅСЏ.", "Insert a module, fill every pad, and upgrade the towers to level 5 first.");
-            case PlaceMonolith -> this.choose(world, "РЎРЅР°С‡Р°Р»Р° РїРѕСЃС‚Р°РІСЊ РњРѕРЅРѕР»РёС‚ РЅР° Р·РѕР»РѕС‚СѓСЋ РїР»РѕС‰Р°РґРєСѓ.", "Place the Monolith on the golden pad first.");
-            case PlaceUniqueTraps -> this.choose(world, "РЎРЅР°С‡Р°Р»Р° РїРѕСЃС‚Р°РІСЊ 3 СЂР°Р·РЅС‹Рµ Р»РѕРІСѓС€РєРё РЅР° СѓС‡РµР±РЅС‹Рµ РїР»РѕС‰Р°РґРєРё РјР°СЂС€СЂСѓС‚Р°.", "Place 3 different traps on the training route pads first.");
-            default -> this.choose(world, "РЎРµР№С‡Р°СЃ РљРІРёР±РµРє Р¶РґС‘С‚ РґСЂСѓРіРѕРµ РґРµР№СЃС‚РІРёРµ.", "Kweebec is waiting for a different action right now.");
+            case BuildSecondTower -> this.choose(world, "Сначала поставь вторую башню и улучши её до 3 уровня.", "Place the second tower and upgrade it to level 3 first.");
+            case CollectTutorialChest -> this.choose(world, "Сначала открой сундук Гайи слева от Квибека.", "Open Gaia's chest to Kweebec's left first.");
+            case FillAllSlots -> this.choose(world, "Сначала вставь модуль, заполни все площадки и доведи башни до 5 уровня.", "Insert a module, fill every pad, and upgrade the towers to level 5 first.");
+            case PlaceMonolith -> this.choose(world, "Сначала поставь Монолит на золотую площадку.", "Place the Monolith on the golden pad first.");
+            case PlaceUniqueTraps -> this.choose(world, "Сначала поставь 3 разные ловушки на учебные площадки маршрута.", "Place 3 different traps on the training route pads first.");
+            default -> this.choose(world, "Сейчас Квибек ждёт другое действие.", "Kweebec is waiting for a different action right now.");
         };
     }
 
@@ -2270,8 +2319,8 @@ public final class BankDefenseRuntime {
             this.syncTowerRangePreview(world, presentation, context);
         }
         return ActionResult.ok(presentation.towerRangePreviewEnabled
-            ? this.choose(world, "РџРѕРєР°Р· СЂР°РґРёСѓСЃРѕРІ Р±Р°С€РµРЅ РІРєР»СЋС‡С‘РЅ.", "Tower range preview enabled.")
-            : this.choose(world, "РџРѕРєР°Р· СЂР°РґРёСѓСЃРѕРІ Р±Р°С€РµРЅ РІС‹РєР»СЋС‡РµРЅ.", "Tower range preview disabled."));
+            ? this.choose(world, "Показ радиусов башен включён.", "Tower range preview enabled.")
+            : this.choose(world, "Показ радиусов башен выключен.", "Tower range preview disabled."));
     }
 
     public MatchState resetMatch(World world) throws IOException {
@@ -2285,16 +2334,16 @@ public final class BankDefenseRuntime {
     public ActionResult endMatchAsDefeat(World world) throws IOException {
         MatchContext context = this.getOrCreateContext(world);
         if (!context.state.gameStarted && context.state.gameState != GameState.InMatch) {
-            return ActionResult.fail(this.choose(world, "РЎРµР№С‡Р°СЃ РЅРµС‚ Р°РєС‚РёРІРЅРѕРіРѕ РјР°С‚С‡Р° РґР»СЏ Р·Р°РІРµСЂС€РµРЅРёСЏ.", "There is no active match to end right now."));
+            return ActionResult.fail(this.choose(world, "Сейчас нет активного матча для завершения.", "There is no active match to end right now."));
         }
         if (context.state.gameState == GameState.Defeat) {
-            return ActionResult.ok(this.choose(world, "РњР°С‚С‡ СѓР¶Рµ Р·Р°РІРµСЂС€С‘РЅ РїРѕСЂР°Р¶РµРЅРёРµРј.", "The match has already ended in defeat."));
+            return ActionResult.ok(this.choose(world, "Матч уже завершён поражением.", "The match has already ended in defeat."));
         }
         if (context.state.gameState == GameState.Victory) {
-            return ActionResult.fail(this.choose(world, "РњР°С‚С‡ СѓР¶Рµ Р·Р°РІРµСЂС€С‘РЅ РїРѕР±РµРґРѕР№. РџРѕРґРіРѕС‚РѕРІСЊ РЅРѕРІС‹Р№ Р·Р°Р±РµРі Сѓ РѕРїРµСЂР°С‚РѕСЂР°.", "The match has already ended in victory. Prepare a new run with the operator."));
+            return ActionResult.fail(this.choose(world, "Матч уже завершён победой. Подготовь новый забег у оператора.", "The match has already ended in victory. Prepare a new run with the operator."));
         }
-        this.finishMatchAsDefeat(world, context, this.choose(world, "РњР°С‚С‡ Р·Р°РІРµСЂС€С‘РЅ РІСЂСѓС‡РЅСѓСЋ. Р—Р°СЃС‡РёС‚Р°РЅРѕ РїРѕСЂР°Р¶РµРЅРёРµ.", "The match was ended manually and counted as a defeat."));
-        return ActionResult.ok(this.choose(world, "РњР°С‚С‡ Р·Р°РІРµСЂС€С‘РЅ. Р—Р°СЃС‡РёС‚Р°РЅРѕ РїРѕСЂР°Р¶РµРЅРёРµ.", "The match has ended and counts as a defeat."));
+        this.finishMatchAsDefeat(world, context, "Матч завершён вручную. Засчитано поражение.", "The match was ended manually and counted as a defeat.");
+        return ActionResult.ok(this.choose(world, "Матч завершён. Засчитано поражение.", "The match has ended and counts as a defeat."));
     }
 
     public RuntimeStatus getRuntimeStatus(World world) throws IOException {
@@ -2342,32 +2391,48 @@ public final class BankDefenseRuntime {
         return this.choose(this.primaryPlayerRef(world), russian, english);
     }
 
-    private String towerDisplayName(World world, TowerDefinition tower) {
+    private String towerDisplayName(PlayerRef playerRef, TowerDefinition tower) {
         if (tower == null) {
             return "";
         }
-        return BankDefenseLocalization.towerDisplayName(this.primaryPlayerRef(world), tower.id, this.text(tower.displayName));
+        return BankDefenseLocalization.towerDisplayName(playerRef, tower.id, this.text(tower.displayName));
     }
 
-    private String enemyDisplayName(World world, EnemyDefinition enemy) {
+    private String towerDisplayName(World world, TowerDefinition tower) {
+        return this.towerDisplayName(this.primaryPlayerRef(world), tower);
+    }
+
+    private String enemyDisplayName(PlayerRef playerRef, EnemyDefinition enemy) {
         if (enemy == null) {
             return "";
         }
-        return BankDefenseLocalization.enemyDisplayName(this.primaryPlayerRef(world), enemy.id, this.text(enemy.displayName));
+        return BankDefenseLocalization.enemyDisplayName(playerRef, enemy.id, this.text(enemy.displayName));
+    }
+
+    private String enemyDisplayName(World world, EnemyDefinition enemy) {
+        return this.enemyDisplayName(this.primaryPlayerRef(world), enemy);
+    }
+
+    private String moduleDisplayName(PlayerRef playerRef, ModuleDefinition module) {
+        if (module == null) {
+            return "";
+        }
+        return BankDefenseLocalization.moduleDisplayName(playerRef, module.id, this.text(module.displayName));
     }
 
     private String moduleDisplayName(World world, ModuleDefinition module) {
+        return this.moduleDisplayName(this.primaryPlayerRef(world), module);
+    }
+
+    private String moduleNote(PlayerRef playerRef, ModuleDefinition module) {
         if (module == null) {
             return "";
         }
-        return BankDefenseLocalization.moduleDisplayName(this.primaryPlayerRef(world), module.id, this.text(module.displayName));
+        return BankDefenseLocalization.moduleNote(playerRef, module.id, this.text(module.note));
     }
 
     private String moduleNote(World world, ModuleDefinition module) {
-        if (module == null) {
-            return "";
-        }
-        return BankDefenseLocalization.moduleNote(this.primaryPlayerRef(world), module.id, this.text(module.note));
+        return this.moduleNote(this.primaryPlayerRef(world), module);
     }
 
     private String progressionDisplayName(World world, ProgressionNodeDefinition node) {
@@ -2406,7 +2471,11 @@ public final class BankDefenseRuntime {
     }
 
     private String seedIdolModeName(World world, int mode) {
-        return BankDefenseLocalization.seedIdolModeName(this.primaryPlayerRef(world), mode);
+        return this.seedIdolModeName(this.primaryPlayerRef(world), mode);
+    }
+
+    private String seedIdolModeName(PlayerRef playerRef, int mode) {
+        return BankDefenseLocalization.seedIdolModeName(playerRef, mode);
     }
 
     public SlotUiState getSlotUiState(World world, String slotId) throws IOException {
@@ -2443,7 +2512,7 @@ public final class BankDefenseRuntime {
         state.slotOwnedByViewer = this.canPlayerUseSlot(world, context, viewerRef, slot);
         state.pendingRewardSummary = context.pendingRewardChoices.isEmpty()
             ? ""
-            : this.tr(world, "page.reward.hint");
+            : this.tr(viewerRef, "page.reward.hint");
 
         if (state.superSlot && !state.trapSlot) {
             for (String towerId : List.of("heart_of_roots", "storm_monolith", "seed_idol")) {
@@ -2454,7 +2523,7 @@ public final class BankDefenseRuntime {
                 if (slot.allowedTowerIds != null && !slot.allowedTowerIds.isEmpty() && !slot.allowedTowerIds.contains(tower.id)) {
                     continue;
                 }
-                state.towerButtons.add(this.createTowerButtonState(context, tower, SEED_IDOL_MODE_DEFAULT, null, this.towerDisplayName(world, tower)));
+                state.towerButtons.add(this.createTowerButtonState(context, tower, SEED_IDOL_MODE_DEFAULT, null, this.towerDisplayName(viewerRef, tower)));
             }
         } else {
             for (TowerDefinition tower : context.snapshot.towers.towers) {
@@ -2467,7 +2536,7 @@ public final class BankDefenseRuntime {
                 if (slot.allowedTowerIds != null && !slot.allowedTowerIds.isEmpty() && !slot.allowedTowerIds.contains(tower.id)) {
                     continue;
                 }
-                state.towerButtons.add(this.createTowerButtonState(context, tower, SEED_IDOL_MODE_DEFAULT, null, this.towerDisplayName(world, tower)));
+                state.towerButtons.add(this.createTowerButtonState(context, tower, SEED_IDOL_MODE_DEFAULT, null, this.towerDisplayName(viewerRef, tower)));
             }
         }
 
@@ -2475,8 +2544,8 @@ public final class BankDefenseRuntime {
             for (ModuleDefinition module : context.snapshot.modules.modules) {
                 ModuleButtonState button = new ModuleButtonState();
                 button.moduleId = module.id;
-                button.displayName = this.moduleDisplayName(world, module);
-                button.note = this.moduleNote(world, module);
+                button.displayName = this.moduleDisplayName(viewerRef, module);
+                button.note = this.moduleNote(viewerRef, module);
                 button.count = context.moduleInventory.getOrDefault(module.id, 0);
                 button.enabled = button.count > 0;
                 state.moduleButtons.add(button);
@@ -2484,68 +2553,68 @@ public final class BankDefenseRuntime {
         }
 
         if (context.tutorialActive) {
-            this.applyTutorialSlotUiState(world, context, slot, state);
+            this.applyTutorialSlotUiState(world, context, viewerRef, slot, state);
         }
-        this.applyDuoSlotAccessUiState(world, context, slot, state);
+        this.applyDuoSlotAccessUiState(world, context, viewerRef, slot, state);
 
         TowerInstance instance = context.placedTowers.get(slot.id);
         if (instance == null) {
             state.towerPresent = false;
             state.slotSummary = state.superSlot
-                ? this.tr(world, "page.slot.super_empty")
+                ? this.tr(viewerRef, "page.slot.super_empty")
                 : state.trapSlot
-                    ? this.tr(world, "page.slot.trap_empty")
-                    : this.tr(world, "page.slot.empty");
+                    ? this.tr(viewerRef, "page.slot.trap_empty")
+                    : this.tr(viewerRef, "page.slot.empty");
             state.upgradeLabel = state.superSlot
-                ? this.tr(world, "page.slot.build_super")
+                ? this.tr(viewerRef, "page.slot.build_super")
                 : state.trapSlot
-                    ? this.tr(world, "page.slot.build_trap")
-                    : this.tr(world, "page.slot.build_tower");
-            state.sellLabel = this.tr(world, "page.slot.sell_unavailable");
+                    ? this.tr(viewerRef, "page.slot.build_trap")
+                    : this.tr(viewerRef, "page.slot.build_tower");
+            state.sellLabel = this.tr(viewerRef, "page.slot.sell_unavailable");
             state.moduleSummary = state.modulesAllowed
-                ? this.tr(world, "page.slot.module.empty")
-                : this.tr(world, "page.slot.module.unavailable");
+                ? this.tr(viewerRef, "page.slot.module.empty")
+                : this.tr(viewerRef, "page.slot.module.unavailable");
             state.removeModuleLabel = state.modulesAllowed
-                ? this.tr(world, "page.slot.module.remove")
-                : this.tr(world, "page.slot.module.unavailable");
+                ? this.tr(viewerRef, "page.slot.module.remove")
+                : this.tr(viewerRef, "page.slot.module.unavailable");
             if (context.tutorialActive) {
-                this.applyTutorialSlotUiState(world, context, slot, state);
+                this.applyTutorialSlotUiState(world, context, viewerRef, slot, state);
             }
-            this.applyDuoSlotAccessUiState(world, context, slot, state);
+            this.applyDuoSlotAccessUiState(world, context, viewerRef, slot, state);
             return state;
         }
 
         state.towerPresent = true;
         state.towerId = instance.definition.id;
-        state.towerName = this.towerDisplayName(world, instance.definition);
+        state.towerName = this.towerDisplayName(viewerRef, instance.definition);
         state.towerLevel = instance.getCurrentLevel().level;
         state.towerMaxLevel = instance.definition.levels.size();
         state.unlockedTowerLevelCap = this.unlockedTowerLevelCap(context, instance.definition);
         state.slotSummary =
             instance.definition.superTower
-                ? this.towerDisplayName(world, instance.definition)
-                : this.towerDisplayName(world, instance.definition)
-                    + BankDefenseLocalization.choose(this.primaryPlayerRef(world), " СѓСЂ. ", " lvl. ")
+                ? this.towerDisplayName(viewerRef, instance.definition)
+                : this.towerDisplayName(viewerRef, instance.definition)
+                    + this.choose(viewerRef, " Ур. ", " Lvl. ")
                     + state.towerLevel
                     + " / "
                     + state.towerMaxLevel;
         if ("seed_idol".equals(instance.definition.id)) {
-            state.slotSummary += " [" + this.seedIdolModeName(world, instance.specialMode) + "]";
+            state.slotSummary += " [" + this.seedIdolModeName(viewerRef, instance.specialMode) + "]";
             if (instance.specialMode == SEED_IDOL_MODE_WARD && instance.idolStoredCurrency > 0) {
-                state.slotSummary += BankDefenseLocalization.choose(this.primaryPlayerRef(world), " вЂў РќР°РєРѕРїР»РµРЅРѕ: ", " вЂў Stored: ") + instance.idolStoredCurrency;
+                state.slotSummary += this.choose(viewerRef, " | Накоплено: ", " | Stored: ") + instance.idolStoredCurrency;
             }
             if (instance.specialMode == SEED_IDOL_MODE_WARD && instance.idolSavingsWavesRemaining > 0) {
-                state.slotSummary += BankDefenseLocalization.choose(this.primaryPlayerRef(world), " вЂў Р”Рѕ РІС‹РїР»Р°С‚С‹: ", " вЂў Payout in: ")
+                state.slotSummary += this.choose(viewerRef, " | До выплаты: ", " | Payout in: ")
                     + instance.idolSavingsWavesRemaining
-                    + BankDefenseLocalization.choose(this.primaryPlayerRef(world), " РІРѕР»РЅ", " waves");
+                    + this.choose(viewerRef, " волн", " waves");
             }
             state.towerButtons.clear();
-            state.towerButtons.add(this.createTowerButtonState(context, instance.definition, SEED_IDOL_MODE_HARVEST, BankDefenseLocalization.choose(this.primaryPlayerRef(world), "РџСЂРµРјРёСЏ", "Bounty"), this.tr(world, "page.super.mode.harvest")));
-            state.towerButtons.add(this.createTowerButtonState(context, instance.definition, SEED_IDOL_MODE_WARD, BankDefenseLocalization.choose(this.primaryPlayerRef(world), "РљРѕРїРёР»РєР°", "Savings"), this.tr(world, "page.super.mode.ward")));
+            state.towerButtons.add(this.createTowerButtonState(context, instance.definition, SEED_IDOL_MODE_HARVEST, this.choose(viewerRef, "Премия", "Bounty"), this.tr(viewerRef, "page.super.mode.harvest")));
+            state.towerButtons.add(this.createTowerButtonState(context, instance.definition, SEED_IDOL_MODE_WARD, this.choose(viewerRef, "Накопление", "Savings"), this.tr(viewerRef, "page.super.mode.ward")));
         }
 
         if (instance.definition.superTower) {
-            state.towerDescription = this.superTowerDescription(this.primaryPlayerRef(world), instance.definition.id);
+            state.towerDescription = this.superTowerDescription(viewerRef, instance.definition.id);
             state.superReady = instance.superReady;
             state.superActivationsTotal = this.maxSuperActivations(context, instance);
             state.superActivationsUsed = instance.superActivationsUsed;
@@ -2553,89 +2622,89 @@ public final class BankDefenseRuntime {
             state.slotSummary = state.towerDescription;
             state.sellRefund = (int)Math.floor(this.totalInvestedCost(context, instance) * this.sellRefundRate(context));
             state.sellLabel = this.isDuoMode(context)
-                ? BankDefenseLocalization.choose(this.primaryPlayerRef(world), "РџСЂРѕРґР°С‚СЊ Р·Р° ", "Sell for ") + state.sellRefund
-                : this.tr(world, "page.slot.sell_unavailable");
+                ? this.choose(viewerRef, "Продать за ", "Sell for ") + state.sellRefund
+                : this.tr(viewerRef, "page.slot.sell_unavailable");
             if ("heart_of_roots".equals(instance.definition.id)) {
                 if (instance.superReady) {
                     state.upgradeAvailable = context.state.gameState == GameState.InMatch && context.activeWaveNumber > 0;
                     state.upgradeLabel = state.upgradeAvailable
-                        ? this.tr(world, "page.super.activate")
-                        : BankDefenseLocalization.choose(this.primaryPlayerRef(world), "РђРєС‚РёРІРёСЂСѓРµС‚СЃСЏ С‚РѕР»СЊРєРѕ РІРѕ РІСЂРµРјСЏ РІРѕР»РЅС‹", "Only activates during a wave");
+                        ? this.tr(viewerRef, "page.super.activate")
+                        : this.choose(viewerRef, "Активируется только во время волны", "Only activates during a wave");
                 } else if (state.superActivationsRemaining > 0) {
                     state.upgradeAvailable = context.state.waveState == WaveState.BuildPhase;
                     state.upgradeLabel = state.upgradeAvailable
-                        ? this.tr(world, "page.super.reactivate") + " (" + state.superActivationsRemaining + " " + BankDefenseLocalization.choose(this.primaryPlayerRef(world), "РѕСЃС‚Р°Р»РѕСЃСЊ", "left") + ")"
-                        : BankDefenseLocalization.choose(this.primaryPlayerRef(world), "Р РµР°РєС‚РёРІР°С†РёСЏ С‚РѕР»СЊРєРѕ РІ РїРѕРґРіРѕС‚РѕРІРєРµ", "Reactivation is only available during preparation");
+                        ? this.tr(viewerRef, "page.super.reactivate") + " (" + state.superActivationsRemaining + " " + this.choose(viewerRef, "осталось", "left") + ")"
+                        : this.choose(viewerRef, "Реактивация только в подготовке", "Reactivation is only available during preparation");
                 } else {
-                    state.upgradeLabel = BankDefenseLocalization.choose(this.primaryPlayerRef(world), "Р’СЃРµ Р°РєС‚РёРІР°С†РёРё РёСЃС‡РµСЂРїР°РЅС‹", "All activations are spent");
+                    state.upgradeLabel = this.choose(viewerRef, "Все активации исчерпаны", "All activations are spent");
                 }
             } else if ("storm_monolith".equals(instance.definition.id)) {
                 if (!instance.superReady && state.superActivationsRemaining > 0) {
                     state.upgradeAvailable = context.state.waveState == WaveState.BuildPhase;
                     state.upgradeLabel = state.upgradeAvailable
-                        ? this.tr(world, "page.super.reactivate") + " (" + state.superActivationsRemaining + " " + BankDefenseLocalization.choose(this.primaryPlayerRef(world), "РѕСЃС‚Р°Р»РѕСЃСЊ", "left") + ")"
-                        : BankDefenseLocalization.choose(this.primaryPlayerRef(world), "Р РµР°РєС‚РёРІР°С†РёСЏ С‚РѕР»СЊРєРѕ РІ РїРѕРґРіРѕС‚РѕРІРєРµ", "Reactivation is only available during preparation");
+                        ? this.tr(viewerRef, "page.super.reactivate") + " (" + state.superActivationsRemaining + " " + this.choose(viewerRef, "осталось", "left") + ")"
+                        : this.choose(viewerRef, "Реактивация только в подготовке", "Reactivation is only available during preparation");
                 } else if (instance.superReady) {
-                    state.upgradeLabel = BankDefenseLocalization.choose(this.primaryPlayerRef(world), "РњРѕРЅРѕР»РёС‚ Р°РєС‚РёРІРµРЅ", "Monolith is active");
+                    state.upgradeLabel = this.choose(viewerRef, "Монолит активен", "Monolith is active");
                 } else {
-                    state.upgradeLabel = BankDefenseLocalization.choose(this.primaryPlayerRef(world), "Р’СЃРµ Р°РєС‚РёРІР°С†РёРё РёСЃС‡РµСЂРїР°РЅС‹", "All activations are spent");
+                    state.upgradeLabel = this.choose(viewerRef, "Все активации исчерпаны", "All activations are spent");
                 }
             } else {
-                state.upgradeLabel = BankDefenseLocalization.choose(this.primaryPlayerRef(world), "РЈСЂРѕРІРЅРё РЅРµРґРѕСЃС‚СѓРїРЅС‹", "Levels unavailable");
+                state.upgradeLabel = this.choose(viewerRef, "Уровни недоступны", "Levels unavailable");
             }
         } else if ("heart_of_roots".equals(instance.definition.id)) {
             state.upgradeAvailable = context.state.gameState == GameState.InMatch;
             state.upgradeLabel = context.state.gameState == GameState.InMatch
-                ? BankDefenseLocalization.choose(this.primaryPlayerRef(world), "РђРєС‚РёРІРёСЂРѕРІР°С‚СЊ: +30% СѓСЂРѕРЅР°", "Activate: +30% damage")
-                : BankDefenseLocalization.choose(this.primaryPlayerRef(world), "РђРєС‚РёРІРёСЂСѓРµС‚СЃСЏ С‚РѕР»СЊРєРѕ РІ Р±РѕСЋ", "Only activates in combat");
+                ? this.choose(viewerRef, "Активировать: +30% урона", "Activate: +30% damage")
+                : this.choose(viewerRef, "Активируется только в бою", "Only activates in combat");
         } else if (state.trapSlot || instance.definition.trapTower) {
-            state.upgradeLabel = BankDefenseLocalization.choose(this.primaryPlayerRef(world), "Р›РѕРІСѓС€РєРё РЅРµ СѓР»СѓС‡С€Р°СЋС‚СЃСЏ", "Traps do not upgrade");
+            state.upgradeLabel = this.choose(viewerRef, "Ловушки не улучшаются", "Traps do not upgrade");
         } else if (instance.levelIndex + 1 < instance.definition.levels.size() && instance.levelIndex + 1 < state.unlockedTowerLevelCap) {
             state.upgradeAvailable = true;
             state.upgradeCost = this.towerLevelCost(context, instance.definition, instance.levelIndex + 1);
-            state.upgradeLabel = BankDefenseLocalization.choose(this.primaryPlayerRef(world), "РЈР»СѓС‡С€РёС‚СЊ Р·Р° ", "Upgrade for ") + state.upgradeCost;
+            state.upgradeLabel = this.choose(viewerRef, "Улучшить за ", "Upgrade for ") + state.upgradeCost;
         } else if (state.unlockedTowerLevelCap < state.towerMaxLevel && !instance.definition.superTower) {
-            state.upgradeLabel = BankDefenseLocalization.choose(this.primaryPlayerRef(world), "РќСѓР¶РЅР° РјРµС‚Р°-РїСЂРѕРєР°С‡РєР°", "Requires progression upgrade");
+            state.upgradeLabel = this.choose(viewerRef, "Нужна мета-прокачка", "Requires progression upgrade");
         } else {
-            state.upgradeLabel = BankDefenseLocalization.choose(this.primaryPlayerRef(world), "РњР°РєСЃРёРјР°Р»СЊРЅС‹Р№ СѓСЂРѕРІРµРЅСЊ", "Maximum level");
+            state.upgradeLabel = this.choose(viewerRef, "Максимальный уровень", "Maximum level");
         }
 
         ModuleDefinition equippedModule = instance.equippedModuleId == null ? null : context.moduleById.get(instance.equippedModuleId);
         if (instance.definition.superTower) {
             if ("seed_idol".equals(instance.definition.id)) {
-                state.moduleSummary = BankDefenseLocalization.choose(this.primaryPlayerRef(world), "Р РµР¶РёРј: ", "Mode: ") + this.seedIdolModeName(world, instance.specialMode)
+                state.moduleSummary = this.choose(viewerRef, "Режим: ", "Mode: ") + this.seedIdolModeName(viewerRef, instance.specialMode)
                     + (instance.specialMode == SEED_IDOL_MODE_WARD
-                        ? BankDefenseLocalization.choose(this.primaryPlayerRef(world), " вЂў РќР°РєРѕРїР»РµРЅРѕ: ", " вЂў Stored: ") + instance.idolStoredCurrency + BankDefenseLocalization.choose(this.primaryPlayerRef(world), " РјРѕРЅРµС‚", " gold")
+                        ? this.choose(viewerRef, " | Накоплено: ", " | Stored: ") + instance.idolStoredCurrency + this.choose(viewerRef, " монет", " gold")
                             + (instance.idolSavingsWavesRemaining > 0
-                                ? BankDefenseLocalization.choose(this.primaryPlayerRef(world), " вЂў Р”Рѕ РІС‹РїР»Р°С‚С‹: ", " вЂў Payout in: ") + instance.idolSavingsWavesRemaining + BankDefenseLocalization.choose(this.primaryPlayerRef(world), " РІРѕР»РЅ", " waves")
+                                ? this.choose(viewerRef, " | До выплаты: ", " | Payout in: ") + instance.idolSavingsWavesRemaining + this.choose(viewerRef, " волн", " waves")
                                 : "")
                         : "");
             } else {
-                state.moduleSummary = BankDefenseLocalization.choose(this.primaryPlayerRef(world), "Р—Р°СЂСЏРґС‹: ", "Charges: ") + state.superActivationsRemaining + BankDefenseLocalization.choose(this.primaryPlayerRef(world), " РёР· ", " of ") + state.superActivationsTotal
+                state.moduleSummary = this.choose(viewerRef, "Заряды: ", "Charges: ") + state.superActivationsRemaining + this.choose(viewerRef, " из ", " / ") + state.superActivationsTotal
                     + (instance.superReady
-                        ? BankDefenseLocalization.choose(this.primaryPlayerRef(world), " вЂў Р“РѕС‚РѕРІРѕ", " вЂў Ready")
-                        : BankDefenseLocalization.choose(this.primaryPlayerRef(world), " вЂў РќСѓР¶РЅР° СЂРµР°РєС‚РёРІР°С†РёСЏ", " вЂў Needs reactivation"));
+                        ? this.choose(viewerRef, " | Готово", " | Ready")
+                        : this.choose(viewerRef, " | Нужна реактивация", " | Needs reactivation"));
             }
-            state.removeModuleLabel = this.tr(world, "page.slot.module.unavailable");
+            state.removeModuleLabel = this.tr(viewerRef, "page.slot.module.unavailable");
         } else if (!state.modulesAllowed) {
-            state.moduleSummary = this.tr(world, "page.slot.module.unavailable");
-            state.removeModuleLabel = this.tr(world, "page.slot.module.unavailable");
+            state.moduleSummary = this.tr(viewerRef, "page.slot.module.unavailable");
+            state.removeModuleLabel = this.tr(viewerRef, "page.slot.module.unavailable");
         } else if (equippedModule == null) {
-            state.moduleSummary = this.tr(world, "page.slot.module.empty");
-            state.removeModuleLabel = this.tr(world, "page.slot.module.remove");
+            state.moduleSummary = this.tr(viewerRef, "page.slot.module.empty");
+            state.removeModuleLabel = this.tr(viewerRef, "page.slot.module.remove");
         } else {
-            state.moduleSummary = BankDefenseLocalization.choose(this.primaryPlayerRef(world), "РњРѕРґСѓР»СЊ: ", "Module: ") + this.moduleDisplayName(world, equippedModule);
-            state.removeModuleLabel = this.tr(world, "page.slot.module.remove");
+            state.moduleSummary = this.choose(viewerRef, "Модуль: ", "Module: ") + this.moduleDisplayName(viewerRef, equippedModule);
+            state.removeModuleLabel = this.tr(viewerRef, "page.slot.module.remove");
         }
 
         state.sellRefund = (int)Math.floor(this.totalInvestedCost(context, instance) * this.sellRefundRate(context));
         if (!instance.definition.superTower) {
-            state.sellLabel = BankDefenseLocalization.choose(this.primaryPlayerRef(world), "РџСЂРѕРґР°С‚СЊ Р·Р° ", "Sell for ") + state.sellRefund;
+            state.sellLabel = this.choose(viewerRef, "Продать за ", "Sell for ") + state.sellRefund;
         }
         if (context.tutorialActive) {
-            this.applyTutorialSlotUiState(world, context, slot, state);
+            this.applyTutorialSlotUiState(world, context, viewerRef, slot, state);
         }
-        this.applyDuoSlotAccessUiState(world, context, slot, state);
+        this.applyDuoSlotAccessUiState(world, context, viewerRef, slot, state);
         return state;
     }
 
@@ -2662,7 +2731,7 @@ public final class BankDefenseRuntime {
         return button;
     }
 
-    private void applyTutorialSlotUiState(World world, MatchContext context, BuildSlot slot, SlotUiState state) {
+    private void applyTutorialSlotUiState(World world, MatchContext context, PlayerRef viewerRef, BuildSlot slot, SlotUiState state) {
         if (world == null || context == null || !context.tutorialActive || slot == null || state == null) {
             return;
         }
@@ -2679,18 +2748,18 @@ public final class BankDefenseRuntime {
             if (tutorial.stage == TutorialStage.BuildSecondTower) {
                 BuildSlot secondSlot = this.tutorialStandardSlot(context, 1);
                 if (secondSlot == null || slot.id == null || !slot.id.equals(secondSlot.id)) {
-                    state.upgradeLabel = this.choose(world, "РЎРµР№С‡Р°СЃ РЅСѓР¶РЅРѕ СѓР»СѓС‡С€Р°С‚СЊ С‚РѕР»СЊРєРѕ РІС‚РѕСЂСѓСЋ Р±Р°С€РЅСЋ.", "Only the second tower can be upgraded right now.");
+                    state.upgradeLabel = this.choose(viewerRef, "Сейчас нужно улучшать только вторую башню.", "Only the second tower can be upgraded right now.");
                 }
             } else if (tutorial.stage != TutorialStage.FillAllSlots && tutorial.stage != TutorialStage.WaitTwoLaneWaveFinish) {
-                state.upgradeLabel = this.choose(world, "РЎРµР№С‡Р°СЃ РљРІРёР±РµРє Р¶РґС‘С‚ РґСЂСѓРіРѕРµ РґРµР№СЃС‚РІРёРµ.", "Kweebec is waiting for a different action right now.");
+                state.upgradeLabel = this.choose(viewerRef, "Сейчас Квибек ждёт другое действие.", "Kweebec is waiting for a different action right now.");
             }
         }
         if (state.modulesAllowed && !this.tutorialModuleButtonEnabled(tutorial, state)) {
-            state.removeModuleLabel = this.choose(world, "РЎРЅР°С‡Р°Р»Р° РІС‹РїРѕР»РЅРё С‚РµРєСѓС‰СѓСЋ Р·Р°РґР°С‡Сѓ.", "Finish the current objective first.");
+            state.removeModuleLabel = this.choose(viewerRef, "Сначала выполни текущую задачу.", "Finish the current objective first.");
         }
     }
 
-    private void applyDuoSlotAccessUiState(World world, MatchContext context, BuildSlot slot, SlotUiState state) {
+    private void applyDuoSlotAccessUiState(World world, MatchContext context, PlayerRef viewerRef, BuildSlot slot, SlotUiState state) {
         if (world == null || context == null || slot == null || state == null || !this.isDuoMode(context)) {
             return;
         }
@@ -2706,12 +2775,12 @@ public final class BankDefenseRuntime {
         state.upgradeAvailable = false;
         state.upgradeCost = 0;
         state.modulesAllowed = false;
-        state.upgradeLabel = this.deniedSlotAccessMessage(world, slot);
-        state.sellLabel = this.deniedSlotAccessMessage(world, slot);
-        state.moduleSummary = this.deniedSlotAccessMessage(world, slot);
-        state.removeModuleLabel = this.deniedSlotAccessMessage(world, slot);
+        state.upgradeLabel = this.deniedSlotAccessMessage(viewerRef, slot);
+        state.sellLabel = this.deniedSlotAccessMessage(viewerRef, slot);
+        state.moduleSummary = this.deniedSlotAccessMessage(viewerRef, slot);
+        state.removeModuleLabel = this.deniedSlotAccessMessage(viewerRef, slot);
         if (!state.towerPresent) {
-            state.slotSummary = this.deniedSlotAccessMessage(world, slot);
+            state.slotSummary = this.deniedSlotAccessMessage(viewerRef, slot);
         }
     }
 
@@ -2913,31 +2982,31 @@ public final class BankDefenseRuntime {
 
     public ActionResult selectGameMode(World world, Ref<EntityStore> playerEntityRef, String modeId) throws IOException {
         if (modeId == null || modeId.isBlank()) {
-            return ActionResult.fail(this.choose(world, "Р РµР¶РёРј РЅРµ РІС‹Р±СЂР°РЅ.", "No mode selected."));
+            return ActionResult.fail(this.choose(world, "Режим не выбран.", "No mode selected."));
         }
         MatchContext existing = this.matchesByWorld.get(this.worldKey(world));
         if (existing != null && existing.state != null && existing.state.gameStarted && existing.state.gameState != GameState.Defeat && existing.state.gameState != GameState.Victory) {
-            return ActionResult.fail(this.choose(world, "РЎРјРµРЅРёС‚СЊ СЂРµР¶РёРј РјРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ РІРЅРµ Р°РєС‚РёРІРЅРѕРіРѕ РјР°С‚С‡Р°.", "You can only change the mode outside an active match."));
+            return ActionResult.fail(this.choose(world, "Сменить режим можно только вне активного матча.", "You can only change the mode outside an active match."));
         }
         return switch (modeId) {
             case MODE_SOLO -> this.teleportPlayerToSoloStart(world, playerEntityRef);
             case MODE_DUO -> this.teleportPlayersToDuoStart(world, playerEntityRef);
-            default -> ActionResult.fail(this.choose(world, "РќРµРёР·РІРµСЃС‚РЅС‹Р№ СЂРµР¶РёРј: ", "Unknown mode: ") + modeId + ".");
+            default -> ActionResult.fail(this.choose(world, "Неизвестный режим: ", "Unknown mode: ") + modeId + ".");
         };
     }
 
     public ActionResult travelToMode(World world, Ref<EntityStore> playerEntityRef, String modeId) throws IOException {
         if (modeId == null || modeId.isBlank()) {
-            return ActionResult.fail(this.choose(world, "РўРѕС‡РєР° РЅР°Р·РЅР°С‡РµРЅРёСЏ РЅРµ РІС‹Р±СЂР°РЅР°.", "No destination was selected."));
+            return ActionResult.fail(this.choose(world, "Точка назначения не выбрана.", "No destination was selected."));
         }
         MatchContext existing = this.matchesByWorld.get(this.worldKey(world));
         if (existing != null && existing.state != null && existing.state.gameStarted && existing.state.gameState != GameState.Defeat && existing.state.gameState != GameState.Victory) {
-            return ActionResult.fail(this.choose(world, "РўРµР»РµРїРѕСЂС‚ РЅРµРґРѕСЃС‚СѓРїРµРЅ РІРѕ РІСЂРµРјСЏ Р°РєС‚РёРІРЅРѕРіРѕ РјР°С‚С‡Р°.", "Travel is unavailable during an active match."));
+            return ActionResult.fail(this.choose(world, "Телепорт недоступен во время активного матча.", "Travel is unavailable during an active match."));
         }
         return switch (this.normalizeModeId(modeId)) {
             case MODE_SOLO -> this.travelPlayerToSoloHub(world, playerEntityRef);
             case MODE_DUO -> this.travelPlayerToDuoHub(world, playerEntityRef);
-            default -> ActionResult.fail(this.choose(world, "РќРµРёР·РІРµСЃС‚РЅР°СЏ С‚РѕС‡РєР° РЅР°Р·РЅР°С‡РµРЅРёСЏ.", "Unknown destination."));
+            default -> ActionResult.fail(this.choose(world, "Неизвестная точка назначения.", "Unknown destination."));
         };
     }
 
@@ -2947,11 +3016,11 @@ public final class BankDefenseRuntime {
         }
         BankDefenseRepository.Snapshot snapshot = this.repository.loadSnapshot(world);
         if (snapshot == null || snapshot.map == null || snapshot.map.playerStart == null) {
-            return ActionResult.fail(this.choose(world, "РЎРѕР»Рѕ-СЃС‚Р°СЂС‚ РЅРµ РЅР°СЃС‚СЂРѕРµРЅ. РќСѓР¶РµРЅ marker playerstart.", "Solo start is not configured. A playerstart marker is required."));
+            return ActionResult.fail(this.choose(world, "Соло-старт не настроен. Нужен marker playerstart.", "Solo start is not configured. A playerstart marker is required."));
         }
         Ref<EntityStore> targetRef = this.resolveTeleportTargetRef(world, playerEntityRef);
         if (targetRef == null || !targetRef.isValid()) {
-            return ActionResult.fail(this.choose(world, "РРіСЂРѕРє РЅРµРґРѕСЃС‚СѓРїРµРЅ РґР»СЏ С‚РµР»РµРїРѕСЂС‚Р°.", "The player is unavailable for teleport."));
+            return ActionResult.fail(this.choose(world, "Игрок недоступен для телепорта.", "The player is unavailable for teleport."));
         }
         String worldKey = this.worldKey(world);
         this.selectedModeIdsByWorld.put(worldKey, MODE_SOLO);
@@ -2959,10 +3028,10 @@ public final class BankDefenseRuntime {
         this.duoTeamSelectionsByWorld.remove(worldKey);
         this.matchesByWorld.put(worldKey, this.createFreshContext(world));
         if (!this.queuePlayerTeleport(world, targetRef, this.playerStartWorldPosition(snapshot.map.playerStart), this.playerStartRotation(snapshot.map, null))) {
-            return ActionResult.fail(this.choose(world, "РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕРґРіРѕС‚РѕРІРёС‚СЊ С‚РµР»РµРїРѕСЂС‚ РёРіСЂРѕРєР°.", "Failed to prepare player teleport."));
+            return ActionResult.fail(this.choose(world, "Не удалось подготовить телепорт игрока.", "Failed to prepare player teleport."));
         }
         this.scheduleVisualizationRefreshAfterTeleport(world);
-        return ActionResult.ok(this.choose(world, "РўРµР»РµРїРѕСЂС‚Р°С†РёСЏ РІ СЃРѕР»Рѕ-СЂРµР¶РёРј РІС‹РїРѕР»РЅРµРЅР°.", "Teleported to solo mode."));
+        return ActionResult.ok(this.choose(world, "Телепортация в соло-режим выполнена.", "Teleported to solo mode."));
     }
 
     private ActionResult teleportPlayersToDuoStart(World world, Ref<EntityStore> playerEntityRef) throws IOException {
@@ -2980,7 +3049,7 @@ public final class BankDefenseRuntime {
         }
         List<PlayerRef> duoPlayers = this.duoPlayers(world);
         if (duoPlayers.isEmpty()) {
-            return ActionResult.fail(this.choose(world, "Р”Р»СЏ Duo СЂРµР¶РёРјР° РЅСѓР¶РµРЅ С…РѕС‚СЏ Р±С‹ РѕРґРёРЅ РёРіСЂРѕРє РІ РјРёСЂРµ.", "Duo mode requires at least one player in the world."));
+            return ActionResult.fail(this.choose(world, "Для Duo режима нужен хотя бы один игрок в мире.", "Duo mode requires at least one player in the world."));
         }
         String worldKey = this.worldKey(world);
         if (!MODE_DUO.equalsIgnoreCase(this.getSelectedModeId(world))) {
@@ -2994,10 +3063,10 @@ public final class BankDefenseRuntime {
         if (duoPlayers.size() > 1) {
             this.teleportPlayer(world, duoPlayers.get(1).getReference(), duoSetupMap.duoPlayerStartGreen, this.duoPlayerStartRotation(duoSetupMap, TEAM_GREEN));
             this.scheduleVisualizationRefreshAfterTeleport(world);
-            return ActionResult.ok(this.choose(world, "РРіСЂРѕРєРё С‚РµР»РµРїРѕСЂС‚РёСЂРѕРІР°РЅС‹ РІ Duo СЂРµР¶РёРј.", "Players were teleported into Duo mode."));
+            return ActionResult.ok(this.choose(world, "Игроки телепортированы в Duo режим.", "Players were teleported into Duo mode."));
         }
         this.scheduleVisualizationRefreshAfterTeleport(world);
-        return ActionResult.ok(this.choose(world, "Duo СЂРµР¶РёРј Р°РєС‚РёРІРёСЂРѕРІР°РЅ РґР»СЏ СЃР±РѕСЂРєРё РєР°СЂС‚С‹. РћРґРёРЅ РёРіСЂРѕРє С‚РµР»РµРїРѕСЂС‚РёСЂРѕРІР°РЅ РЅР° СЃРёРЅРёР№ СЃС‚Р°СЂС‚.", "Duo mode was enabled for map authoring. One player was teleported to the blue start."));
+        return ActionResult.ok(this.choose(world, "Duo режим активирован для сборки карты. Один игрок телепортирован на синий старт.", "Duo mode was enabled for map authoring. One player was teleported to the blue start."));
     }
 
     private ActionResult travelPlayerToSoloHub(World world, Ref<EntityStore> playerEntityRef) throws IOException {
@@ -3008,11 +3077,11 @@ public final class BankDefenseRuntime {
         MapConfig map = snapshot == null ? null : snapshot.map;
         Vec3i targetPoint = map == null ? null : map.soloTeleportTarget != null ? map.soloTeleportTarget : map.playerStart;
         if (targetPoint == null) {
-            return ActionResult.fail(this.choose(world, "РўРѕС‡РєР° С‚РµР»РµРїРѕСЂС‚Р° РІ SOLO РЅРµ РЅР°СЃС‚СЂРѕРµРЅР°.", "The SOLO teleport target is not configured."));
+            return ActionResult.fail(this.choose(world, "Точка телепорта в SOLO не настроена.", "The SOLO teleport target is not configured."));
         }
         List<Ref<EntityStore>> playerRefs = this.collectPlayerEntityRefs(world);
         if (playerRefs.isEmpty()) {
-            return ActionResult.fail(this.choose(world, "Р’ РјРёСЂРµ РЅРµС‚ РёРіСЂРѕРєРѕРІ РґР»СЏ С‚РµР»РµРїРѕСЂС‚Р°.", "There are no players in the world to teleport."));
+            return ActionResult.fail(this.choose(world, "В мире нет игроков для телепорта.", "There are no players in the world to teleport."));
         }
         String worldKey = this.worldKey(world);
         this.selectedModeIdsByWorld.put(worldKey, MODE_SOLO);
@@ -3026,10 +3095,10 @@ public final class BankDefenseRuntime {
             queued |= this.queuePlayerTeleport(world, playerRef, targetPosition, targetRotation);
         }
         if (!queued) {
-            return ActionResult.fail(this.choose(world, "РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕРґРіРѕС‚РѕРІРёС‚СЊ С‚РµР»РµРїРѕСЂС‚ РІ SOLO.", "Failed to prepare the SOLO teleport."));
+            return ActionResult.fail(this.choose(world, "Не удалось подготовить телепорт в SOLO.", "Failed to prepare the SOLO teleport."));
         }
         this.scheduleVisualizationRefreshAfterTeleport(world);
-        return ActionResult.ok(this.choose(world, "РўРµР»РµРїРѕСЂС‚ РІ SOLO РІС‹РїРѕР»РЅРµРЅ.", "Teleported to SOLO."));
+        return ActionResult.ok(this.choose(world, "Телепорт в SOLO выполнен.", "Teleported to SOLO."));
     }
 
     private ActionResult travelPlayerToDuoHub(World world, Ref<EntityStore> playerEntityRef) throws IOException {
@@ -3040,11 +3109,11 @@ public final class BankDefenseRuntime {
         MapConfig duoMap = snapshot == null ? null : this.buildDuoLayoutMap(snapshot.map);
         List<Ref<EntityStore>> playerRefs = this.collectPlayerEntityRefs(world);
         if (playerRefs.isEmpty()) {
-            return ActionResult.fail(this.choose(world, "Р’ РјРёСЂРµ РЅРµС‚ РёРіСЂРѕРєРѕРІ РґР»СЏ С‚РµР»РµРїРѕСЂС‚Р°.", "There are no players in the world to teleport."));
+            return ActionResult.fail(this.choose(world, "В мире нет игроков для телепорта.", "There are no players in the world to teleport."));
         }
         Vec3i targetPoint = duoMap == null ? null : duoMap.duoTeleportTarget != null ? duoMap.duoTeleportTarget : duoMap.duoTeamPoint;
         if (targetPoint == null) {
-            return ActionResult.fail(this.choose(world, "РўРѕС‡РєР° С‚РµР»РµРїРѕСЂС‚Р° РІ DUO РЅРµ РЅР°СЃС‚СЂРѕРµРЅР°.", "The DUO teleport target is not configured."));
+            return ActionResult.fail(this.choose(world, "Точка телепорта в DUO не настроена.", "The DUO teleport target is not configured."));
         }
         if (snapshot != null && snapshot.map != null && duoMap != null) {
             this.persistDerivedDuoMapConfig(world, snapshot.map, duoMap);
@@ -3063,10 +3132,10 @@ public final class BankDefenseRuntime {
             queued |= this.queuePlayerTeleport(world, playerRef, targetPosition, targetRotation);
         }
         if (!queued) {
-            return ActionResult.fail(this.choose(world, "РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕРґРіРѕС‚РѕРІРёС‚СЊ С‚РµР»РµРїРѕСЂС‚ РІ DUO.", "Failed to prepare the DUO teleport."));
+            return ActionResult.fail(this.choose(world, "Не удалось подготовить телепорт в DUO.", "Failed to prepare the DUO teleport."));
         }
         this.scheduleVisualizationRefreshAfterTeleport(world);
-        return ActionResult.ok(this.choose(world, "РўРµР»РµРїРѕСЂС‚ РІ DUO РІС‹РїРѕР»РЅРµРЅ.", "Teleported to DUO."));
+        return ActionResult.ok(this.choose(world, "Телепорт в DUO выполнен.", "Teleported to DUO."));
     }
 
     private void persistSelectedMode(World world, String modeId) throws IOException {
@@ -3175,19 +3244,19 @@ public final class BankDefenseRuntime {
 
     private String validateDuoSetup(MapConfig map, BuildSlotsConfig buildSlots) {
         if (map == null) {
-            return this.choose((PlayerRef)null, "Duo РєР°СЂС‚Р° РЅРµРґРѕСЃС‚СѓРїРЅР°.", "Duo map is unavailable.");
+            return this.choose((PlayerRef)null, "Duo карта недоступна.", "Duo map is unavailable.");
         }
         if (map.duoPlayerStartBlue == null || map.duoPlayerStartGreen == null) {
-            return this.choose((PlayerRef)null, "Р”Р»СЏ Duo РЅСѓР¶РЅС‹ duoPlayerStartBlue Рё duoPlayerStartGreen.", "Duo requires duoPlayerStartBlue and duoPlayerStartGreen.");
+            return this.choose((PlayerRef)null, "Для Duo нужны duoPlayerStartBlue и duoPlayerStartGreen.", "Duo requires duoPlayerStartBlue and duoPlayerStartGreen.");
         }
         if (map.duoSpawnPointBlue == null || map.duoSpawnPointGreen == null) {
-            return this.choose((PlayerRef)null, "Р”Р»СЏ Duo РЅСѓР¶РЅС‹ duoSpawnPointBlue Рё duoSpawnPointGreen.", "Duo requires duoSpawnPointBlue and duoSpawnPointGreen.");
+            return this.choose((PlayerRef)null, "Для Duo нужны duoSpawnPointBlue и duoSpawnPointGreen.", "Duo requires duoSpawnPointBlue and duoSpawnPointGreen.");
         }
         if (map.duoBankCenter == null || map.duoVaultPoint == null) {
-            return this.choose((PlayerRef)null, "Р”Р»СЏ Duo РЅСѓР¶РЅС‹ duoBankCenter Рё duoVaultPoint.", "Duo requires duoBankCenter and duoVaultPoint.");
+            return this.choose((PlayerRef)null, "Для Duo нужны duoBankCenter и duoVaultPoint.", "Duo requires duoBankCenter and duoVaultPoint.");
         }
         if (map.duoRouteBlue == null || map.duoRouteBlue.isEmpty() || map.duoRouteGreen == null || map.duoRouteGreen.isEmpty()) {
-            return this.choose((PlayerRef)null, "Р”Р»СЏ Duo РЅСѓР¶РЅРѕ РЅР°СЃС‚СЂРѕРёС‚СЊ duoRouteBlue Рё duoRouteGreen.", "Duo requires duoRouteBlue and duoRouteGreen.");
+            return this.choose((PlayerRef)null, "Для Duo нужно настроить duoRouteBlue и duoRouteGreen.", "Duo requires duoRouteBlue and duoRouteGreen.");
         }
         int duoSlots = 0;
         if (buildSlots != null && buildSlots.slots != null) {
@@ -3198,7 +3267,7 @@ public final class BankDefenseRuntime {
             }
         }
         if (duoSlots <= 0) {
-            return this.choose((PlayerRef)null, "Р”Р»СЏ Duo РЅРµ РЅР°Р№РґРµРЅРѕ РЅРё РѕРґРЅРѕРіРѕ duo-СЃР»РѕС‚Р° РІ build_slots.json.", "No duo slots were found in build_slots.json.");
+            return this.choose((PlayerRef)null, "Для Duo не найдено ни одного duo-слота в build_slots.json.", "No duo slots were found in build_slots.json.");
         }
         return null;
     }
@@ -3477,7 +3546,7 @@ public final class BankDefenseRuntime {
     public ActionResult toggleInstantAutoStart(World world) throws IOException {
         MatchContext context = this.getOrCreateContext(world);
         context.state.instantAutoStart = !context.state.instantAutoStart;
-        String autoStartToastText = this.choose(world, "РђРІС‚РѕСЃС‚Р°СЂС‚ РІРєР»СЋС‡С‘РЅ. Р‘РѕРЅСѓСЃ +15% РЅР°С‡РЅС‘С‚ СЂР°Р±РѕС‚Р°С‚СЊ С‡РµСЂРµР· РѕРґРЅСѓ РІРѕР»РЅСѓ.", "Auto-start enabled. The +15% bonus will start working after one wave.");
+        String autoStartToastText = this.choose(world, "Автостарт включён. Бонус +15% начнёт работать через одну волну.", "Auto-start enabled. The +15% bonus will start working after one wave.");
         if (context.state.instantAutoStart) {
             this.armInstantAutoStartWarmup(context);
         } else {
@@ -3489,13 +3558,44 @@ public final class BankDefenseRuntime {
             && context.pendingRewardChoices.isEmpty()) {
             ActionResult result = this.startPreparedWave(world, context, false);
             this.scheduleEventToast(context, autoStartToastText, EVENT_TOAST_ICON_ALERT, 1.35);
-            return ActionResult.ok(this.choose(world, "РђРІС‚РѕСЃС‚Р°СЂС‚ Р±РµР· РѕР¶РёРґР°РЅРёСЏ: Р’РљР›. ", "Instant auto-start: ON. ") + result.message);
+            return ActionResult.ok(this.choose(world, "Автостарт без ожидания: ВКЛ. ", "Instant auto-start: ON. ") + result.message);
         }
         if (context.state.instantAutoStart) {
             this.scheduleEventToast(context, autoStartToastText, EVENT_TOAST_ICON_ALERT, 0.45);
         }
-        return ActionResult.ok(this.choose(world, "РђРІС‚РѕСЃС‚Р°СЂС‚ Р±РµР· РѕР¶РёРґР°РЅРёСЏ: ", "Instant auto-start: ")
-            + (context.state.instantAutoStart ? this.choose(world, "Р’РљР›", "ON") : this.choose(world, "Р’Р«РљР›", "OFF")) + ".");
+        return ActionResult.ok(this.choose(world, "Автостарт без ожидания: ", "Instant auto-start: ")
+            + (context.state.instantAutoStart ? this.choose(world, "ВКЛ", "ON") : this.choose(world, "ВЫКЛ", "OFF")) + ".");
+    }
+
+    public boolean isMatchPaused(World world) {
+        MatchContext context = world == null ? null : this.matchesByWorld.get(this.worldKey(world));
+        return context != null && context.state != null && context.state.paused;
+    }
+
+    public ActionResult toggleMatchPause(World world) throws IOException {
+        return this.toggleMatchPause(world, this.primaryPlayerRef(world));
+    }
+
+    public ActionResult toggleMatchPause(World world, PlayerRef actor) throws IOException {
+        MatchContext context = this.getOrCreateContext(world);
+        if (!context.state.gameStarted) {
+            return ActionResult.fail(this.choose(actor, "Сначала подготовьте и начните матч.", "Prepare and start a match first."));
+        }
+        if (context.tutorialActive) {
+            return ActionResult.fail(this.choose(actor, "В обучении пауза у оператора недоступна.", "Pause from the operator is unavailable in the tutorial."));
+        }
+        if (context.state.gameState == GameState.Defeat || context.state.gameState == GameState.Victory) {
+            return ActionResult.fail(this.choose(actor, "После завершения матча пауза недоступна.", "Pause is unavailable after the match has ended."));
+        }
+        context.state.paused = !context.state.paused;
+        this.refreshVisualizationIfEnabled(world);
+        this.playWorldUiSound(world, context.state.paused ? SOUND_NOTIFICATION : SOUND_UI_CLICK);
+        this.showEventToast(
+            context,
+            this.choose(world, context.state.paused ? "Матч поставлен на паузу." : "Пауза снята.", context.state.paused ? "Match paused." : "Match resumed."),
+            EVENT_TOAST_ICON_ALERT
+        );
+        return ActionResult.ok(this.choose(actor, context.state.paused ? "Матч поставлен на паузу." : "Пауза снята.", context.state.paused ? "Match paused." : "Match resumed."));
     }
 
     public ActionResult reopenPendingRewardPage(World world, PlayerRef actor) throws IOException {
@@ -3503,12 +3603,54 @@ public final class BankDefenseRuntime {
             return ActionResult.fail("World is unavailable.");
         }
         MatchContext context = this.getOrCreateContext(world);
-        if (context.pendingRewardChoices.isEmpty()) {
-            return ActionResult.fail(this.choose(world, "РЎРµР№С‡Р°СЃ РЅРµС‚ Р°РєС‚РёРІРЅРѕР№ РЅР°РіСЂР°РґС‹ РјРѕРґСѓР»РµРј.", "There is no active module reward right now."));
-        }
         RewardUiState rewardUiState = this.getRewardUiState(world, actor);
-        if (!rewardUiState.rewardPending) {
-            return ActionResult.fail(this.choose(world, "РЎРµР№С‡Р°СЃ РЅРµС‚ Р°РєС‚РёРІРЅРѕР№ РЅР°РіСЂР°РґС‹ РјРѕРґСѓР»РµРј.", "There is no active module reward right now."));
+        ActionResult validation = this.validatePendingRewardPageOpen(context, rewardUiState, actor);
+        if (!validation.success) {
+            return validation;
+        }
+        Ref<EntityStore> actorRef = actor == null ? null : actor.getReference();
+        if (actorRef == null || !actorRef.isValid()) {
+            return ActionResult.fail(this.choose(actor, "Игрок недоступен для открытия награды.", "The player is unavailable to open the reward."));
+        }
+        Store<EntityStore> store = world.getEntityStore().getStore();
+        Player player = store.getComponent(actorRef, Player.getComponentType());
+        if (player == null) {
+            return ActionResult.fail(this.choose(actor, "Игрок недоступен для открытия награды.", "The player is unavailable to open the reward."));
+        }
+        context.state.rewardPending = !context.pendingRewardChoices.isEmpty();
+        if (actor != null && actor.getUuid() != null) {
+            context.pendingRewardPageOpenDelayByPlayer.remove(actor.getUuid());
+        }
+        this.playUiSoundForPlayer(world, actor, SOUND_NOTIFICATION);
+        player.getPageManager().openCustomPage(actorRef, store, new BankDefenseRewardPage(actor, this));
+        this.showEventToast(
+            context,
+            this.choose(actor, "Выберите модуль у оператора.", "Choose the module at the operator."),
+            EVENT_TOAST_ICON_ALERT
+        );
+        return ActionResult.ok(this.choose(actor, "Окно выбора модуля открыто.", "The module selection is open."));
+    }
+
+    public ActionResult schedulePendingRewardPageOpen(World world, PlayerRef actor, double delaySeconds) throws IOException {
+        if (world == null) {
+            return ActionResult.fail("World is unavailable.");
+        }
+        MatchContext context = this.getOrCreateContext(world);
+        RewardUiState rewardUiState = this.getRewardUiState(world, actor);
+        ActionResult validation = this.validatePendingRewardPageOpen(context, rewardUiState, actor);
+        if (!validation.success) {
+            return validation;
+        }
+        if (actor == null || actor.getUuid() == null) {
+            return ActionResult.fail(this.choose(actor, "Игрок недоступен для открытия награды.", "The player is unavailable to open the reward."));
+        }
+        context.pendingRewardPageOpenDelayByPlayer.put(actor.getUuid(), Math.max(0.05, delaySeconds));
+        return ActionResult.ok(this.choose(actor, "Открываю выбор модуля.", "Opening the module selection."));
+    }
+
+    private ActionResult validatePendingRewardPageOpen(MatchContext context, RewardUiState rewardUiState, PlayerRef actor) {
+        if (context == null || rewardUiState == null || context.pendingRewardChoices.isEmpty() || !rewardUiState.rewardPending) {
+            return ActionResult.fail(this.choose(actor, "Сейчас нет активной награды модулем.", "There is no active module reward right now."));
         }
         if (this.isDuoMode(context)
             && !this.isDuoSoloTestEnabled(context)
@@ -3516,65 +3658,58 @@ public final class BankDefenseRuntime {
             && !rewardUiState.activePickerTeam.isBlank()
             && !TEAM_SHARED.equals(this.normalizeTeam(rewardUiState.activePickerTeam))
             && !this.normalizeTeam(rewardUiState.viewerTeam).equals(this.normalizeTeam(rewardUiState.activePickerTeam))) {
-            return ActionResult.fail(this.choose(world, "РЎРµР№С‡Р°СЃ РјРѕРґСѓР»СЊ РІС‹Р±РёСЂР°РµС‚ РґСЂСѓРіР°СЏ РєРѕРјР°РЅРґР°.", "Another team is choosing the module right now."));
+            return ActionResult.fail(this.choose(actor, "Сейчас модуль выбирает другая команда.", "Another team is choosing the module right now."));
         }
-        Ref<EntityStore> actorRef = actor == null ? null : actor.getReference();
-        if (actorRef == null || !actorRef.isValid()) {
-            return ActionResult.fail(this.choose(world, "РРіСЂРѕРє РЅРµРґРѕСЃС‚СѓРїРµРЅ РґР»СЏ РѕС‚РєСЂС‹С‚РёСЏ РЅР°РіСЂР°РґС‹.", "The player is unavailable to open the reward."));
-        }
-        Store<EntityStore> store = world.getEntityStore().getStore();
-        Player player = store.getComponent(actorRef, Player.getComponentType());
-        if (player == null) {
-            return ActionResult.fail(this.choose(world, "РРіСЂРѕРє РЅРµРґРѕСЃС‚СѓРїРµРЅ РґР»СЏ РѕС‚РєСЂС‹С‚РёСЏ РЅР°РіСЂР°РґС‹.", "The player is unavailable to open the reward."));
-        }
-        player.getPageManager().openCustomPage(actorRef, store, new BankDefenseRewardPage(actor, this));
-        return ActionResult.ok(this.choose(world, "РћРєРЅРѕ РІС‹Р±РѕСЂР° РјРѕРґСѓР»СЏ РѕС‚РєСЂС‹С‚Рѕ.", "The module selection was reopened."));
+        return ActionResult.ok("");
     }
 
     private ActionResult startGame(World world, MatchContext context) throws IOException {
         if (BankDefenseMatchPhaseSupport.isPrepared(context.state)) {
-            return ActionResult.fail(this.choose(world, "РњР°С‚С‡ СѓР¶Рµ Р·Р°РїСѓС‰РµРЅ. РСЃРїРѕР»СЊР·СѓР№ 'РќР°С‡Р°С‚СЊ РІРѕР»РЅСѓ' РёР»Рё РґРѕР¶РґРёСЃСЊ Р°РІС‚РѕР·Р°РїСѓСЃРєР°.", "The match is already prepared. Use 'Start wave' or wait for auto-start."));
+            return ActionResult.fail(this.choose(world, "Матч уже запущен. Используй 'Начать волну' или дождись автозапуска.", "The match is already prepared. Use 'Start wave' or wait for auto-start."));
         }
         ActionResult tutorialValidation = this.validateTutorialWaveLaunch(world, context);
         if (tutorialValidation != null) {
             return tutorialValidation;
         }
-        return this.beginWave(world, context, this.choose(world, "РњР°С‚С‡ РЅР°С‡Р°С‚.", "Match started."), false);
+        return this.beginWave(world, context, this.choose(world, "Матч начат.", "Match started."), false);
     }
 
     private ActionResult startPreparedWave(World world, MatchContext context, boolean manualStart) throws IOException {
         if (context.state.gameState == GameState.Victory) {
-            return ActionResult.fail(this.choose(world, "РњР°С‚С‡ СѓР¶Рµ Р·Р°РІРµСЂС€С‘РЅ РїРѕР±РµРґРѕР№. РџРѕРґРіРѕС‚РѕРІСЊ РЅРѕРІС‹Р№ РјР°С‚С‡ Сѓ РѕРїРµСЂР°С‚РѕСЂР°.", "The match already ended in victory. Prepare a new match with the operator."));
+            return ActionResult.fail(this.choose(world, "Матч уже завершён победой. Подготовь новый матч у оператора.", "The match already ended in victory. Prepare a new match with the operator."));
         }
         if (context.state.gameState == GameState.Defeat) {
-            return ActionResult.fail(this.choose(world, "РњР°С‚С‡ СѓР¶Рµ Р·Р°РІРµСЂС€С‘РЅ РїРѕСЂР°Р¶РµРЅРёРµРј. РџРѕРґРіРѕС‚РѕРІСЊ РЅРѕРІС‹Р№ РјР°С‚С‡ Сѓ РѕРїРµСЂР°С‚РѕСЂР°.", "The match already ended in defeat. Prepare a new match with the operator."));
+            return ActionResult.fail(this.choose(world, "Матч уже завершён поражением. Подготовь новый матч у оператора.", "The match already ended in defeat. Prepare a new match with the operator."));
         }
         if (!context.state.gameStarted) {
-            return ActionResult.fail(this.choose(world, "РЎРЅР°С‡Р°Р»Р° РІС‹Р±РµСЂРё СЃР»РѕР¶РЅРѕСЃС‚СЊ Рё РєРѕРЅС‚СЂР°РєС‚ Сѓ РѕРїРµСЂР°С‚РѕСЂР°.", "Choose a difficulty and contract with the operator first."));
+            return ActionResult.fail(this.choose(world, "Сначала выберите сложность и контракт у оператора.", "Choose a difficulty and contract with the operator first."));
         }
         if (!context.pendingRewardChoices.isEmpty()) {
-            return ActionResult.fail(this.choose(world, "РЎРЅР°С‡Р°Р»Р° РІС‹Р±РµСЂРё РјРѕРґСѓР»СЊ РЅР°РіСЂР°РґС‹ Р·Р° РІРѕР»РЅСѓ.", "Choose the wave reward module first."));
+            return ActionResult.fail(this.choose(world, "Сначала выберите модуль награды за волну.", "Choose the wave reward module first."));
+        }
+        if (this.hasPendingIdolModeChoice(context)) {
+            return ActionResult.fail(this.choose(world, "Сначала выберите режим Идола урожая.", "Choose the Harvest Idol mode first."));
         }
         if (!BankDefenseMatchPhaseSupport.isBuildPhase(context.state)) {
-            return ActionResult.fail(this.choose(world, "РЎРµР№С‡Р°СЃ РЅРµР»СЊР·СЏ Р·Р°РїСѓСЃС‚РёС‚СЊ РІРѕР»РЅСѓ. РўРµРєСѓС‰РµРµ СЃРѕСЃС‚РѕСЏРЅРёРµ: ", "The wave cannot be started right now. Current state: ") + context.state.waveState + ".");
+            return ActionResult.fail(this.choose(world, "Сейчас нельзя запустить волну. Текущее состояние: ", "The wave cannot be started right now. Current state: ") + context.state.waveState + ".");
         }
         ActionResult tutorialValidation = this.validateTutorialWaveLaunch(world, context);
         if (tutorialValidation != null) {
             return tutorialValidation;
         }
         if (!context.tutorialActive && !this.hasAnyPlacedTowerOrTrap(context)) {
-            String message = this.choose(world, "РЎРЅР°С‡Р°Р»Р° РїРѕСЃС‚Р°РІСЊС‚Рµ С…РѕС‚СЏ Р±С‹ 1 Р±Р°С€РЅСЋ РёР»Рё Р»РѕРІСѓС€РєСѓ.", "Place at least 1 tower or trap first.");
+            String message = this.choose(world, "Сначала поставьте хотя бы одну башню или ловушку.", "Place at least one tower or trap first.");
             this.showEventToast(context, message, EVENT_TOAST_ICON_ALERT);
             this.playWorldUiSound(world, SOUND_NOTIFICATION);
             return ActionResult.fail(message);
         }
-        return this.beginWave(world, context, manualStart ? this.choose(world, "Р СѓС‡РЅРѕР№ СЃС‚Р°СЂС‚.", "Manual start.") : null, manualStart);
+        return this.beginWave(world, context, manualStart ? this.choose(world, "Ручной старт.", "Manual start.") : null, manualStart);
     }
 
     private ActionResult beginWave(World world, MatchContext context, String prefaceMessage, boolean manualStart) throws IOException {
         WaveDefinition wave = this.resolveWaveDefinition(context, context.state.currentWave);
         if (wave == null) {
-            return ActionResult.fail(this.choose(world, "Р”Р»СЏ РІРѕР»РЅС‹ " + context.state.currentWave + " РЅРµ РЅР°Р№РґРµРЅ РєРѕРЅС„РёРі.", "No config found for wave " + context.state.currentWave + "."));
+            return ActionResult.fail(this.choose(world, "Для волны " + context.state.currentWave + " не найден конфиг.", "No config found for wave " + context.state.currentWave + "."));
         }
         this.ensureBonusChestsSpawned(context);
         boolean autoStartBonus = !manualStart && context.state.instantAutoStart && context.state.currentWave > 1;
@@ -3625,23 +3760,27 @@ public final class BankDefenseRuntime {
             int startBonusDisplayPercent = (int)Math.round(startBonusPercent * 100.0);
             this.showEventToast(
                 context,
-                (BankDefenseLocalization.choose(playerRef, autoStartBonus ? "РђРІС‚РѕСЃС‚Р°СЂС‚: +" : "Р Р°РЅРЅРёР№ СЃС‚Р°СЂС‚: +", autoStartBonus ? "Auto-start: +" : "Early start: +"))
+                (BankDefenseLocalization.choose(playerRef, autoStartBonus ? "Автостарт: +" : "Ранний старт: +", autoStartBonus ? "Auto-start: +" : "Early start: +"))
                     + earlyStartBonus
-                    + BankDefenseLocalization.choose(playerRef, " Р·РѕР»РѕС‚Р° (+", " gold (+")
+                    + BankDefenseLocalization.choose(playerRef, " золота (+", " gold (+")
                     + startBonusDisplayPercent + "%).",
                 EVENT_TOAST_ICON_MONEY
             );
-            BankDefenseLocalization.sendWorldMessage(world,
-                BankDefenseLocalization.choose(playerRef, "Р’РѕР»РЅР° ", "Wave ")
+            this.sendLocalizedWorldMessage(world, viewerRef ->
+                BankDefenseLocalization.choose(viewerRef, "Волна ", "Wave ")
                     + context.activeWaveNumber
-                    + BankDefenseLocalization.choose(playerRef, " РЅР°С‡Р°Р»Р°СЃСЊ. ", " has started. ")
-                    + BankDefenseLocalization.choose(playerRef, autoStartBonus ? "Р‘РѕРЅСѓСЃ Р·Р° Р°РІС‚РѕСЃС‚Р°СЂС‚: +" : "Р‘РѕРЅСѓСЃ Р·Р° СЂР°РЅРЅРёР№ СЃС‚Р°СЂС‚: +", autoStartBonus ? "Auto-start bonus: +" : "Early-start bonus: +")
+                    + BankDefenseLocalization.choose(viewerRef, " началась. ", " has started. ")
+                    + BankDefenseLocalization.choose(viewerRef, autoStartBonus ? "Бонус за автостарт: +" : "Бонус за ранний старт: +", autoStartBonus ? "Auto-start bonus: +" : "Early-start bonus: +")
                     + earlyStartBonus
-                    + BankDefenseLocalization.choose(playerRef, " Р·РѕР»РѕС‚Р° (+", " gold (+")
+                    + BankDefenseLocalization.choose(viewerRef, " золота (+", " gold (+")
                     + startBonusDisplayPercent + "%)."
             );
         } else {
-            BankDefenseLocalization.sendWorldMessage(world, BankDefenseLocalization.choose(playerRef, "Р’РѕР»РЅР° ", "Wave ") + context.activeWaveNumber + BankDefenseLocalization.choose(playerRef, " РЅР°С‡Р°Р»Р°СЃСЊ.", " has started."));
+            this.sendLocalizedWorldMessage(world, viewerRef ->
+                BankDefenseLocalization.choose(viewerRef, "Волна ", "Wave ")
+                    + context.activeWaveNumber
+                    + BankDefenseLocalization.choose(viewerRef, " началась.", " has started.")
+            );
         }
         if (wave.bossWave) {
             String bossName = null;
@@ -3661,31 +3800,43 @@ public final class BankDefenseRuntime {
             this.showEventToast(
                 context,
                 bossName == null
-                    ? BankDefenseLocalization.choose(playerRef, "Р‘РѕСЃСЃ-РІРѕР»РЅР° РЅР°С‡Р°Р»Р°СЃСЊ.", "Boss wave started.")
-                    : BankDefenseLocalization.choose(playerRef, "Р‘РѕСЃСЃ-РІРѕР»РЅР°: ", "Boss wave: ") + bossName + ".",
+                    ? BankDefenseLocalization.choose(playerRef, "Босс-волна началась.", "Boss wave started.")
+                    : BankDefenseLocalization.choose(playerRef, "Босс-волна: ", "Boss wave: ") + bossName + ".",
                 EVENT_TOAST_ICON_ALERT
             );
-            BankDefenseLocalization.sendWorldMessage(world,
-                bossName == null
-                    ? BankDefenseLocalization.choose(playerRef, "Р’РЅРёРјР°РЅРёРµ: Р±РѕСЃСЃ-РІРѕР»РЅР°!", "Warning: boss wave!")
-                    : BankDefenseLocalization.choose(playerRef, "Р’РЅРёРјР°РЅРёРµ: Р±РѕСЃСЃ-РІРѕР»РЅР°! ", "Warning: boss wave! ") + bossName + (bossId == null ? "." : " [" + bossId + "].")
-            );
+            String resolvedBossId = bossId;
+            this.sendLocalizedWorldMessage(world, viewerRef -> {
+                String localizedBossName = null;
+                if (resolvedBossId != null && !resolvedBossId.isBlank()) {
+                    EnemyDefinition bossDefinition = context.enemyById.get(resolvedBossId);
+                    localizedBossName = bossDefinition == null
+                        ? resolvedBossId
+                        : BankDefenseLocalization.enemyDisplayName(viewerRef, bossDefinition.id, this.text(bossDefinition.displayName));
+                }
+                return localizedBossName == null
+                    ? BankDefenseLocalization.choose(viewerRef, "Внимание: босс-волна!", "Warning: boss wave!")
+                    : BankDefenseLocalization.choose(viewerRef, "Внимание: босс-волна! ", "Warning: boss wave! ")
+                        + localizedBossName
+                        + " ["
+                        + resolvedBossId
+                        + "].";
+            });
         }
 
         StringBuilder builder = new StringBuilder();
         if (prefaceMessage != null && !prefaceMessage.isBlank()) {
             builder.append(prefaceMessage).append(' ');
         }
-        builder.append(this.choose(world, "Р’РѕР»РЅР° ", "Wave "))
+        builder.append(this.choose(world, "Волна ", "Wave "))
             .append(context.activeWaveNumber)
-            .append(this.choose(world, " Р·Р°РїСѓС‰РµРЅР°. Р’ РѕС‡РµСЂРµРґРё ", " started. Queued enemies: "))
+            .append(this.choose(world, " запущена. В очереди ", " started. Queued enemies: "))
             .append(context.pendingSpawns.size())
-            .append(this.choose(world, " РІСЂР°РіРѕРІ.", "."));
+            .append(this.choose(world, " врагов.", "."));
         if (earlyStartBonus > 0) {
             int startBonusDisplayPercent = (int)Math.round(startBonusPercent * 100.0);
-            builder.append(autoStartBonus ? this.choose(world, " Р‘РѕРЅСѓСЃ Р·Р° Р°РІС‚РѕСЃС‚Р°СЂС‚: +", " Auto-start bonus: +") : this.choose(world, " Р‘РѕРЅСѓСЃ Р·Р° СЂР°РЅРЅРёР№ СЃС‚Р°СЂС‚: +", " Early-start bonus: +"))
+            builder.append(autoStartBonus ? this.choose(world, " Бонус за автостарт: +", " Auto-start bonus: +") : this.choose(world, " Бонус за ранний старт: +", " Early-start bonus: +"))
                 .append(earlyStartBonus)
-                .append(this.choose(world, " Р·РѕР»РѕС‚Р° (+", " gold (+"))
+                .append(this.choose(world, " золота (+", " gold (+"))
                 .append(startBonusDisplayPercent)
                 .append("%)")
                 .append('.');
@@ -4518,7 +4669,7 @@ public final class BankDefenseRuntime {
         if (active.isEmpty()) {
             return "";
         }
-        return this.choose(playerRef, "РџСЂРѕРєР»СЏС‚РёСЏ: ", "Curses: ") + active.size();
+        return this.choose(playerRef, "Проклятия: ", "Curses: ") + active.size();
     }
 
     private String appendSealCurseHudSummary(PlayerRef playerRef, MatchContext context, String base) {
@@ -4526,7 +4677,7 @@ public final class BankDefenseRuntime {
         if (summary.isBlank()) {
             return base;
         }
-        return base + " | " + this.choose(playerRef, "РџСЂРѕРєР»СЏС‚РёСЏ: ", "Curses: ") + summary;
+        return base + " | " + this.choose(playerRef, "Проклятия: ", "Curses: ") + summary;
     }
 
     private String activeSealCurseSummary(PlayerRef playerRef, MatchContext context, boolean shortLabels) {
@@ -4546,29 +4697,29 @@ public final class BankDefenseRuntime {
 
     private String sealCurseDisplayName(PlayerRef playerRef, SealCurseType type) {
         return switch (type) {
-            case Range -> this.choose(playerRef, "РўСѓСЃРєР»С‹Рµ РїСЂРёС†РµР»С‹", "Dim Sights");
-            case FireRate -> this.choose(playerRef, "Р—Р°РµРґР°СЋС‰РёРµ РјРµС…Р°РЅРёР·РјС‹", "Jamming Mechanisms");
-            case TrapDelay -> this.choose(playerRef, "РўСЏР¶С‘Р»С‹Рµ Р»РѕРІСѓС€РєРё", "Heavy Traps");
-            case Damage -> this.choose(playerRef, "РќР°РґР»РѕРјР»РµРЅРЅС‹Рµ РјРµС…Р°РЅРёР·РјС‹", "Cracked Mechanisms");
-            case Preparation -> this.choose(playerRef, "РЎР¶Р°С‚Р°СЏ РїРµСЂРµРґС‹С€РєР°", "Compressed Breather");
-            case EnemySpeed -> this.choose(playerRef, "РўСЂРµРІРѕР¶РЅС‹Р№ РјР°СЂС€", "Anxious March");
-            case UpgradeCost -> this.choose(playerRef, "Р”Р°РІР»РµРЅРёРµ РїРµС‡Р°С‚Рё", "Seal Pressure");
-            case ModuleEffect -> this.choose(playerRef, "РЎР»Р°Р±С‹Р№ СЂРµР·РѕРЅР°РЅСЃ", "Faded Resonance");
-            case Gold -> this.choose(playerRef, "РЎРєСѓРґРЅР°СЏ РґРѕР±С‹С‡Р°", "Meager Bounty");
+            case Range -> this.choose(playerRef, "Тусклые прицелы", "Dim Sights");
+            case FireRate -> this.choose(playerRef, "Заедающие механизмы", "Jamming Mechanisms");
+            case TrapDelay -> this.choose(playerRef, "Тяжёлые ловушки", "Heavy Traps");
+            case Damage -> this.choose(playerRef, "Надломленные механизмы", "Cracked Mechanisms");
+            case Preparation -> this.choose(playerRef, "Сжатая передышка", "Compressed Breather");
+            case EnemySpeed -> this.choose(playerRef, "Тревожный марш", "Anxious March");
+            case UpgradeCost -> this.choose(playerRef, "Давление печати", "Seal Pressure");
+            case ModuleEffect -> this.choose(playerRef, "Слабый резонанс", "Faded Resonance");
+            case Gold -> this.choose(playerRef, "Скудная добыча", "Meager Bounty");
         };
     }
 
     private String sealCurseShortLabel(PlayerRef playerRef, SealCurseType type) {
         return switch (type) {
-            case Range -> this.choose(playerRef, "-12% РґР°Р»СЊРЅ.", "-12% range");
-            case FireRate -> this.choose(playerRef, "-10% СЃРєРѕСЂРѕСЃС‚СЂ.", "-10% fire rate");
-            case TrapDelay -> this.choose(playerRef, "Р»РѕРІСѓС€РєРё +35%", "traps +35%");
-            case Damage -> this.choose(playerRef, "-12% СѓСЂРѕРЅ", "-12% damage");
-            case Preparation -> this.choose(playerRef, "РїРѕРґРіРѕС‚РѕРІРєР° 15СЃ", "prep 15s");
-            case EnemySpeed -> this.choose(playerRef, "РІСЂР°РіРё +6% СЃРє.", "enemies +6% spd");
-            case UpgradeCost -> this.choose(playerRef, "Р°РїРіСЂРµР№Рґ +10%", "upgrades +10%");
-            case ModuleEffect -> this.choose(playerRef, "РјРѕРґСѓР»Рё -15%", "modules -15%");
-            case Gold -> this.choose(playerRef, "Р·РѕР»РѕС‚Рѕ -20%", "gold -20%");
+            case Range -> this.choose(playerRef, "-12% дальн.", "-12% range");
+            case FireRate -> this.choose(playerRef, "-10% скоростр.", "-10% fire rate");
+            case TrapDelay -> this.choose(playerRef, "ловушки +35%", "traps +35%");
+            case Damage -> this.choose(playerRef, "-12% урон", "-12% damage");
+            case Preparation -> this.choose(playerRef, "подготовка 15с", "prep 15s");
+            case EnemySpeed -> this.choose(playerRef, "враги +6% ск.", "enemies +6% spd");
+            case UpgradeCost -> this.choose(playerRef, "апгрейд +10%", "upgrades +10%");
+            case ModuleEffect -> this.choose(playerRef, "модули -15%", "modules -15%");
+            case Gold -> this.choose(playerRef, "золото -20%", "gold -20%");
         };
     }
 
@@ -4609,20 +4760,26 @@ public final class BankDefenseRuntime {
             context.activeSealCurses.removeIf(existing -> existing != null && existing.type == type);
             context.activeSealCurses.add(new SealCurseState(type, startWave, DUO_SEAL_MASTER_CURSE_WAVES));
         }
-        PlayerRef playerRef = this.primaryPlayerRef(world);
-        List<String> appliedLabels = new ArrayList<>();
-        for (SealCurseType type : selected) {
-            appliedLabels.add(this.sealCurseDisplayName(playerRef, type) + " (" + DUO_SEAL_MASTER_CURSE_WAVES + ")");
-        }
-        String summary = String.join(", ", appliedLabels);
         String appliedText = this.choose(
             world,
-            "РњР°СЃС‚РµСЂ РџРµС‡Р°С‚Рё РѕСЃС‚Р°РІРёР» " + curseCount + " РїСЂРѕРєР»СЏС‚" + (curseCount == 1 ? "РёРµ" : curseCount <= 4 ? "РёСЏ" : "РёР№") + " РЅР° СЃР»РµРґСѓСЋС‰РёРµ 5 РІРѕР»РЅ.",
+            "Мастер Печати оставил " + curseCount + " проклят" + (curseCount == 1 ? "ие" : curseCount <= 4 ? "ия" : "ий") + " на следующие 5 волн.",
             "The Seal Master left " + curseCount + " curse" + (curseCount == 1 ? "" : "s") + " for the next 5 waves."
         );
         this.showEventToast(context, appliedText, EVENT_TOAST_ICON_ALERT);
         this.queueWorldUiSound(context, SOUND_CURSE_UI);
-        BankDefenseLocalization.sendWorldMessage(world, appliedText + " " + summary + ".");
+        this.sendLocalizedWorldMessage(world, viewerRef -> {
+            List<String> localizedLabels = new ArrayList<>();
+            for (SealCurseType type : selected) {
+                localizedLabels.add(this.sealCurseDisplayName(viewerRef, type) + " (" + DUO_SEAL_MASTER_CURSE_WAVES + ")");
+            }
+            String localizedSummary = String.join(", ", localizedLabels);
+            String localizedAppliedText = this.choose(
+                viewerRef,
+                "Мастер Печати оставил " + curseCount + " проклят" + (curseCount == 1 ? "ие" : curseCount <= 4 ? "ия" : "ий") + " на следующие 5 волн.",
+                "The Seal Master left " + curseCount + " curse" + (curseCount == 1 ? "" : "s") + " for the next 5 waves."
+            );
+            return localizedAppliedText + " " + localizedSummary + ".";
+        });
     }
 
     private List<SealCurseType> pickSealCurseTypes(int count) {
@@ -4657,9 +4814,9 @@ public final class BankDefenseRuntime {
         context.activeSealCurses.clear();
         context.activeSealCurses.addAll(remaining);
         if (removedAny && context.activeSealCurses.isEmpty()) {
-            String message = this.choose(world, "РџСЂРѕРєР»СЏС‚РёСЏ РњР°СЃС‚РµСЂР° РџРµС‡Р°С‚Рё СЂР°СЃСЃРµСЏР»РёСЃСЊ.", "The Seal Master's curses faded.");
+            String message = this.choose(world, "Проклятия Мастера Печати рассеялись.", "The Seal Master's curses faded.");
             this.showEventToast(context, message, EVENT_TOAST_ICON_ALERT);
-            BankDefenseLocalization.sendWorldMessage(world, message);
+            this.sendLocalizedWorldMessage(world, "Проклятия Мастера Печати рассеялись.", "The Seal Master's curses faded.");
         }
     }
 
@@ -5399,18 +5556,18 @@ public final class BankDefenseRuntime {
     public ActionResult buildTower(World world, Vec3i playerPosition, String towerId, int radius) throws IOException {
         MatchContext context = this.getOrCreateContext(world);
         if (!context.state.gameStarted && !this.tutorialAllowsPrematchBuild(world, context)) {
-            return ActionResult.fail(this.choose(world, "РЎРЅР°С‡Р°Р»Р° РІС‹Р±РµСЂРё СЃР»РѕР¶РЅРѕСЃС‚СЊ Рё РєРѕРЅС‚СЂР°РєС‚ Сѓ РѕРїРµСЂР°С‚РѕСЂР°.", "Choose a difficulty and contract with the operator first."));
+            return ActionResult.fail(this.choose(world, "Сначала выберите сложность и контракт у оператора.", "Choose a difficulty and contract with the operator first."));
         }
         TowerDefinition tower = context.towerById.get(towerId);
         if (tower == null) {
-            return ActionResult.fail(this.choose(world, "РќРµРёР·РІРµСЃС‚РЅР°СЏ Р±Р°С€РЅСЏ: '", "Unknown tower: '") + towerId + this.choose(world, "'. РСЃРїРѕР»СЊР·СѓР№ /bankdefense towers.", "'. Use /bankdefense towers."));
+            return ActionResult.fail(this.choose(world, "Неизвестная башня: '", "Unknown tower: '") + towerId + this.choose(world, "'. Используй /bankdefense towers.", "'. Use /bankdefense towers."));
         }
         if (!BankDefenseMatchPhaseSupport.canBuild(context.state, context.snapshot.gameRules.allowBuildDuringWave)) {
-            return ActionResult.fail(this.choose(world, "РЎС‚СЂРѕРёС‚СЊ РјРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ РІ С„Р°Р·Сѓ РїРѕРґРіРѕС‚РѕРІРєРё.", "Building is only allowed during preparation."));
+            return ActionResult.fail(this.choose(world, "Строить можно только в фазу подготовки.", "Building is only allowed during preparation."));
         }
         BuildSlot slot = this.findNearestAvailableSlot(context, playerPosition, radius);
         if (slot == null) {
-            return ActionResult.fail(this.choose(world, "Р СЏРґРѕРј РЅРµС‚ СЃРІРѕР±РѕРґРЅРѕРіРѕ СЃР»РѕС‚Р° СЃС‚СЂРѕРёС‚РµР»СЊСЃС‚РІР° РІ СЂР°РґРёСѓСЃРµ ", "No free build slot found within radius ") + radius + ".");
+            return ActionResult.fail(this.choose(world, "Рядом нет свободного слота строительства в радиусе ", "No free build slot found within radius ") + radius + ".");
         }
         return this.buildTowerInSlot(world, context, this.primaryPlayerRef(world), slot, tower, SEED_IDOL_MODE_DEFAULT);
     }
@@ -5423,22 +5580,22 @@ public final class BankDefenseRuntime {
         MatchContext context = this.getOrCreateContext(world);
         TowerInstance instance = this.findNearestPlacedTower(context, playerPosition, radius);
         if (instance == null) {
-            return ActionResult.fail(this.choose(world, "Р СЏРґРѕРј РЅРµС‚ Р±Р°С€РЅРё РґР»СЏ СѓР»СѓС‡С€РµРЅРёСЏ РІ СЂР°РґРёСѓСЃРµ ", "No tower to upgrade found within radius ") + radius + ".");
+            return ActionResult.fail(this.choose(actor, "Рядом нет башни для улучшения в радиусе ", "No tower to upgrade found within radius ") + radius + ".");
         }
         if (instance.definition.superTower) {
             if ("seed_idol".equals(instance.definition.id)) {
-                return ActionResult.fail(this.choose(world, "РРґРѕР» СѓСЂРѕР¶Р°СЏ РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚ Р°РєС‚РёРІР°С†РёРё.", "The Harvest Idol does not use activations."));
+                return ActionResult.fail(this.choose(actor, "Идол урожая не использует активации.", "The Harvest Idol does not use activations."));
             }
             if (instance.superReady) {
                 if ("heart_of_roots".equals(instance.definition.id)) {
-                    return this.activateHeartOfRoots(world, context, instance);
+                    return this.activateHeartOfRoots(world, context, actor, instance);
                 }
-                return ActionResult.fail(this.towerDisplayName(world, instance.definition) + this.choose(world, " СѓР¶Рµ Р°РєС‚РёРІРµРЅ.", " is already active."));
+                return ActionResult.fail(this.towerDisplayName(actor, instance.definition) + this.choose(actor, " уже активен.", " is already active."));
             }
-            return this.reactivateSuperTower(world, context, instance);
+            return this.reactivateSuperTower(world, context, actor, instance);
         }
         if (!BankDefenseMatchPhaseSupport.canBuild(context.state, context.snapshot.gameRules.allowUpgradeDuringWave)) {
-            return ActionResult.fail(this.choose(world, "РЈР»СѓС‡С€Р°С‚СЊ РјРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ РІ С„Р°Р·Сѓ РїРѕРґРіРѕС‚РѕРІРєРё.", "Upgrades are only allowed during preparation."));
+            return ActionResult.fail(this.choose(actor, "Улучшать можно только в фазу подготовки.", "Upgrades are only allowed during preparation."));
         }
         return this.upgradeTowerInstance(world, context, actor, instance);
     }
@@ -5451,15 +5608,15 @@ public final class BankDefenseRuntime {
         MatchContext context = this.getOrCreateContext(world);
         TowerInstance instance = this.findNearestPlacedTower(context, targetPosition, radius);
         if (instance == null || !instance.definition.superTower) {
-            return ActionResult.fail(this.choose(world, "Р СЏРґРѕРј РЅРµС‚ СЃСѓРїРµСЂ-Р±Р°С€РЅРё.", "No super tower found nearby."));
+            return ActionResult.fail(this.choose(actor, "Рядом нет супер-башни.", "No super tower found nearby."));
         }
         if (instance.slot != null && !this.canPlayerUseSlot(world, context, actor, instance.slot)) {
-            return ActionResult.fail(this.deniedSlotAccessMessage(world, instance.slot));
+            return ActionResult.fail(this.deniedSlotAccessMessage(actor, instance.slot));
         }
         if ("heart_of_roots".equals(instance.definition.id)) {
-            return this.activateHeartOfRoots(world, context, instance);
+            return this.activateHeartOfRoots(world, context, actor, instance);
         }
-        return ActionResult.fail(this.choose(world, "РЈ СЌС‚РѕР№ СЃСѓРїРµСЂ-Р±Р°С€РЅРё РЅРµС‚ СЂСѓС‡РЅРѕР№ Р°РєС‚РёРІР°С†РёРё.", "This super tower does not have a manual activation."));
+        return ActionResult.fail(this.choose(actor, "У этой супер-башни нет ручной активации.", "This super tower does not have a manual activation."));
     }
 
     public ActionResult reactivateSuperTowerAt(World world, Vec3i targetPosition, int radius) throws IOException {
@@ -5470,12 +5627,12 @@ public final class BankDefenseRuntime {
         MatchContext context = this.getOrCreateContext(world);
         TowerInstance instance = this.findNearestPlacedTower(context, targetPosition, radius);
         if (instance == null || !instance.definition.superTower) {
-            return ActionResult.fail(this.choose(world, "Р СЏРґРѕРј РЅРµС‚ СЃСѓРїРµСЂ-Р±Р°С€РЅРё.", "No super tower found nearby."));
+            return ActionResult.fail(this.choose(actor, "Рядом нет супер-башни.", "No super tower found nearby."));
         }
         if (instance.slot != null && !this.canPlayerUseSlot(world, context, actor, instance.slot)) {
-            return ActionResult.fail(this.deniedSlotAccessMessage(world, instance.slot));
+            return ActionResult.fail(this.deniedSlotAccessMessage(actor, instance.slot));
         }
-        return this.reactivateSuperTower(world, context, instance);
+        return this.reactivateSuperTower(world, context, actor, instance);
     }
 
     public ActionResult buildOrUpgradeTower(World world, Vec3i targetPosition, String towerId, int buildMode) throws IOException {
@@ -5485,20 +5642,20 @@ public final class BankDefenseRuntime {
     public ActionResult buildOrUpgradeTower(World world, PlayerRef actor, Vec3i targetPosition, String towerId, int buildMode) throws IOException {
         MatchContext context = this.getOrCreateContext(world);
         if (!context.state.gameStarted && !this.tutorialAllowsPrematchBuild(world, context)) {
-            return ActionResult.fail(this.choose(world, "РЎРЅР°С‡Р°Р»Р° РІС‹Р±РµСЂРё СЃР»РѕР¶РЅРѕСЃС‚СЊ Рё РєРѕРЅС‚СЂР°РєС‚ Сѓ РѕРїРµСЂР°С‚РѕСЂР°.", "Choose a difficulty and contract with the operator first."));
+            return ActionResult.fail(this.choose(actor, "Сначала выберите сложность и контракт у оператора.", "Choose a difficulty and contract with the operator first."));
         }
         TowerDefinition tower = context.towerById.get(towerId);
         if (tower == null) {
-            return ActionResult.fail(this.choose(world, "РќРµРёР·РІРµСЃС‚РЅР°СЏ Р±Р°С€РЅСЏ: '", "Unknown tower: '") + towerId + this.choose(world, "'. РСЃРїРѕР»СЊР·СѓР№ /bankdefense towers.", "'. Use /bankdefense towers."));
+            return ActionResult.fail(this.choose(actor, "Неизвестная башня: '", "Unknown tower: '") + towerId + this.choose(actor, "'. Используй /bankdefense towers.", "'. Use /bankdefense towers."));
         }
         BuildSlot slot = this.findNearestSlot(context, targetPosition, 0);
         if (slot == null) {
-            return ActionResult.fail(this.choose(world, "Р СЏРґРѕРј РЅРµС‚ СЃР»РѕС‚Р° СЃС‚СЂРѕРёС‚РµР»СЊСЃС‚РІР°.", "No build slot found nearby."));
+            return ActionResult.fail(this.choose(actor, "Рядом нет слота строительства.", "No build slot found nearby."));
         }
         TowerInstance existingTower = context.placedTowers.get(slot.id);
         if (existingTower == null) {
             if (!BankDefenseMatchPhaseSupport.canBuild(context.state, context.snapshot.gameRules.allowBuildDuringWave)) {
-                return ActionResult.fail(this.choose(world, "РЎС‚СЂРѕРёС‚СЊ РјРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ РІ С„Р°Р·Сѓ РїРѕРґРіРѕС‚РѕРІРєРё.", "Building is only allowed during preparation."));
+                return ActionResult.fail(this.choose(actor, "Строить можно только в фазу подготовки.", "Building is only allowed during preparation."));
             }
             return this.buildTowerInSlot(world, context, actor, slot, tower, buildMode);
         }
@@ -5506,18 +5663,18 @@ public final class BankDefenseRuntime {
             && buildMode != SEED_IDOL_MODE_DEFAULT
             && existingTower.specialMode != SEED_IDOL_MODE_DEFAULT
             && existingTower.specialMode != buildMode) {
-            return ActionResult.fail(this.choose(world, "Р РµР¶РёРј РёРґРѕР»Р° РІС‹Р±РёСЂР°РµС‚СЃСЏ С‚РѕР»СЊРєРѕ РїСЂРё СѓСЃС‚Р°РЅРѕРІРєРµ. РџСЂРѕРґР°Р№ РµРіРѕ Рё РїРѕСЃС‚Р°РІСЊ Р·Р°РЅРѕРІРѕ.", "The idol mode can only be chosen when placing it. Sell it and build it again."));
+            return ActionResult.fail(this.choose(actor, "Режим идола выбирается только при установке. Продай его и поставь заново.", "The idol mode can only be chosen when placing it. Sell it and build it again."));
         }
         if (!existingTower.definition.id.equals(tower.id)) {
             return ActionResult.fail(
-                this.choose(world, "Р’ СЃР»РѕС‚Рµ ", "Slot ") + slot.id
-                    + this.choose(world, " СѓР¶Рµ СЃС‚РѕРёС‚ ", " already contains ")
-                    + this.towerDisplayName(world, existingTower.definition)
-                    + this.choose(world, ". Р’С‹Р±РµСЂРё С‚Р°РєСѓСЋ Р¶Рµ Р±Р°С€РЅСЋ РґР»СЏ СѓР»СѓС‡С€РµРЅРёСЏ РёР»Рё СЃРЅР°С‡Р°Р»Р° РїСЂРѕРґР°Р№ С‚РµРєСѓС‰СѓСЋ.", ". Choose the same tower to upgrade it, or sell the current one first.")
+                this.choose(actor, "На площадке ", "Pad ") + this.slotDisplayName(slot)
+                    + this.choose(actor, " уже стоит ", " already contains ")
+                    + this.towerDisplayName(actor, existingTower.definition)
+                    + this.choose(actor, ". Выберите такую же башню для улучшения или сначала продайте текущую.", ". Choose the same tower to upgrade it, or sell the current one first.")
             );
         }
         if (!BankDefenseMatchPhaseSupport.canBuild(context.state, context.snapshot.gameRules.allowUpgradeDuringWave)) {
-            return ActionResult.fail(this.choose(world, "РЈР»СѓС‡С€Р°С‚СЊ РјРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ РІ С„Р°Р·Сѓ РїРѕРґРіРѕС‚РѕРІРєРё.", "Upgrades are only allowed during preparation."));
+            return ActionResult.fail(this.choose(actor, "Улучшать можно только в фазу подготовки.", "Upgrades are only allowed during preparation."));
         }
         return this.upgradeTowerInstance(world, context, actor, existingTower);
     }
@@ -5534,7 +5691,7 @@ public final class BankDefenseRuntime {
         MatchContext context = this.getOrCreateContext(world);
         TowerInstance instance = this.findNearestPlacedTower(context, playerPosition, radius);
         if (instance == null) {
-            return ActionResult.fail(this.choose(world, "Р СЏРґРѕРј РЅРµС‚ Р±Р°С€РЅРё РґР»СЏ РїСЂРѕРґР°Р¶Рё РІ СЂР°РґРёСѓСЃРµ ", "No tower to sell found within radius ") + radius + ".");
+            return ActionResult.fail(this.choose(world, "Рядом нет башни для продажи в радиусе ", "No tower to sell found within radius ") + radius + ".");
         }
         return this.sellTowerInstance(world, context, this.primaryPlayerRef(world), instance);
     }
@@ -5547,7 +5704,7 @@ public final class BankDefenseRuntime {
         MatchContext context = this.getOrCreateContext(world);
         TowerInstance instance = this.findNearestPlacedTower(context, targetPosition, radius);
         if (instance == null) {
-            return ActionResult.fail(this.choose(world, "Р СЏРґРѕРј РЅРµС‚ Р±Р°С€РЅРё РґР»СЏ РїСЂРѕРґР°Р¶Рё РІ СЂР°РґРёСѓСЃРµ ", "No tower to sell found within radius ") + radius + ".");
+            return ActionResult.fail(this.choose(actor, "Рядом нет башни для продажи в радиусе ", "No tower to sell found within radius ") + radius + ".");
         }
         return this.sellTowerInstance(world, context, actor, instance);
     }
@@ -5559,34 +5716,34 @@ public final class BankDefenseRuntime {
     public ActionResult equipTowerModule(World world, PlayerRef actor, Vec3i targetPosition, String moduleId, int radius) throws IOException {
         MatchContext context = this.getOrCreateContext(world);
         if (!BankDefenseMatchPhaseSupport.isBuildPhase(context.state)) {
-            return ActionResult.fail(this.choose(world, "РњРµРЅСЏС‚СЊ РјРѕРґСѓР»Рё РјРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ РІ С„Р°Р·Сѓ РїРѕРґРіРѕС‚РѕРІРєРё.", "Modules can only be changed during preparation."));
+            return ActionResult.fail(this.choose(actor, "Менять модули можно только в фазу подготовки.", "Modules can only be changed during preparation."));
         }
         if (context.tutorialActive) {
             TutorialState tutorial = this.tutorialState(world);
             if (tutorial.stage != TutorialStage.FillAllSlots && tutorial.stage != TutorialStage.WaitTwoLaneWaveFinish) {
-                return ActionResult.fail(this.choose(world, "РЎРµР№С‡Р°СЃ РљРІРёР±РµРє Р¶РґС‘С‚, РїРѕРєР° С‚С‹ РґРѕР±РµСЂС‘С€СЊСЃСЏ РґРѕ С€Р°РіР° СЃ РјРѕРґСѓР»РµРј.", "Kweebec is waiting until you reach the module step."));
+                return ActionResult.fail(this.choose(actor, "Сейчас Квибек ждёт, пока ты доберёшься до шага с модулем.", "Kweebec is waiting until you reach the module step."));
             }
         }
         TowerInstance instance = this.findNearestPlacedTower(context, targetPosition, radius);
         if (instance == null) {
-            return ActionResult.fail(this.choose(world, "Р СЏРґРѕРј РЅРµС‚ Р±Р°С€РЅРё РґР»СЏ СѓСЃС‚Р°РЅРѕРІРєРё РјРѕРґСѓР»СЏ РІ СЂР°РґРёСѓСЃРµ ", "No tower to install a module into was found within radius ") + radius + ".");
+            return ActionResult.fail(this.choose(actor, "Рядом нет башни для установки модуля в радиусе ", "No tower to install a module into was found within radius ") + radius + ".");
         }
         if (!this.canPlayerUseSlot(world, context, actor, instance.slot)) {
-            return ActionResult.fail(this.deniedSlotAccessMessage(world, instance.slot));
+            return ActionResult.fail(this.deniedSlotAccessMessage(actor, instance.slot));
         }
         ModuleDefinition module = context.moduleById.get(moduleId);
         if (module == null) {
-            return ActionResult.fail(this.choose(world, "РќРµРёР·РІРµСЃС‚РЅС‹Р№ РјРѕРґСѓР»СЊ: '", "Unknown module: '") + moduleId + "'.");
+            return ActionResult.fail(this.choose(actor, "Неизвестный модуль: '", "Unknown module: '") + moduleId + "'.");
         }
         int available = context.moduleInventory.getOrDefault(moduleId, 0);
         if (available <= 0) {
-            return ActionResult.fail(this.choose(world, "РњРѕРґСѓР»СЏ ", "No copies of ") + this.moduleDisplayName(world, module) + this.choose(world, " РЅРµС‚ РІ Р·Р°РїР°СЃРµ.", " are available in storage."));
+            return ActionResult.fail(this.choose(actor, "Модуля ", "No copies of ") + this.moduleDisplayName(actor, module) + this.choose(actor, " нет в запасе.", " are available in storage."));
         }
         if (moduleId.equals(instance.equippedModuleId)) {
-            return ActionResult.fail(this.moduleDisplayName(world, module) + this.choose(world, " СѓР¶Рµ СѓСЃС‚Р°РЅРѕРІР»РµРЅ РІ СЌС‚РѕР№ Р±Р°С€РЅРµ.", " is already installed in this tower."));
+            return ActionResult.fail(this.moduleDisplayName(actor, module) + this.choose(actor, " уже установлен в этой башне.", " is already installed in this tower."));
         }
         if (instance.equippedModuleId != null) {
-            return ActionResult.fail(this.choose(world, "Р’ СЌС‚РѕР№ Р±Р°С€РЅРµ СѓР¶Рµ СѓСЃС‚Р°РЅРѕРІР»РµРЅ РјРѕРґСѓР»СЊ. РЎРЅР°С‡Р°Р»Р° СЃРЅРёРјРё С‚РµРєСѓС‰РёР№.", "A module is already installed in this tower. Remove it first."));
+            return ActionResult.fail(this.choose(actor, "В этой башне уже установлен модуль. Сначала сними текущий.", "A module is already installed in this tower. Remove it first."));
         }
         this.addModuleToInventory(context, moduleId, -1);
         instance.equippedModuleId = moduleId;
@@ -5594,7 +5751,7 @@ public final class BankDefenseRuntime {
         this.playSound3d(world, SOUND_MODULE_INSTALL, this.towerWorldPosition(instance.slot));
         this.showEventToast(
             context,
-            this.choose(world, "РњРѕРґСѓР»СЊ ", "Module ") + this.moduleDisplayName(world, module) + this.choose(world, " СѓСЃС‚Р°РЅРѕРІР»РµРЅ РІ ", " installed in ") + this.towerDisplayName(world, instance.definition) + ".",
+            this.choose(world, "Модуль ", "Module ") + this.moduleDisplayName(world, module) + this.choose(world, " установлен в ", " installed in ") + this.towerDisplayName(world, instance.definition) + ".",
             EVENT_TOAST_ICON_CORES
         );
         this.refreshVisualizationIfEnabled(world);
@@ -5603,7 +5760,7 @@ public final class BankDefenseRuntime {
             tutorial.moduleEquipped = true;
             this.updateTutorialProgressionFromContext(world, context);
         }
-        return ActionResult.ok(this.towerDisplayName(world, instance.definition) + this.choose(world, " РїРѕР»СѓС‡РёР» РјРѕРґСѓР»СЊ ", " received module ") + this.moduleDisplayName(world, module) + ".");
+        return ActionResult.ok(this.towerDisplayName(actor, instance.definition) + this.choose(actor, " получил модуль ", " received module ") + this.moduleDisplayName(actor, module) + ".");
     }
 
     public ActionResult removeTowerModule(World world, Vec3i targetPosition, int radius) throws IOException {
@@ -5613,25 +5770,25 @@ public final class BankDefenseRuntime {
     public ActionResult removeTowerModule(World world, PlayerRef actor, Vec3i targetPosition, int radius) throws IOException {
         MatchContext context = this.getOrCreateContext(world);
         if (!BankDefenseMatchPhaseSupport.isBuildPhase(context.state)) {
-            return ActionResult.fail(this.choose(world, "РњРµРЅСЏС‚СЊ РјРѕРґСѓР»Рё РјРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ РІ С„Р°Р·Сѓ РїРѕРґРіРѕС‚РѕРІРєРё.", "Modules can only be changed during preparation."));
+            return ActionResult.fail(this.choose(actor, "Менять модули можно только в фазу подготовки.", "Modules can only be changed during preparation."));
         }
         TowerInstance instance = this.findNearestPlacedTower(context, targetPosition, radius);
         if (instance == null) {
-            return ActionResult.fail(this.choose(world, "Р СЏРґРѕРј РЅРµС‚ Р±Р°С€РЅРё РґР»СЏ СЃРЅСЏС‚РёСЏ РјРѕРґСѓР»СЏ РІ СЂР°РґРёСѓСЃРµ ", "No tower to remove a module from was found within radius ") + radius + ".");
+            return ActionResult.fail(this.choose(actor, "Рядом нет башни для снятия модуля в радиусе ", "No tower to remove a module from was found within radius ") + radius + ".");
         }
         if (!this.canPlayerUseSlot(world, context, actor, instance.slot)) {
-            return ActionResult.fail(this.deniedSlotAccessMessage(world, instance.slot));
+            return ActionResult.fail(this.deniedSlotAccessMessage(actor, instance.slot));
         }
         if (instance.equippedModuleId == null) {
-            return ActionResult.fail(this.choose(world, "Р’ СЌС‚РѕР№ Р±Р°С€РЅРµ РЅРµС‚ СѓСЃС‚Р°РЅРѕРІР»РµРЅРЅРѕРіРѕ РјРѕРґСѓР»СЏ.", "This tower has no module installed."));
+            return ActionResult.fail(this.choose(actor, "В этой башне нет установленного модуля.", "This tower has no module installed."));
         }
         ModuleDefinition module = context.moduleById.get(instance.equippedModuleId);
-        String displayName = module != null ? this.moduleDisplayName(world, module) : instance.equippedModuleId;
+        String displayName = module != null ? this.moduleDisplayName(actor, module) : instance.equippedModuleId;
         this.addModuleToInventory(context, instance.equippedModuleId, 1);
         instance.equippedModuleId = null;
         this.playSound3d(world, SOUND_MODULE_REMOVE, this.towerWorldPosition(instance.slot));
         this.refreshVisualizationIfEnabled(world);
-        return ActionResult.ok(this.choose(world, "РњРѕРґСѓР»СЊ ", "Module ") + displayName + this.choose(world, " СЃРЅСЏС‚ Рё РІРѕР·РІСЂР°С‰С‘РЅ РІ Р·Р°РїР°СЃ.", " was removed and returned to storage."));
+        return ActionResult.ok(this.choose(actor, "Модуль ", "Module ") + displayName + this.choose(actor, " снят и возвращён в запас.", " was removed and returned to storage."));
     }
 
     public RewardUiState getRewardUiState(World world) throws IOException {
@@ -5650,14 +5807,14 @@ public final class BankDefenseRuntime {
         state.rewardPending = !context.pendingRewardChoices.isEmpty();
         if (this.isDuoMode(context) && state.rewardPending) {
             if (this.isDuoSoloTestEnabled(context)) {
-                state.phaseText = this.choose(viewerRef, "РўРµСЃС‚РѕРІС‹Р№ Duo: РІС‹Р±СЂР°РЅРЅС‹Р№ РјРѕРґСѓР»СЊ Р±СѓРґРµС‚ РІС‹РґР°РЅ x2.", "Duo test: the selected module will be granted x2.");
+                state.phaseText = this.choose(viewerRef, "Тестовый Duo: выбранный модуль будет выдан x2.", "Duo test: the selected module will be granted x2.");
             } else {
                 String pickerLabel = TEAM_GREEN.equals(context.rewardPickerTeam)
-                    ? this.choose(viewerRef, "Р—РµР»С‘РЅС‹Р№", "Green")
-                    : this.choose(viewerRef, "РЎРёРЅРёР№", "Blue");
+                    ? this.choose(viewerRef, "Зелёный", "Green")
+                    : this.choose(viewerRef, "Синий", "Blue");
                 state.phaseText = context.rewardSelectionsByTeam.isEmpty()
-                    ? this.choose(viewerRef, "РџРµСЂРІС‹Р№ РІС‹Р±РѕСЂ: ", "First pick: ") + pickerLabel
-                    : this.choose(viewerRef, "РЎР»РµРґСѓСЋС‰РёР№ РІС‹Р±РѕСЂ: ", "Next pick: ") + pickerLabel;
+                    ? this.choose(viewerRef, "Первый выбор: ", "First pick: ") + pickerLabel
+                    : this.choose(viewerRef, "Следующий выбор: ", "Next pick: ") + pickerLabel;
             }
             if (context.rewardLastPickedModuleId != null
                 && !context.rewardLastPickedModuleId.isBlank()
@@ -5665,8 +5822,8 @@ public final class BankDefenseRuntime {
                 && !context.rewardLastPickedTeam.isBlank()
                 && !context.rewardLastPickedTeam.equals(state.viewerTeam)) {
                 ModuleDefinition picked = context.moduleById.get(context.rewardLastPickedModuleId);
-                String pickedName = picked == null ? context.rewardLastPickedModuleId : this.moduleDisplayName(world, picked);
-                state.allyPickText = this.choose(viewerRef, "РЎРѕСЋР·РЅРёРє РІС‹Р±СЂР°Р»: ", "Ally picked: ") + pickedName;
+                String pickedName = picked == null ? context.rewardLastPickedModuleId : this.moduleDisplayName(viewerRef, picked);
+                state.allyPickText = this.choose(viewerRef, "Союзник выбрал: ", "Ally picked: ") + pickedName;
             }
         }
         for (String moduleId : context.pendingRewardChoices) {
@@ -5676,8 +5833,8 @@ public final class BankDefenseRuntime {
             }
             ModuleButtonState button = new ModuleButtonState();
             button.moduleId = module.id;
-            button.displayName = this.moduleDisplayName(world, module);
-            button.note = this.moduleNote(world, module);
+            button.displayName = this.moduleDisplayName(viewerRef, module);
+            button.note = this.moduleNote(viewerRef, module);
             button.count = context.moduleInventory.getOrDefault(module.id, 0);
             button.enabled = !this.isDuoMode(context)
                 || state.viewerTeam.equals(context.rewardPickerTeam)
@@ -5691,7 +5848,7 @@ public final class BankDefenseRuntime {
         MatchContext context = this.getOrCreateContext(world);
         if (!context.pendingRewardChoices.isEmpty()) {
             context.state.rewardPending = true;
-            return ActionResult.ok(this.choose(world, "РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ С‚РµРєСѓС‰РёР№ РІС‹Р±РѕСЂ РјРѕРґСѓР»РµР№.", "Using the current module selection."));
+            return ActionResult.ok(this.choose(world, "Используется текущий выбор модулей.", "Using the current module selection."));
         }
         List<String> pool = new ArrayList<>();
         for (ModuleDefinition module : context.snapshot.modules.modules) {
@@ -5700,15 +5857,15 @@ public final class BankDefenseRuntime {
             }
         }
         if (pool.isEmpty()) {
-            return ActionResult.fail(this.choose(world, "Р’ РєРѕРЅС„РёРіРµ РЅРµ РЅР°Р№РґРµРЅРѕ РЅРё РѕРґРЅРѕРіРѕ РјРѕРґСѓР»СЏ.", "No modules were found in the config."));
+            return ActionResult.fail(this.choose(world, "В конфиге не найдено ни одного модуля.", "No modules were found in the config."));
         }
         Collections.shuffle(pool, ThreadLocalRandom.current());
         this.prepareRewardChoices(context, pool, context.state.currentWave);
         if (!context.state.rewardPending) {
-            return ActionResult.fail(this.choose(world, "РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕРґРіРѕС‚РѕРІРёС‚СЊ РІС‹Р±РѕСЂ РјРѕРґСѓР»РµР№.", "Failed to prepare the module selection."));
+            return ActionResult.fail(this.choose(world, "Не удалось подготовить выбор модулей.", "Failed to prepare the module selection."));
         }
         this.playWorldUiSound(world, SOUND_REWARD);
-        return ActionResult.ok(this.choose(world, "РЎРѕР·РґР°РЅ С‚РµСЃС‚РѕРІС‹Р№ РІС‹Р±РѕСЂ РјРѕРґСѓР»РµР№.", "A test module selection has been created."));
+        return ActionResult.ok(this.choose(world, "Создан тестовый выбор модулей.", "A test module selection has been created."));
     }
 
     public ActionResult claimModuleReward(World world, String moduleId) throws IOException {
@@ -5718,32 +5875,32 @@ public final class BankDefenseRuntime {
     public ActionResult claimModuleReward(World world, PlayerRef actor, String moduleId) throws IOException {
         MatchContext context = this.getOrCreateContext(world);
         if (context.pendingRewardChoices.isEmpty()) {
-            return ActionResult.fail(this.choose(world, "РЎРµР№С‡Р°СЃ РЅРµС‚ РЅР°РіСЂР°РґС‹ Р·Р° РІРѕР»РЅСѓ.", "There is no wave reward available right now."));
+            return ActionResult.fail(this.choose(actor, "Сейчас нет награды за волну.", "There is no wave reward available right now."));
         }
         if (!context.pendingRewardChoices.contains(moduleId)) {
-            return ActionResult.fail(this.choose(world, "Р­С‚РѕРіРѕ РјРѕРґСѓР»СЏ РЅРµС‚ РІ С‚РµРєСѓС‰РµРј РІС‹Р±РѕСЂРµ РЅР°РіСЂР°РґС‹.", "That module is not in the current reward selection."));
+            return ActionResult.fail(this.choose(actor, "Этого модуля нет в текущем выборе награды.", "That module is not in the current reward selection."));
         }
         ModuleDefinition module = context.moduleById.get(moduleId);
-        String displayName = module != null ? this.moduleDisplayName(world, module) : moduleId;
+        String displayName = module != null ? this.moduleDisplayName(actor, module) : moduleId;
         if (this.isDuoMode(context)) {
             String actorTeam = this.teamForPlayer(context, actor);
             String effectivePickerTeam = actorTeam;
             if (this.isDuoSoloTestEnabled(context)) {
                 effectivePickerTeam = this.normalizeTeam(context.rewardPickerTeam);
                 if (!TEAM_BLUE.equals(effectivePickerTeam) && !TEAM_GREEN.equals(effectivePickerTeam)) {
-                    return ActionResult.fail(this.choose(world, "РЎРµР№С‡Р°СЃ РЅРµС‚ Р°РєС‚РёРІРЅРѕРіРѕ РІС‹Р±РѕСЂР° СЃС‚РѕСЂРѕРЅС‹.", "There is no active side pick right now."));
+                    return ActionResult.fail(this.choose(actor, "Сейчас нет активного выбора стороны.", "There is no active side pick right now."));
                 }
             } else if (!TEAM_BLUE.equals(actorTeam) && !TEAM_GREEN.equals(actorTeam)) {
-                return ActionResult.fail(this.choose(world, "РРіСЂРѕРє РЅРµ РїСЂРёРІСЏР·Р°РЅ Рє РєРѕРјР°РЅРґРµ Duo.", "The player is not assigned to a Duo team."));
+                return ActionResult.fail(this.choose(actor, "Игрок не привязан к команде Duo.", "The player is not assigned to a Duo team."));
             }
             if (!this.isDuoSoloTestEnabled(context) && !actorTeam.equals(context.rewardPickerTeam)) {
-                return ActionResult.fail(this.choose(world, "РЎРµР№С‡Р°СЃ РІС‹Р±РёСЂР°РµС‚ СЃРѕСЋР·РЅРёРє.", "It is your ally's turn to pick."));
+                return ActionResult.fail(this.choose(actor, "Сейчас выбирает союзник.", "It is your ally's turn to pick."));
             }
             if (this.isDuoSoloTestEnabled(context)) {
                 this.addModuleToInventory(context, moduleId, 2);
                 this.showEventToast(
                     context,
-                    this.choose(world, "РўРµСЃС‚РѕРІС‹Р№ Duo РІС‹Р±РѕСЂ: ", "Duo test pick: ") + displayName + " x2",
+                    this.choose(world, "Тестовый Duo выбор: ", "Duo test pick: ") + displayName + " x2",
                     EVENT_TOAST_ICON_CORES
                 );
                 this.clearRewardDraftState(context);
@@ -5752,10 +5909,10 @@ public final class BankDefenseRuntime {
                 if (context.state.instantAutoStart
                     && BankDefenseMatchPhaseSupport.canStartPreparedWave(context.state)) {
                     ActionResult result = this.startPreparedWave(world, context, false);
-                    return ActionResult.ok(this.choose(world, "РўРµСЃС‚РѕРІС‹Р№ Duo РІС‹Р±РѕСЂ Р·Р°РІРµСЂС€С‘РЅ. ", "Duo test reward completed. ") + result.message);
+                    return ActionResult.ok(this.choose(actor, "Тестовый Duo выбор завершён. ", "Duo test reward completed. ") + result.message);
                 }
-                return ActionResult.ok(this.choose(world, "РўРµСЃС‚РѕРІС‹Р№ Duo РІС‹Р±РѕСЂ Р·Р°РІРµСЂС€С‘РЅ. ", "Duo test reward completed. ")
-                    + this.choose(world, "РњРѕРґСѓР»СЊ РІС‹РґР°РЅ РґРІР°Р¶РґС‹: ", "Module granted twice: ")
+                return ActionResult.ok(this.choose(actor, "Тестовый Duo выбор завершён. ", "Duo test reward completed. ")
+                    + this.choose(actor, "Модуль выдан дважды: ", "Module granted twice: ")
                     + displayName + ".");
             }
             this.addModuleToInventory(context, moduleId, 1);
@@ -5765,7 +5922,7 @@ public final class BankDefenseRuntime {
             context.pendingRewardChoices.remove(moduleId);
             this.showEventToast(
                 context,
-                this.choose(world, TEAM_BLUE.equals(effectivePickerTeam) ? "РЎРёРЅРёР№ РІС‹Р±СЂР°Р»: " : "Р—РµР»С‘РЅС‹Р№ РІС‹Р±СЂР°Р»: ", TEAM_BLUE.equals(effectivePickerTeam) ? "Blue picked: " : "Green picked: ") + displayName,
+                this.choose(world, TEAM_BLUE.equals(effectivePickerTeam) ? "Синий выбрал: " : "Зелёный выбрал: ", TEAM_BLUE.equals(effectivePickerTeam) ? "Blue picked: " : "Green picked: ") + displayName,
                 EVENT_TOAST_ICON_CORES
             );
             if (context.rewardSelectionsByTeam.size() == 1) {
@@ -5773,28 +5930,29 @@ public final class BankDefenseRuntime {
                 context.state.rewardPending = !context.pendingRewardChoices.isEmpty();
                 this.queueWorldUiSound(context, SOUND_DUO_REWARD_ALLY_PICK);
                 this.openRewardPages(world);
-                return ActionResult.ok(this.choose(world, "Р’С‹Р±РѕСЂ СЃРѕС…СЂР°РЅС‘РЅ. РўРµРїРµСЂСЊ С…РѕРґ СЃРѕСЋР·РЅРёРєР°: ", "Pick saved. Your ally chooses next: ")
+                return ActionResult.ok(this.choose(actor, "Выбор сохранён. Теперь ход союзника: ", "Pick saved. Your ally chooses next: ")
                     + displayName + ".");
             }
             this.finalizeDuoRewardDraft(world, context);
             this.refreshVisualizationIfEnabled(world);
-            boolean idolModePromptOpened = this.openPendingSeedIdolModeChoices(world, context);
-            if (idolModePromptOpened) {
-                return ActionResult.ok(this.choose(world, "Duo РЅР°РіСЂР°РґР° Р·Р°РІРµСЂС€РµРЅР°. РРґРѕР» СѓСЂРѕР¶Р°СЏ Р¶РґС‘С‚ РІС‹Р±РѕСЂР° СЂРµР¶РёРјР°.", "Duo reward completed. The Harvest Idol is waiting for a mode choice."));
+            boolean idolModePromptPending = !context.pendingIdolModeSlotByPlayer.isEmpty();
+            if (idolModePromptPending) {
+                this.schedulePendingSeedIdolModeChoiceOpens(world, context, 0.12);
+                return ActionResult.ok(this.choose(actor, "Duo награда завершена. Идол урожая ждёт выбора режима.", "Duo reward completed. The Harvest Idol is waiting for a mode choice."));
             }
             if (context.state.instantAutoStart
                 && BankDefenseMatchPhaseSupport.canStartPreparedWave(context.state)) {
                 ActionResult result = this.startPreparedWave(world, context, false);
-                return ActionResult.ok(this.choose(world, "Duo РЅР°РіСЂР°РґР° Р·Р°РІРµСЂС€РµРЅР°. ", "Duo reward completed. ") + result.message);
+                return ActionResult.ok(this.choose(actor, "Duo награда завершена. ", "Duo reward completed. ") + result.message);
             }
-            return ActionResult.ok(this.choose(world, "Duo РЅР°РіСЂР°РґР° Р·Р°РІРµСЂС€РµРЅР°.", "Duo reward completed."));
+            return ActionResult.ok(this.choose(actor, "Duo награда завершена.", "Duo reward completed."));
         }
 
         this.addModuleToInventory(context, moduleId, 1);
         this.clearRewardDraftState(context);
         this.showEventToast(
             context,
-            this.choose(world, "РџРѕР»СѓС‡РµРЅ РјРѕРґСѓР»СЊ: ", "Module received: ") + displayName,
+            this.choose(world, "Получен модуль: ", "Module received: ") + displayName,
             EVENT_TOAST_ICON_CORES
         );
         if (context.tutorialActive) {
@@ -5808,16 +5966,16 @@ public final class BankDefenseRuntime {
         }
         this.playWorldUiSound(world, SOUND_REWARD);
         this.refreshVisualizationIfEnabled(world);
-        boolean idolModePromptOpened = this.openPendingSeedIdolModeChoices(world, context);
-        if (idolModePromptOpened) {
-            return ActionResult.ok(this.choose(world, "РџРѕР»СѓС‡РµРЅ РјРѕРґСѓР»СЊ: ", "Module received: ") + displayName + ". " + this.choose(world, "РРґРѕР» СѓСЂРѕР¶Р°СЏ Р¶РґС‘С‚ РІС‹Р±РѕСЂР° СЂРµР¶РёРјР°.", "The Harvest Idol is waiting for a mode choice."));
+        boolean idolModePromptPending = !context.pendingIdolModeSlotByPlayer.isEmpty();
+        if (idolModePromptPending) {
+            return ActionResult.ok(this.choose(actor, "Получен модуль: ", "Module received: ") + displayName + ". " + this.choose(actor, "Идол урожая ждёт выбора режима.", "The Harvest Idol is waiting for a mode choice."));
         }
         if (context.state.instantAutoStart
             && BankDefenseMatchPhaseSupport.canStartPreparedWave(context.state)) {
             ActionResult result = this.startPreparedWave(world, context, false);
-            return ActionResult.ok(this.choose(world, "РџРѕР»СѓС‡РµРЅ РјРѕРґСѓР»СЊ: ", "Module received: ") + displayName + ". " + result.message);
+            return ActionResult.ok(this.choose(actor, "Получен модуль: ", "Module received: ") + displayName + ". " + result.message);
         }
-        return ActionResult.ok(this.choose(world, "РџРѕР»СѓС‡РµРЅ РјРѕРґСѓР»СЊ: ", "Module received: ") + displayName + ".");
+        return ActionResult.ok(this.choose(actor, "Получен модуль: ", "Module received: ") + displayName + ".");
     }
 
     private void prepareRewardChoices(MatchContext context, List<String> pool, int completedWaveNumber) {
@@ -5825,6 +5983,7 @@ public final class BankDefenseRuntime {
             return;
         }
         this.clearRewardDraftState(context);
+        context.lastRewardPreparedWave = completedWaveNumber;
         int choiceCount = Math.min(4, pool.size());
         for (int i = 0; i < choiceCount; i++) {
             context.pendingRewardChoices.add(pool.get(i));
@@ -5842,6 +6001,7 @@ public final class BankDefenseRuntime {
             return;
         }
         context.pendingRewardChoices.clear();
+        context.pendingRewardPageOpenDelayByPlayer.clear();
         context.rewardSelectionsByTeam.clear();
         context.rewardPickerTeam = TEAM_SHARED;
         context.rewardTeamBonusModuleId = "";
@@ -5869,37 +6029,69 @@ public final class BankDefenseRuntime {
         context.rewardPickerTeam = TEAM_SHARED;
         context.state.rewardPending = false;
         StringBuilder message = new StringBuilder();
-        message.append(this.choose(world, "Duo РІС‹Р±РѕСЂ Р·Р°РІРµСЂС€С‘РЅ. ", "Duo draft completed. "));
+        message.append(this.choose(world, "Duo выбор завершён. ", "Duo draft completed. "));
         if (!context.rewardSelectionsByTeam.isEmpty()) {
             String blueModule = context.rewardSelectionsByTeam.get(TEAM_BLUE);
             String greenModule = context.rewardSelectionsByTeam.get(TEAM_GREEN);
             if (blueModule != null) {
                 ModuleDefinition blue = context.moduleById.get(blueModule);
-                message.append(this.choose(world, "РЎРёРЅРёР№: ", "Blue: "))
+                message.append(this.choose(world, "Синий: ", "Blue: "))
                     .append(blue == null ? blueModule : this.moduleDisplayName(world, blue))
                     .append(". ");
             }
             if (greenModule != null) {
                 ModuleDefinition green = context.moduleById.get(greenModule);
-                message.append(this.choose(world, "Р—РµР»С‘РЅС‹Р№: ", "Green: "))
+                message.append(this.choose(world, "Зелёный: ", "Green: "))
                     .append(green == null ? greenModule : this.moduleDisplayName(world, green))
                     .append(". ");
             }
         }
         if (context.rewardTeamBonusModuleId != null && !context.rewardTeamBonusModuleId.isBlank()) {
             ModuleDefinition bonus = context.moduleById.get(context.rewardTeamBonusModuleId);
-            message.append(this.choose(world, "РљРѕРјР°РЅРґРЅС‹Р№ Р±РѕРЅСѓСЃ: ", "Team bonus: "))
+            message.append(this.choose(world, "Командный бонус: ", "Team bonus: "))
                 .append(bonus == null ? context.rewardTeamBonusModuleId : this.moduleDisplayName(world, bonus))
                 .append(". ");
         }
         if (context.rewardBurnedModuleId != null && !context.rewardBurnedModuleId.isBlank()) {
             ModuleDefinition burned = context.moduleById.get(context.rewardBurnedModuleId);
-            message.append(this.choose(world, "РЎРіРѕСЂРµР»Рѕ: ", "Burned: "))
+            message.append(this.choose(world, "Сгорело: ", "Burned: "))
                 .append(burned == null ? context.rewardBurnedModuleId : this.moduleDisplayName(world, burned))
                 .append(".");
         }
         this.showEventToast(context, message.toString().trim(), EVENT_TOAST_ICON_CORES);
-        BankDefenseLocalization.sendWorldMessage(world, message.toString().trim());
+        this.sendLocalizedWorldMessage(world, viewerRef -> {
+            StringBuilder localized = new StringBuilder();
+            localized.append(this.choose(viewerRef, "Duo выбор завершён. ", "Duo draft completed. "));
+            if (!context.rewardSelectionsByTeam.isEmpty()) {
+                String blueModule = context.rewardSelectionsByTeam.get(TEAM_BLUE);
+                String greenModule = context.rewardSelectionsByTeam.get(TEAM_GREEN);
+                if (blueModule != null) {
+                    ModuleDefinition blue = context.moduleById.get(blueModule);
+                    localized.append(this.choose(viewerRef, "Синий: ", "Blue: "))
+                        .append(blue == null ? blueModule : this.moduleDisplayName(viewerRef, blue))
+                        .append(". ");
+                }
+                if (greenModule != null) {
+                    ModuleDefinition green = context.rewardSelectionsByTeam.get(TEAM_GREEN) == null ? null : context.moduleById.get(greenModule);
+                    localized.append(this.choose(viewerRef, "Зелёный: ", "Green: "))
+                        .append(green == null ? greenModule : this.moduleDisplayName(viewerRef, green))
+                        .append(". ");
+                }
+            }
+            if (context.rewardTeamBonusModuleId != null && !context.rewardTeamBonusModuleId.isBlank()) {
+                ModuleDefinition bonus = context.moduleById.get(context.rewardTeamBonusModuleId);
+                localized.append(this.choose(viewerRef, "Командный бонус: ", "Team bonus: "))
+                    .append(bonus == null ? context.rewardTeamBonusModuleId : this.moduleDisplayName(viewerRef, bonus))
+                    .append(". ");
+            }
+            if (context.rewardBurnedModuleId != null && !context.rewardBurnedModuleId.isBlank()) {
+                ModuleDefinition burned = context.moduleById.get(context.rewardBurnedModuleId);
+                localized.append(this.choose(viewerRef, "Сгорело: ", "Burned: "))
+                    .append(burned == null ? context.rewardBurnedModuleId : this.moduleDisplayName(viewerRef, burned))
+                    .append(".");
+            }
+            return localized.toString().trim();
+        });
     }
 
     public ProgressionUiState getProgressionUiState(World world) throws IOException {
@@ -5946,7 +6138,7 @@ public final class BankDefenseRuntime {
             button.contractId = contract.id;
             button.displayName = this.contractDisplayName(world, contract);
             String contractNote = this.contractNote(world, contract);
-            String rewardNote = BankDefenseLocalization.choose(this.primaryPlayerRef(world), "РћСЃРєРѕР»РєРё РґСѓРїР»Р°: ", "Hollow shards: ") + this.formatMultiplier(contract.rewardMultiplier);
+            String rewardNote = BankDefenseLocalization.choose(this.primaryPlayerRef(world), "Осколки дупла: ", "Hollow shards: ") + this.formatMultiplier(contract.rewardMultiplier);
             button.note = contractNote == null || contractNote.isBlank()
                 ? rewardNote
                 : contractNote + "\n" + rewardNote;
@@ -5983,24 +6175,24 @@ public final class BankDefenseRuntime {
     public ActionResult unlockProgressionNode(World world, String nodeId) throws IOException {
         MatchContext context = this.getOrCreateContext(world);
         if (context.progression == null) {
-            return ActionResult.fail(this.choose(world, "РџСЂРѕС„РёР»СЊ РїСЂРѕРіСЂРµСЃСЃРёРё РЅРµРґРѕСЃС‚СѓРїРµРЅ.", "Progression profile is unavailable."));
+            return ActionResult.fail(this.choose(world, "Профиль прогрессии недоступен.", "Progression profile is unavailable."));
         }
         if (this.progressionLocked(context)) {
-            return ActionResult.fail(this.choose(world, "РЈР»СѓС‡С€РµРЅРёСЏ Р·Р° РѕСЃРєРѕР»РєРё РґСѓРїР»Р° РґРѕСЃС‚СѓРїРЅС‹ С‚РѕР»СЊРєРѕ РІРЅРµ РјР°С‚С‡Р°.", "Hollow shard upgrades are only available outside a match."));
+            return ActionResult.fail(this.choose(world, "Улучшения за осколки дупла доступны только вне матча.", "Hollow shard upgrades are only available outside a match."));
         }
         ProgressionNodeDefinition node = this.findProgressionNode(context.snapshot, nodeId);
         if (node == null) {
-            return ActionResult.fail(this.choose(world, "РќРµРёР·РІРµСЃС‚РЅС‹Р№ СѓР·РµР»: ", "Unknown node: ") + nodeId + ".");
+            return ActionResult.fail(this.choose(world, "Неизвестный узел: ", "Unknown node: ") + nodeId + ".");
         }
         Set<String> unlocked = new HashSet<>(context.progression.unlockedNodeIds);
         if (unlocked.contains(node.id)) {
-            return ActionResult.fail(this.text(node.displayName) + this.choose(world, " СѓР¶Рµ РѕС‚РєСЂС‹С‚.", " is already unlocked."));
+            return ActionResult.fail(this.text(node.displayName) + this.choose(world, " уже открыто.", " is already unlocked."));
         }
         if (!this.areRequirementsMet(unlocked, node.requires)) {
-            return ActionResult.fail(this.choose(world, "РЎРЅР°С‡Р°Р»Р° РѕС‚РєСЂРѕР№ РїСЂРµРґС‹РґСѓС‰РёРµ СѓР·Р»С‹.", "Unlock the previous nodes first."));
+            return ActionResult.fail(this.choose(world, "Сначала открой предыдущие узлы.", "Unlock the previous nodes first."));
         }
         if (context.progression.cores < node.cost) {
-            return ActionResult.fail(this.choose(world, "РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РЇРґРµСЂ РґСѓРїР»Р°. РќСѓР¶РЅРѕ: ", "Not enough Hollow Cores. Required: ") + node.cost + ".");
+            return ActionResult.fail(this.choose(world, "Недостаточно Ядер дупла. Нужно: ", "Not enough Hollow Cores. Required: ") + node.cost + ".");
         }
         context.progression.cores -= node.cost;
         context.progression.unlockedNodeIds.add(node.id);
@@ -6009,8 +6201,8 @@ public final class BankDefenseRuntime {
         }
         this.showEventToast(
             context,
-            this.choose(world, "РћС‚РєСЂС‹С‚Рѕ СѓР»СѓС‡С€РµРЅРёРµ: ", "Upgrade unlocked: ") + this.text(node.displayName)
-                + this.choose(world, " (-", " (-") + node.cost + this.choose(world, " РѕСЃРєРѕР»РєРѕРІ).", " shards)."),
+            this.choose(world, "Открыто улучшение: ", "Upgrade unlocked: ") + this.text(node.displayName)
+                + this.choose(world, " (-", " (-") + node.cost + this.choose(world, " осколков).", " shards)."),
             EVENT_TOAST_ICON_CORES
         );
         this.playWorldUiSound(world, SOUND_CORE_UNLOCK);
@@ -6022,17 +6214,17 @@ public final class BankDefenseRuntime {
                 this.refreshVisualization(world);
             }
         }
-        return ActionResult.ok(this.choose(world, "РћС‚РєСЂС‹С‚ СѓР·РµР»: ", "Node unlocked: ") + this.text(node.displayName)
-            + this.choose(world, ". РР·РјРµРЅРµРЅРёСЏ РїСЂРёРјРµРЅСЏС‚СЃСЏ РІ СЃР»РµРґСѓСЋС‰РµРј РјР°С‚С‡Рµ.", ". The changes will apply in the next match."));
+        return ActionResult.ok(this.choose(world, "Открыт узел: ", "Node unlocked: ") + this.text(node.displayName)
+            + this.choose(world, ". Изменения применятся в следующем матче.", ". The changes will apply in the next match."));
     }
 
     public ActionResult resetProgression(World world) throws IOException {
         MatchContext context = this.getOrCreateContext(world);
         if (context.progression == null) {
-            return ActionResult.fail(this.choose(world, "РџСЂРѕС„РёР»СЊ РїСЂРѕРіСЂРµСЃСЃРёРё РЅРµРґРѕСЃС‚СѓРїРµРЅ.", "Progression profile is unavailable."));
+            return ActionResult.fail(this.choose(world, "Профиль прогрессии недоступен.", "Progression profile is unavailable."));
         }
         if (this.progressionLocked(context)) {
-            return ActionResult.fail(this.choose(world, "РЎР±СЂРѕСЃ РїСЂРѕРіСЂРµСЃСЃРёРё РґРѕСЃС‚СѓРїРµРЅ С‚РѕР»СЊРєРѕ РІРЅРµ РјР°С‚С‡Р°.", "Progression reset is only available outside a match."));
+            return ActionResult.fail(this.choose(world, "Сброс прогрессии доступен только вне матча.", "Progression reset is only available outside a match."));
         }
 
         int previousCores = context.progression.cores;
@@ -6044,19 +6236,19 @@ public final class BankDefenseRuntime {
         MatchContext refreshed = this.createFreshContext(world);
         this.matchesByWorld.put(this.worldKey(world), refreshed);
         this.refreshVisualizationIfEnabled(world);
-        return ActionResult.ok(this.choose(world, "РџСЂРѕРіСЂРµСЃСЃ РґСѓРїР»Р° СЃР±СЂРѕС€РµРЅ. РћСЃРєРѕР»РєРё: ", "Hollow progression reset. Shards: ")
+        return ActionResult.ok(this.choose(world, "Прогресс дупла сброшен. Осколки: ", "Hollow progression reset. Shards: ")
             + previousCores + " -> 0"
-            + this.choose(world, ", СѓР»СѓС‡С€РµРЅРёСЏ: ", ", upgrades: ")
+            + this.choose(world, ", улучшения: ", ", upgrades: ")
             + previousUnlocks + " -> 0.");
     }
 
     public ActionResult resetStatistics(World world) throws IOException {
         MatchContext context = this.getOrCreateContext(world);
         if (context.progression == null) {
-            return ActionResult.fail(this.choose(world, "РџСЂРѕС„РёР»СЊ РїСЂРѕРіСЂРµСЃСЃРёРё РЅРµРґРѕСЃС‚СѓРїРµРЅ.", "Progression profile is unavailable."));
+            return ActionResult.fail(this.choose(world, "Профиль прогрессии недоступен.", "Progression profile is unavailable."));
         }
         if (this.progressionLocked(context)) {
-            return ActionResult.fail(this.choose(world, "РЎР±СЂРѕСЃ СЃС‚Р°С‚РёСЃС‚РёРєРё РґРѕСЃС‚СѓРїРµРЅ С‚РѕР»СЊРєРѕ РІРЅРµ РјР°С‚С‡Р°.", "Statistics reset is only available outside a match."));
+            return ActionResult.fail(this.choose(world, "Сброс статистики доступен только вне матча.", "Statistics reset is only available outside a match."));
         }
 
         long previousWavesCleared = context.progression.lifetimeWavesCleared;
@@ -6088,27 +6280,27 @@ public final class BankDefenseRuntime {
         this.matchesByWorld.put(this.worldKey(world), refreshed);
         this.refreshVisualizationIfEnabled(world);
         return ActionResult.ok(
-            this.choose(world, "РЎС‚Р°С‚РёСЃС‚РёРєР° СЃР±СЂРѕС€РµРЅР°. Р’РѕР»РЅС‹: ", "Statistics reset. Waves: ")
+            this.choose(world, "Статистика сброшена. Волны: ", "Statistics reset. Waves: ")
                 + previousWavesCleared + " -> 0"
-                + this.choose(world, ", СѓР±РёР№СЃС‚РІР°: ", ", kills: ") + previousEnemyKills + " -> 0"
-                + this.choose(world, ", С‚СЂР°С‚С‹: ", ", spent: ") + previousSpentCurrency + " -> 0"
-                + this.choose(world, ", Р»РѕРІСѓС€РєРё: ", ", traps: ") + previousTrapsPlaced + " -> 0"
-                + this.choose(world, ", СЃСѓРЅРґСѓРєРё: ", ", chests: ") + previousOpenedChests + " -> 0"
-                + this.choose(world, ", РјРѕРґСѓР»Рё: ", ", modules: ") + previousModulesInstalled + " -> 0"
-                + this.choose(world, ", РјР°С‚С‡Рё: ", ", runs: ") + previousTotalRuns + " -> 0"
-                + this.choose(world, ", РїРѕР±РµРґС‹: ", ", victories: ") + previousTotalVictories + " -> 0"
-                + this.choose(world, ", СЂРµРєРѕСЂРґ РІРѕР»РЅС‹: ", ", highest wave: ") + previousHighestWave + " -> 0"
-                + this.choose(world, ", Р»СѓС‡С€РёР№ Р·Р°Р±РµРі: ", ", best run: ") + previousBestRunWave + " -> 0."
+                + this.choose(world, ", убийства: ", ", kills: ") + previousEnemyKills + " -> 0"
+                + this.choose(world, ", траты: ", ", spent: ") + previousSpentCurrency + " -> 0"
+                + this.choose(world, ", ловушки: ", ", traps: ") + previousTrapsPlaced + " -> 0"
+                + this.choose(world, ", сундуки: ", ", chests: ") + previousOpenedChests + " -> 0"
+                + this.choose(world, ", модули: ", ", modules: ") + previousModulesInstalled + " -> 0"
+                + this.choose(world, ", матчи: ", ", runs: ") + previousTotalRuns + " -> 0"
+                + this.choose(world, ", победы: ", ", victories: ") + previousTotalVictories + " -> 0"
+                + this.choose(world, ", рекорд волны: ", ", highest wave: ") + previousHighestWave + " -> 0"
+                + this.choose(world, ", лучший забег: ", ", best run: ") + previousBestRunWave + " -> 0."
         );
     }
 
     public ActionResult setActiveContract(World world, String contractId) throws IOException {
         MatchContext context = this.getOrCreateContext(world);
         if (this.isDuoGameplayMode(world)) {
-            return ActionResult.fail(this.choose(world, "РљРѕРЅС‚СЂР°РєС‚С‹ РІ Duo СЂРµР¶РёРјРµ РѕС‚РєР»СЋС‡РµРЅС‹.", "Contracts are disabled in Duo mode."));
+            return ActionResult.fail(this.choose(world, "Контракты в Duo режиме отключены.", "Contracts are disabled in Duo mode."));
         }
         if (context.progression == null) {
-            return ActionResult.fail(this.choose(world, "РџСЂРѕС„РёР»СЊ РїСЂРѕРіСЂРµСЃСЃРёРё РЅРµРґРѕСЃС‚СѓРїРµРЅ.", "Progression profile is unavailable."));
+            return ActionResult.fail(this.choose(world, "Профиль прогрессии недоступен.", "Progression profile is unavailable."));
         }
         ContractDefinition selected = null;
         for (ContractDefinition contract : context.snapshot.contracts.contracts) {
@@ -6118,19 +6310,19 @@ public final class BankDefenseRuntime {
             }
         }
         if (selected == null) {
-            return ActionResult.fail(this.choose(world, "РќРµРёР·РІРµСЃС‚РЅС‹Р№ РєРѕРЅС‚СЂР°РєС‚: ", "Unknown contract: ") + contractId + ".");
+            return ActionResult.fail(this.choose(world, "Неизвестный контракт: ", "Unknown contract: ") + contractId + ".");
         }
         context.progression.activeContractId = selected.id;
         this.repository.savePlayerProgression(context.progression);
-        return ActionResult.ok(this.choose(world, "РђРєС‚РёРІРЅС‹Р№ РєРѕРЅС‚СЂР°РєС‚: ", "Active contract: ") + this.text(selected.displayName)
-            + this.choose(world, ". РЎРјРµРЅРёС‚СЃСЏ РїРѕСЃР»Рµ СЃР±СЂРѕСЃР° РјР°С‚С‡Р°.", ". It will change after the match is reset."));
+        return ActionResult.ok(this.choose(world, "Активный контракт: ", "Active contract: ") + this.text(selected.displayName)
+            + this.choose(world, ". Сменится после сброса матча.", ". It will change after the match is reset."));
     }
 
     public ActionResult prepareMatch(World world, String difficultyId, String contractId) throws IOException {
         if (this.isTutorialActive(world)) {
             TutorialState tutorial = this.tutorialState(world);
             if (tutorial.stage != TutorialStage.PrepareFirstWave) {
-                return ActionResult.fail(this.choose(world, "РЎРµР№С‡Р°СЃ РѕР±СѓС‡РµРЅРёРµ Р¶РґС‘С‚ РґСЂСѓРіРѕР№ С€Р°Рі, Р° РЅРµ РІС‹Р±РѕСЂ РјР°С‚С‡Р°.", "The tutorial is waiting for a different step, not match selection."));
+                return ActionResult.fail(this.choose(world, "Сейчас обучение ждёт другой шаг, а не выбор матча.", "The tutorial is waiting for a different step, not match selection."));
             }
             difficultyId = DIFFICULTY_EASY;
             contractId = "none";
@@ -6139,10 +6331,10 @@ public final class BankDefenseRuntime {
             boolean hasBlue = this.isDuoTeamClaimed(world, TEAM_BLUE);
             boolean hasGreen = this.isDuoTeamClaimed(world, TEAM_GREEN);
             if (!hasBlue && !hasGreen) {
-                return ActionResult.fail(this.choose(world, "РЎРЅР°С‡Р°Р»Р° РІС‹Р±РµСЂРё СЃС‚РѕСЂРѕРЅСѓ.", "Choose a side first."));
+                return ActionResult.fail(this.choose(world, "Сначала выберите сторону.", "Choose a side first."));
             }
             if (!this.isDuoSoloTestEnabled(world) && !this.isDuoTeamSelectionComplete(world)) {
-                return ActionResult.fail(this.choose(world, "Р–РґС‘Рј РІС‚РѕСЂРѕРіРѕ РёРіСЂРѕРєР°: РѕРЅ РґРѕР»Р¶РµРЅ РІС‹Р±СЂР°С‚СЊ РґСЂСѓРіСѓСЋ СЃС‚РѕСЂРѕРЅСѓ.", "Waiting for the second player: they must choose the other side."));
+                return ActionResult.fail(this.choose(world, "Ждём второго игрока: он должен выбрать другую сторону.", "Waiting for the second player: they must choose the other side."));
             }
             contractId = "none";
         }
@@ -6165,23 +6357,23 @@ public final class BankDefenseRuntime {
             context.pendingSpawns.clear();
             context.enemies.clear();
             if (!context.tutorialActive) {
-                String buildPrompt = this.choose(world, "РџРѕСЃС‚Р°РІСЊС‚Рµ С…РѕС‚СЏ Р±С‹ 1 Р±Р°С€РЅСЋ РёР»Рё Р»РѕРІСѓС€РєСѓ.", "Place at least 1 tower or trap.");
+                String buildPrompt = this.choose(world, "Поставьте хотя бы одну башню или ловушку.", "Place at least one tower or trap.");
                 this.showEventToast(context, buildPrompt, EVENT_TOAST_ICON_ALERT);
                 this.playWorldUiSound(world, SOUND_NOTIFICATION);
             }
         }
         this.refreshVisualizationIfEnabled(world);
         if (this.isDuoGameplayMode(world)) {
-            return ActionResult.ok(this.choose(world, "Duo РјР°С‚С‡ РїРѕРґРіРѕС‚РѕРІР»РµРЅ. РЎР»РѕР¶РЅРѕСЃС‚СЊ: ", "Duo match prepared. Difficulty: ")
+            return ActionResult.ok(this.choose(world, "Duo матч подготовлен. Сложность: ", "Duo match prepared. Difficulty: ")
                 + this.difficultyDisplayName(world, difficulty)
-                + this.choose(world, ". РљРѕРЅС‚СЂР°РєС‚С‹ РѕС‚РєР»СЋС‡РµРЅС‹. РњРѕР¶РЅРѕ СЃС‚Р°РІРёС‚СЊ Р±Р°С€РЅРё. Р‘Р°Р»Р°РЅСЃ: ", ". Contracts are disabled. You can build towers. Balance: ")
+                + this.choose(world, ". Контракты отключены. Можно ставить башни. Баланс: ", ". Contracts are disabled. You can build towers. Balance: ")
                 + state.currency + ".");
         }
-        return ActionResult.ok(this.choose(world, "РњР°С‚С‡ РїРѕРґРіРѕС‚РѕРІР»РµРЅ. РЎР»РѕР¶РЅРѕСЃС‚СЊ: ", "Match prepared. Difficulty: ")
+        return ActionResult.ok(this.choose(world, "Матч подготовлен. Сложность: ", "Match prepared. Difficulty: ")
             + this.difficultyDisplayName(world, difficulty)
-            + this.choose(world, ", РєРѕРЅС‚СЂР°РєС‚: ", ", contract: ")
+            + this.choose(world, ", контракт: ", ", contract: ")
             + this.activeContractName(world)
-            + this.choose(world, ". РњРѕР¶РЅРѕ СЃС‚Р°РІРёС‚СЊ Р±Р°С€РЅРё. Р‘Р°Р»Р°РЅСЃ: ", ". You can build towers. Balance: ")
+            + this.choose(world, ". Можно ставить башни. Баланс: ", ". You can build towers. Balance: ")
             + state.currency + ".");
     }
 
@@ -6221,21 +6413,21 @@ public final class BankDefenseRuntime {
 
     public ActionResult addCurrency(World world, int amount) throws IOException {
         if (amount <= 0) {
-            return ActionResult.fail(this.choose(world, "РЎСѓРјРјР° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р±РѕР»СЊС€Рµ 0.", "The amount must be greater than 0."));
+            return ActionResult.fail(this.choose(world, "Сумма должна быть больше 0.", "The amount must be greater than 0."));
         }
         return this.changeCurrency(world, amount);
     }
 
     public ActionResult changeCurrency(World world, int amountDelta) throws IOException {
         if (amountDelta == 0) {
-            return ActionResult.fail(this.choose(world, "РР·РјРµРЅРµРЅРёРµ СЃСЂРµРґСЃС‚РІ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ 0.", "The currency change cannot be 0."));
+            return ActionResult.fail(this.choose(world, "Изменение средств не может быть 0.", "The currency change cannot be 0."));
         }
         MatchContext context = this.getOrCreateContext(world);
         if (this.isDuoMode(context)) {
             int nextBlue = context.blueCurrency + amountDelta;
             int nextGreen = context.greenCurrency + amountDelta;
             if (nextBlue < 0 || nextGreen < 0) {
-                return ActionResult.fail(this.choose(world, "РќРµР»СЊР·СЏ СѓР№С‚Рё РІ РјРёРЅСѓСЃ. РњРёРЅРёРјСѓРј: 0.", "You cannot go below zero. Minimum: 0."));
+                return ActionResult.fail(this.choose(world, "Нельзя уйти в минус. Минимум: 0.", "You cannot go below zero. Minimum: 0."));
             }
             context.blueCurrency = nextBlue;
             context.greenCurrency = nextGreen;
@@ -6243,31 +6435,31 @@ public final class BankDefenseRuntime {
             this.refreshVisualizationIfEnabled(world);
             return ActionResult.ok(
                 (amountDelta > 0
-                    ? this.choose(world, "Р”РѕР±Р°РІР»РµРЅРѕ СЃСЂРµРґСЃС‚РІ РєР°Р¶РґРѕРјСѓ РёРіСЂРѕРєСѓ: ", "Currency added to each player: ")
-                    : this.choose(world, "РЎРїРёСЃР°РЅРѕ СЃСЂРµРґСЃС‚РІ Сѓ РєР°Р¶РґРѕРіРѕ РёРіСЂРѕРєР°: ", "Currency removed from each player: "))
+                    ? this.choose(world, "Добавлено средств каждому игроку: ", "Currency added to each player: ")
+                    : this.choose(world, "Списано средств у каждого игрока: ", "Currency removed from each player: "))
                     + Math.abs(amountDelta)
-                    + this.choose(world, ". Р›РёС‡РЅС‹Р№ Р±Р°Р»Р°РЅСЃ: ", ". Personal balance: ")
+                    + this.choose(world, ". Личный баланс: ", ". Personal balance: ")
                     + context.blueCurrency
                     + "."
             );
         }
         int nextBalance = context.state.currency + amountDelta;
         if (nextBalance < 0) {
-            return ActionResult.fail(this.choose(world, "РќРµР»СЊР·СЏ СѓР№С‚Рё РІ РјРёРЅСѓСЃ. РњРёРЅРёРјСѓРј: 0.", "You cannot go below zero. Minimum: 0."));
+            return ActionResult.fail(this.choose(world, "Нельзя уйти в минус. Минимум: 0.", "You cannot go below zero. Minimum: 0."));
         }
         context.state.currency = nextBalance;
         this.refreshVisualizationIfEnabled(world);
         if (amountDelta > 0) {
-            return ActionResult.ok(this.choose(world, "Р”РѕР±Р°РІР»РµРЅРѕ СЃСЂРµРґСЃС‚РІ: ", "Currency added: ") + amountDelta
-                + this.choose(world, ". Р‘Р°Р»Р°РЅСЃ: ", ". Balance: ") + context.state.currency + ".");
+            return ActionResult.ok(this.choose(world, "Добавлено средств: ", "Currency added: ") + amountDelta
+                + this.choose(world, ". Баланс: ", ". Balance: ") + context.state.currency + ".");
         }
-        return ActionResult.ok(this.choose(world, "РЎРїРёСЃР°РЅРѕ СЃСЂРµРґСЃС‚РІ: ", "Currency removed: ") + Math.abs(amountDelta)
-            + this.choose(world, ". Р‘Р°Р»Р°РЅСЃ: ", ". Balance: ") + context.state.currency + ".");
+        return ActionResult.ok(this.choose(world, "Списано средств: ", "Currency removed: ") + Math.abs(amountDelta)
+            + this.choose(world, ". Баланс: ", ". Balance: ") + context.state.currency + ".");
     }
 
     public ActionResult setCurrency(World world, int amount) throws IOException {
         if (amount < 0) {
-            return ActionResult.fail(this.choose(world, "Р‘Р°Р»Р°РЅСЃ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Рј.", "The balance cannot be negative."));
+            return ActionResult.fail(this.choose(world, "Баланс не может быть отрицательным.", "The balance cannot be negative."));
         }
         MatchContext context = this.getOrCreateContext(world);
         if (this.isDuoMode(context)) {
@@ -6275,11 +6467,11 @@ public final class BankDefenseRuntime {
             context.greenCurrency = amount;
             this.syncTotalCurrency(context);
             this.refreshVisualizationIfEnabled(world);
-            return ActionResult.ok(this.choose(world, "Р›РёС‡РЅС‹Р№ Р±Р°Р»Р°РЅСЃ РёРіСЂРѕРєРѕРІ СѓСЃС‚Р°РЅРѕРІР»РµРЅ: ", "Player personal balance set to: ") + amount + ".");
+            return ActionResult.ok(this.choose(world, "Личный баланс игроков установлен: ", "Player personal balance set to: ") + amount + ".");
         }
         context.state.currency = amount;
         this.refreshVisualizationIfEnabled(world);
-        return ActionResult.ok(this.choose(world, "Р‘Р°Р»Р°РЅСЃ СѓСЃС‚Р°РЅРѕРІР»РµРЅ: ", "Balance set: ") + context.state.currency + ".");
+        return ActionResult.ok(this.choose(world, "Баланс установлен: ", "Balance set: ") + context.state.currency + ".");
     }
 
     public ActionResult grantAllModules(World world) throws IOException {
@@ -6293,23 +6485,23 @@ public final class BankDefenseRuntime {
             granted++;
         }
         this.refreshVisualizationIfEnabled(world);
-        return ActionResult.ok(this.choose(world, "Р’С‹РґР°РЅРѕ РјРѕРґСѓР»РµР№: ", "Modules granted: ") + granted
-            + this.choose(world, ". РџРѕ 1 СЌРєР·РµРјРїР»СЏСЂСѓ РєР°Р¶РґРѕРіРѕ.", ". One copy of each."));
+        return ActionResult.ok(this.choose(world, "Выдано модулей: ", "Modules granted: ") + granted
+            + this.choose(world, ". По 1 экземпляру каждого.", ". One copy of each."));
     }
 
     public ActionResult grantProgressionCores(World world, int amount) throws IOException {
         if (amount <= 0) {
-            return ActionResult.fail(this.choose(world, "РљРѕР»РёС‡РµСЃС‚РІРѕ СЏРґРµСЂ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ Р±РѕР»СЊС€Рµ 0.", "The number of cores must be greater than 0."));
+            return ActionResult.fail(this.choose(world, "Количество ядер должно быть больше 0.", "The number of cores must be greater than 0."));
         }
         MatchContext context = this.getOrCreateContext(world);
         if (context.progression == null) {
-            return ActionResult.fail(this.choose(world, "РџСЂРѕРіСЂРµСЃСЃРёСЏ РґР»СЏ СЌС‚РѕРіРѕ РјРёСЂР° РЅРµРґРѕСЃС‚СѓРїРЅР°.", "Progression is unavailable for this world."));
+            return ActionResult.fail(this.choose(world, "Прогрессия для этого мира недоступна.", "Progression is unavailable for this world."));
         }
         context.progression.cores += amount;
         this.repository.savePlayerProgression(context.progression);
         this.refreshVisualizationIfEnabled(world);
-        return ActionResult.ok(this.choose(world, "Р’С‹РґР°РЅРѕ РЇРґРµСЂ РґСѓРїР»Р°: +", "Hollow Cores granted: +") + amount
-            + this.choose(world, ". Р’СЃРµРіРѕ: ", ". Total: ") + context.progression.cores + ".");
+        return ActionResult.ok(this.choose(world, "Выдано Ядер дупла: +", "Hollow Cores granted: +") + amount
+            + this.choose(world, ". Всего: ", ". Total: ") + context.progression.cores + ".");
     }
 
     public ActionResult claimMoneyChest(World world, Vec3i position) throws IOException {
@@ -6323,10 +6515,10 @@ public final class BankDefenseRuntime {
     private ActionResult claimChest(World world, Vec3i position, ChestType expectedType) throws IOException {
         MatchContext context = this.getOrCreateContext(world);
         if (!context.state.gameStarted) {
-            return ActionResult.fail(this.choose(world, "РЎСѓРЅРґСѓРєРё РїРѕСЏРІР»СЏСЋС‚СЃСЏ С‚РѕР»СЊРєРѕ РїРѕСЃР»Рµ РЅР°С‡Р°Р»Р° РјР°С‚С‡Р°.", "Chests only appear after the match starts."));
+            return ActionResult.fail(this.choose(world, "Сундуки появляются только после начала матча.", "Chests only appear after the match starts."));
         }
         if (context.activeChests.isEmpty()) {
-            return ActionResult.fail(this.choose(world, "РђРєС‚РёРІРЅС‹С… СЃСѓРЅРґСѓРєРѕРІ СЃРµР№С‡Р°СЃ РЅРµС‚.", "There are no active chests right now."));
+            return ActionResult.fail(this.choose(world, "Активных сундуков сейчас нет.", "There are no active chests right now."));
         }
         ActiveChest targetChest = null;
         for (ActiveChest chest : context.activeChests.values()) {
@@ -6336,7 +6528,7 @@ public final class BankDefenseRuntime {
             }
         }
         if (targetChest == null) {
-            return ActionResult.fail(this.choose(world, "Р­С‚РѕС‚ СЃСѓРЅРґСѓРє СѓР¶Рµ РѕС‚РєСЂС‹С‚ РёР»Рё РЅРµРґРѕСЃС‚СѓРїРµРЅ.", "That chest is already opened or unavailable."));
+            return ActionResult.fail(this.choose(world, "Этот сундук уже открыт или недоступен.", "That chest is already opened or unavailable."));
         }
         context.activeChests.remove(targetChest.id);
         Vector3d effectPosition = new Vector3d(position.x + 0.5, position.y + 0.55, position.z + 0.5);
@@ -6349,18 +6541,18 @@ public final class BankDefenseRuntime {
             this.playSound3d(world, SOUND_REWARD, effectPosition);
             if (context.progression == null) {
                 this.syncChestInteractionBlocks(world, context.snapshot.map, context);
-                return ActionResult.fail(this.choose(world, "РџСЂРѕРіСЂРµСЃСЃРёСЏ РґР»СЏ СЌС‚РѕРіРѕ РјРёСЂР° РЅРµРґРѕСЃС‚СѓРїРЅР°.", "Progression is unavailable for this world."));
+                return ActionResult.fail(this.choose(world, "Прогрессия для этого мира недоступна.", "Progression is unavailable for this world."));
             }
             this.trackLifetimeChestOpened(context);
             context.progression.cores += CORE_CHEST_REWARD;
             this.repository.savePlayerProgression(context.progression);
             this.showEventToast(
                 context,
-                this.choose(world, "РЎСѓРЅРґСѓРє: +", "Chest: +") + CORE_CHEST_REWARD + this.choose(world, " РѕСЃРєРѕР»РѕРє РґСѓРїР»Р°", " hollow shard"),
+                this.choose(world, "Сундук: +", "Chest: +") + CORE_CHEST_REWARD + this.choose(world, " осколок дупла", " hollow shard"),
                 EVENT_TOAST_ICON_CORES
             );
             this.syncChestInteractionBlocks(world, context.snapshot.map, context);
-            return ActionResult.ok(this.choose(world, "РћС‚РєСЂС‹С‚ СЃСѓРЅРґСѓРє СЃ СЏРґСЂРѕРј: +", "Core chest opened: +") + CORE_CHEST_REWARD + this.choose(world, " РѕСЃРєРѕР»РѕРє РґСѓРїР»Р°. Р’СЃРµРіРѕ: ", " hollow shard. Total: ") + context.progression.cores + ".");
+            return ActionResult.ok(this.choose(world, "Открыт сундук с ядром: +", "Core chest opened: +") + CORE_CHEST_REWARD + this.choose(world, " осколок дупла. Всего: ", " hollow shard. Total: ") + context.progression.cores + ".");
         }
         this.spawnColoredParticle(store, playerRefs, PARTICLE_IMPACT, effectPosition, new Vector3f(0.0f, 0.0f, 0.0f), 0.65f, this.rgb(255, 222, 122));
         this.trackLifetimeChestOpened(context);
@@ -6378,43 +6570,43 @@ public final class BankDefenseRuntime {
         if (grantedCurrency > 0) {
             this.showEventToast(
                 context,
-                this.choose(world, "РЎСѓРЅРґСѓРє: +", "Chest: +") + grantedCurrency + this.choose(world, " РјРѕРЅРµС‚", " gold"),
+                this.choose(world, "Сундук: +", "Chest: +") + grantedCurrency + this.choose(world, " монет", " gold"),
                 EVENT_TOAST_ICON_MONEY
             );
             if (this.isDuoMode(context)) {
                 return ActionResult.ok(
-                    this.choose(world, "РћС‚РєСЂС‹С‚ СЃСѓРЅРґСѓРє СЃ РґРѕР±С‹С‡РµР№: +", "Supply chest opened: +") + grantedCurrency
-                        + this.choose(world, " РјРѕРЅРµС‚. Р‘Р°Р»Р°РЅСЃС‹ Duo: СЃРёРЅРёР№ ", " gold. Duo balances: blue ")
+                    this.choose(world, "Открыт сундук с добычей: +", "Supply chest opened: +") + grantedCurrency
+                        + this.choose(world, " монет. Балансы Duo: синий ", " gold. Duo balances: blue ")
                         + context.blueCurrency
-                        + this.choose(world, ", Р·РµР»С‘РЅС‹Р№ ", ", green ")
+                        + this.choose(world, ", зелёный ", ", green ")
                         + context.greenCurrency
                         + "."
                 );
             }
-            return ActionResult.ok(this.choose(world, "РћС‚РєСЂС‹С‚ СЃСѓРЅРґСѓРє СЃ РґРѕР±С‹С‡РµР№: +", "Supply chest opened: +") + grantedCurrency + this.choose(world, " РјРѕРЅРµС‚. Р‘Р°Р»Р°РЅСЃ: ", " gold. Balance: ") + context.state.currency + ".");
+            return ActionResult.ok(this.choose(world, "Открыт сундук с добычей: +", "Supply chest opened: +") + grantedCurrency + this.choose(world, " монет. Баланс: ", " gold. Balance: ") + context.state.currency + ".");
         }
         TowerInstance seedIdol = this.findSeedIdol(context);
         int stored = seedIdol == null ? chestIncome : seedIdol.idolStoredCurrency;
         this.showEventToast(
             context,
-            this.choose(world, "РЎСѓРЅРґСѓРє: +", "Chest: +") + chestIncome + this.choose(world, " РјРѕРЅРµС‚ РѕС‚РїСЂР°РІР»РµРЅРѕ РІ РЅР°РєРѕРїР»РµРЅРёРµ", " gold sent to storage"),
+            this.choose(world, "Сундук: +", "Chest: +") + chestIncome + this.choose(world, " монет отправлено в накопление", " gold sent to storage"),
             EVENT_TOAST_ICON_MONEY
         );
-        return ActionResult.ok(this.choose(world, "РћС‚РєСЂС‹С‚ СЃСѓРЅРґСѓРє СЃ РґРѕР±С‹С‡РµР№: +", "Supply chest opened: +") + chestIncome + this.choose(world, " РѕС‚РїСЂР°РІР»РµРЅРѕ РІ Р·Р°РїР°СЃ РёРґРѕР»Р°. РќР°РєРѕРїР»РµРЅРѕ: ", " sent to the idol reserve. Stored: ") + stored + ".");
+        return ActionResult.ok(this.choose(world, "Открыт сундук с добычей: +", "Supply chest opened: +") + chestIncome + this.choose(world, " отправлено в запас идола. Накоплено: ", " sent to the idol reserve. Stored: ") + stored + ".");
     }
 
     public ActionResult setWave(World world, int waveNumber) throws IOException {
         if (waveNumber <= 0) {
-            return ActionResult.fail(this.choose(world, "РќРѕРјРµСЂ РІРѕР»РЅС‹ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ Р±РѕР»СЊС€Рµ 0.", "The wave number must be greater than 0."));
+            return ActionResult.fail(this.choose(world, "Номер волны должен быть больше 0.", "The wave number must be greater than 0."));
         }
         String worldKey = this.worldKey(world);
         MatchContext context = this.getOrCreateContext(world);
         boolean matchPrepared = context.state.gameStarted;
         if (context.state.gameState == GameState.InMatch) {
-            return ActionResult.fail(this.choose(world, "РЎС‚Р°СЂС‚РѕРІСѓСЋ РІРѕР»РЅСѓ РјРѕР¶РЅРѕ РјРµРЅСЏС‚СЊ С‚РѕР»СЊРєРѕ РІ С„Р°Р·Рµ РїРѕРґРіРѕС‚РѕРІРєРё.", "The starting wave can only be changed during preparation."));
+            return ActionResult.fail(this.choose(world, "Стартовую волну можно менять только в фазе подготовки.", "The starting wave can only be changed during preparation."));
         }
         if (context.state.gameState == GameState.Victory || context.state.gameState == GameState.Defeat) {
-            return ActionResult.fail(this.choose(world, "РЎРЅР°С‡Р°Р»Р° СЃР±СЂРѕСЃСЊ РјР°С‚С‡, Р·Р°С‚РµРј РІС‹Р±РµСЂРё СЃС‚Р°СЂС‚РѕРІСѓСЋ РІРѕР»РЅСѓ.", "Reset the match first, then choose the starting wave."));
+            return ActionResult.fail(this.choose(world, "Сначала сбрось матч, затем выбери стартовую волну.", "Reset the match first, then choose the starting wave."));
         }
         this.selectedStartWavesByWorld.put(worldKey, Integer.valueOf(waveNumber));
         context.pendingSpawns.clear();
@@ -6423,6 +6615,7 @@ public final class BankDefenseRuntime {
         context.activeWaveTotalEnemies = 0;
         context.waveElapsedSeconds = 0.0;
         this.clearRewardDraftState(context);
+        context.lastRewardPreparedWave = 0;
         context.state.currentWave = waveNumber;
         context.state.gameState = GameState.Ready;
         context.state.waveState = WaveState.BuildPhase;
@@ -6432,8 +6625,8 @@ public final class BankDefenseRuntime {
         this.refreshVisualizationIfEnabled(world);
         return ActionResult.ok(
             matchPrepared
-                ? this.choose(world, "РЎС‚Р°СЂС‚РѕРІР°СЏ РІРѕР»РЅР° СѓСЃС‚Р°РЅРѕРІР»РµРЅР°: ", "Starting wave set to ") + waveNumber + this.choose(world, ". РњРѕР¶РЅРѕ СЃС‚СЂРѕРёС‚СЊ Р±Р°С€РЅРё Рё Р·Р°РїСѓСЃРєР°С‚СЊ РІРѕР»РЅСѓ.", ". You can build towers and start the wave.")
-                : this.choose(world, "РЎС‚Р°СЂС‚РѕРІР°СЏ РІРѕР»РЅР° СЃРѕС…СЂР°РЅРµРЅР°: ", "Starting wave saved: ") + waveNumber + this.choose(world, ". РўРµРїРµСЂСЊ РІС‹Р±РµСЂРё СЃР»РѕР¶РЅРѕСЃС‚СЊ Рё РєРѕРЅС‚СЂР°РєС‚ Сѓ РѕРїРµСЂР°С‚РѕСЂР°.", ". Now choose a difficulty and contract with the operator.")
+                ? this.choose(world, "Стартовая волна установлена: ", "Starting wave set to ") + waveNumber + this.choose(world, ". Можно строить башни и запускать волну.", ". You can build towers and start the wave.")
+                : this.choose(world, "Стартовая волна сохранена: ", "Starting wave saved: ") + waveNumber + this.choose(world, ". Теперь выберите сложность и контракт у оператора.", ". Now choose a difficulty and contract with the operator.")
         );
     }
 
@@ -6457,10 +6650,10 @@ public final class BankDefenseRuntime {
             presentation.cachedRawSnapshot = rawSnapshot;
             this.rebuildCombatVisualLayer(world, presentation, context);
             this.syncHud(world, presentation, this.presentationSnapshot(rawSnapshot, context, this.tutorialState(world)), context);
-            return ActionResult.ok(this.choose(world, "Р‘РѕРµРІРѕР№ СЃР»РѕР№ РІРёР·СѓР°Р»РёР·Р°С†РёРё РїРµСЂРµСЃРѕР±СЂР°РЅ.", "Combat visualization rebuilt."));
+            return ActionResult.ok(this.choose(world, "Боевой слой визуализации пересобран.", "Combat visualization rebuilt."));
         }
         int rendered = this.fullRefreshPresentation(world, presentation);
-        return ActionResult.ok(this.choose(world, "Р’РёР·СѓР°Р»РёР·Р°С†РёСЏ РѕР±РЅРѕРІР»РµРЅР°. РЎСѓС‰РЅРѕСЃС‚РµР№: ", "Visualization refreshed. Entities: ") + rendered + ".");
+        return ActionResult.ok(this.choose(world, "Визуализация обновлена. Сущностей: ", "Visualization refreshed. Entities: ") + rendered + ".");
     }
 
     public void resetPresentationState(World world) {
@@ -6484,33 +6677,40 @@ public final class BankDefenseRuntime {
         }
         removed += this.purgeDetachedTowerVisuals(world, Collections.emptySet());
         removed += this.purgeDetachedProjectileVisuals(world, Collections.emptySet());
-        return ActionResult.ok(this.choose(world, "Р’РёР·СѓР°Р»РёР·Р°С†РёСЏ РѕС‡РёС‰РµРЅР°. РЈРґР°Р»РµРЅРѕ СЃСѓС‰РЅРѕСЃС‚РµР№: ", "Visualization cleared. Removed entities: ") + removed + ".");
+        return ActionResult.ok(this.choose(world, "Визуализация очищена. Удалено сущностей: ", "Visualization cleared. Removed entities: ") + removed + ".");
     }
 
     public void tickWorld(World world, double deltaSeconds) {
-        this.syncPinnedSpawnChunks(world);
+        this.tickPinnedSpawnChunkSync(world, deltaSeconds);
         MatchContext context = this.matchesByWorld.get(this.worldKey(world));
         if (context == null) {
             this.clearStaleAcidStormWeather(world);
             return;
         }
-        if (context.snapshot != null) {
-            this.syncSlotInteractionBlocks(world, context.snapshot.buildSlots, context);
-            this.syncChestInteractionBlocks(world, context.snapshot.map, context);
-        }
+        this.tickWorldInteractionSync(world, context, deltaSeconds);
         if (this.isDuoMode(context)
             && !this.isDuoSoloTestEnabled(context)
             && context.state.gameStarted
             && context.state.gameState != GameState.Defeat
             && context.state.gameState != GameState.Victory) {
-            if (this.duoPlayerCount(world, context) < 2) {
-                this.finishMatchAsDefeat(world, context, this.choose(world, "РЎРѕСЋР·РЅРёРє РѕС‚РєР»СЋС‡РёР»СЃСЏ. Duo РјР°С‚С‡ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РїСЂРѕРёРіСЂР°РЅ.", "An ally disconnected. The Duo match was automatically lost."));
+            context.duoPlayerCountCheckAccumulatedSeconds += Math.max(0.0, deltaSeconds);
+            if (context.duoPlayerCountCheckAccumulatedSeconds >= DUO_PLAYER_COUNT_CHECK_SECONDS
+                && this.duoPlayerCount(world, context) < 2) {
+                context.duoPlayerCountCheckAccumulatedSeconds = 0.0;
+                this.finishMatchAsDefeat(world, context, "Союзник отключился. Duo матч автоматически проигран.", "An ally disconnected. The Duo match was automatically lost.");
                 return;
             }
+        } else {
+            context.duoPlayerCountCheckAccumulatedSeconds = 0.0;
         }
         this.tickTransientUi(context, deltaSeconds);
+        this.tickPendingRewardPageOpens(world, context, deltaSeconds);
+        this.tickPendingSeedIdolModeChoiceOpens(world, context, deltaSeconds);
         this.tickActiveChestLoopAudio(world, context, deltaSeconds);
         this.flushPendingWorldUiSounds(world, context);
+        if (context.state.paused) {
+            return;
+        }
         this.tickAcidStorm(world, context, deltaSeconds);
         if (context.state.gameState == GameState.Victory || context.state.gameState == GameState.Defeat) {
             this.clearExpiredVisualEffects(world, context);
@@ -6520,6 +6720,7 @@ public final class BankDefenseRuntime {
         if (BankDefenseMatchPhaseSupport.isBuildPhase(context.state)) {
             if (BankDefenseMatchPhaseSupport.isPrepared(context.state)
                 && context.pendingRewardChoices.isEmpty()
+                && !this.hasPendingIdolModeChoice(context)
                 && context.state.preparationRemainingSeconds > 0.0) {
                 if (context.state.instantAutoStart) {
                     try {
@@ -6548,7 +6749,12 @@ public final class BankDefenseRuntime {
         if (context.routeLength <= 0.0) {
             context.state.gameState = GameState.Defeat;
             context.state.waveState = WaveState.Finished;
-            BankDefenseLocalization.sendWorldMessage(world, this.choose(world, "РњР°СЂС€СЂСѓС‚ РІСЂР°РіРѕРІ РЅРµ РЅР°СЃС‚СЂРѕРµРЅ. РњР°С‚С‡ РѕСЃС‚Р°РЅРѕРІР»РµРЅ.", "Enemy routes are not configured. The match was stopped."));
+            if (world != null) {
+                this.sendLocalizedWorldMessage(world, "Маршрут врагов не настроен. Матч остановлен.", "Enemy routes are not configured. The match was stopped.");
+                this.clearExpiredVisualEffects(world, context);
+                this.tickProjectiles(world, deltaSeconds);
+                return;
+            }
             this.clearExpiredVisualEffects(world, context);
             this.tickProjectiles(world, deltaSeconds);
             return;
@@ -6556,6 +6762,7 @@ public final class BankDefenseRuntime {
 
         context.waveElapsedSeconds += deltaSeconds;
         this.spawnEnemies(world, context);
+        this.refreshEnemyAuraFlags(context);
         this.tickDuoBossState(world, context, deltaSeconds);
         this.tickTowers(world, context, deltaSeconds);
         this.tickEnemies(world, context, deltaSeconds);
@@ -6565,7 +6772,7 @@ public final class BankDefenseRuntime {
         this.tickProjectiles(world, deltaSeconds);
 
         if (context.state.bankHp <= 0) {
-            this.finishMatchAsDefeat(world, context, this.choose(world, "Р”СѓРїР»Рѕ СЂР°Р·СЂСѓС€РµРЅРѕ. РњР°С‚С‡ РїСЂРѕРёРіСЂР°РЅ.", "The Hollow was destroyed. Match lost."));
+            this.finishMatchAsDefeat(world, context, "Дупло разрушено. Матч проигран.", "The Hollow was destroyed. Match lost.");
             return;
         }
 
@@ -6584,13 +6791,19 @@ public final class BankDefenseRuntime {
                 context.state.gameState = GameState.Victory;
                 context.state.waveState = WaveState.Finished;
                 context.state.gameStarted = false;
+                context.state.paused = false;
                 context.state.preparationRemainingSeconds = 0.0;
                 this.clearInstantAutoStartWarmup(context);
                 this.deactivateAcidStorm(world, context);
                 this.grantProgressionRewardIfNeeded(world, context, completedWaveNumber, true);
                 context.activeWaveNumber = 0;
                 context.state.currentWave = this.selectedStartWave(world);
-                BankDefenseLocalization.sendWorldMessage(world, this.choose(world, "Р”СѓРїР»Рѕ СѓСЃС‚РѕСЏР»Рѕ. РџРѕР±РµРґР°!", "The Hollow endured. Victory!"));
+                if (world != null) {
+                    this.sendLocalizedWorldMessage(world, "Дупло устояло. Победа!", "The Hollow endured. Victory!");
+                    this.playWorldUiSound(world, SOUND_VICTORY);
+                    this.refreshVisualizationIfEnabled(world);
+                    return;
+                }
                 this.playWorldUiSound(world, SOUND_VICTORY);
                 this.refreshVisualizationIfEnabled(world);
                 return;
@@ -6619,35 +6832,68 @@ public final class BankDefenseRuntime {
             boolean idolModePromptOpened = context.pendingRewardChoices.isEmpty() && this.openPendingSeedIdolModeChoices(world, context);
             context.activeWaveNumber = 0;
             context.activeWaveTotalEnemies = 0;
-            PlayerRef playerRef = this.primaryPlayerRef(world);
-            String prefix = BankDefenseLocalization.choose(playerRef, "Р’РѕР»РЅР° ", "Wave ") + completedWaveNumber + BankDefenseLocalization.choose(playerRef, " Р·Р°РІРµСЂС€РµРЅР°. ", " complete. ");
-            if (context.tutorialActive) {
-                // Р’ РѕР±СѓС‡РµРЅРёРё С…РІР°С‚Р°РµС‚ РІРµСЂС…РЅРµРіРѕ РєРІРµСЃС‚Р° Рё РґРёР°Р»РѕРіРѕРІ РљРІРёР±РµРєР°, Р±РµР· РґСѓР±Р»РёСЂСѓСЋС‰РµРіРѕ С‡Р°С‚Р°.
-            } else if (!context.pendingRewardChoices.isEmpty()) {
-                if (this.isDuoMode(context)) {
-                    String firstPicker = TEAM_GREEN.equals(context.rewardPickerTeam) ? this.choose(world, "Р·РµР»С‘РЅРѕР№", "green") : this.choose(world, "СЃРёРЅРµР№", "blue");
-                    BankDefenseLocalization.sendWorldMessage(world, prefix + this.choose(world, "РРіСЂРѕРє ", "The ") + firstPicker + this.choose(world, " РєРѕРјР°РЅРґС‹ РµС‰С‘ РЅРµ РІС‹Р±СЂР°Р» РјРѕРґСѓР»СЊ. Р•РіРѕ РјРѕР¶РЅРѕ РІР·СЏС‚СЊ Сѓ РѕРїРµСЂР°С‚РѕСЂР°.", " team player has not chosen a module yet. It can be taken from the operator."));
-                } else {
-                    BankDefenseLocalization.sendWorldMessage(world, prefix + BankDefenseLocalization.choose(playerRef, "Р’С‹Р±РµСЂРёС‚Рµ 1 РјРѕРґСѓР»СЊ РЅР°РіСЂР°РґС‹ Сѓ РѕРїРµСЂР°С‚РѕСЂР°.", "Choose 1 reward module at the operator."));
+            if (world != null) {
+                if (!context.tutorialActive) {
+                    if (!context.pendingRewardChoices.isEmpty()) {
+                        if (this.isDuoMode(context)) {
+                            this.sendLocalizedWorldMessage(world, playerRef -> {
+                                String firstPicker = TEAM_GREEN.equals(context.rewardPickerTeam)
+                                    ? this.choose(playerRef, "зелёной", "green")
+                                    : this.choose(playerRef, "синей", "blue");
+                                return BankDefenseLocalization.choose(playerRef, "Волна ", "Wave ")
+                                    + completedWaveNumber
+                                    + BankDefenseLocalization.choose(playerRef, " завершена. Игрок ", " complete. The ")
+                                    + firstPicker
+                                    + this.choose(playerRef, " команды ещё не выбрал модуль. Его можно взять у оператора.", " team player has not chosen a module yet. It can be taken from the operator.");
+                            });
+                        } else {
+                            this.sendLocalizedWorldMessage(world, playerRef ->
+                                BankDefenseLocalization.choose(playerRef, "Волна ", "Wave ")
+                                    + completedWaveNumber
+                                    + BankDefenseLocalization.choose(playerRef, " завершена. Выберите 1 модуль награды у оператора.", " complete. Choose 1 reward module at the operator.")
+                            );
+                        }
+                    } else if (idolModePromptOpened) {
+                        this.sendLocalizedWorldMessage(world, playerRef ->
+                            BankDefenseLocalization.choose(playerRef, "Волна ", "Wave ")
+                                + completedWaveNumber
+                                + BankDefenseLocalization.choose(playerRef, " завершена. Идол урожая ждёт выбора следующего режима.", " complete. The Harvest Idol is waiting for its next mode choice.")
+                        );
+                    } else if (context.state.instantAutoStart || context.state.preparationRemainingSeconds <= 0.0) {
+                        this.sendLocalizedWorldMessage(world, playerRef ->
+                            BankDefenseLocalization.choose(playerRef, "Волна ", "Wave ")
+                                + completedWaveNumber
+                                + BankDefenseLocalization.choose(playerRef, " завершена. Автостарт без ожидания включён. Следующая волна начинается.", " complete. Instant auto-start is enabled. The next wave begins now.")
+                        );
+                        try {
+                            this.startPreparedWave(world, context, false);
+                        } catch (IOException ignored) {
+                        }
+                    } else if (context.state.preparationRemainingSeconds > 0.0) {
+                        this.sendLocalizedWorldMessage(world, playerRef ->
+                            BankDefenseLocalization.choose(playerRef, "Волна ", "Wave ")
+                                + completedWaveNumber
+                                + BankDefenseLocalization.choose(playerRef, " завершена. Следующая волна: ", " complete. Next wave: ")
+                                + context.state.currentWave
+                                + ". "
+                                + BankDefenseLocalization.choose(playerRef, "Подготовка ", "Preparation ")
+                                + (int)Math.ceil(context.state.preparationRemainingSeconds)
+                                + BankDefenseLocalization.choose(playerRef, "с.", "s.")
+                        );
+                    }
                 }
-            } else if (idolModePromptOpened) {
-                BankDefenseLocalization.sendWorldMessage(world, prefix + this.choose(world, "РРґРѕР» СѓСЂРѕР¶Р°СЏ Р¶РґС‘С‚ РІС‹Р±РѕСЂР° СЃР»РµРґСѓСЋС‰РµРіРѕ СЂРµР¶РёРјР°.", "The Harvest Idol is waiting for its next mode choice."));
+                this.refreshVisualizationIfEnabled(world);
+                return;
+            }
+            if (context.tutorialActive) {
+                // В обучении хватает верхнего квеста и диалогов Квибека, без дублирующего чата.
+            } else if (!context.pendingRewardChoices.isEmpty() || idolModePromptOpened) {
             } else if (context.state.instantAutoStart || context.state.preparationRemainingSeconds <= 0.0) {
-                BankDefenseLocalization.sendWorldMessage(world, prefix + BankDefenseLocalization.choose(playerRef, "РђРІС‚РѕСЃС‚Р°СЂС‚ Р±РµР· РѕР¶РёРґР°РЅРёСЏ РІРєР»СЋС‡С‘РЅ. РЎР»РµРґСѓСЋС‰Р°СЏ РІРѕР»РЅР° РЅР°С‡РёРЅР°РµС‚СЃСЏ.", "Instant auto-start is enabled. The next wave begins now."));
                 try {
                     this.startPreparedWave(world, context, false);
                 } catch (IOException ignored) {
                 }
             } else if (context.state.preparationRemainingSeconds > 0.0) {
-                BankDefenseLocalization.sendWorldMessage(world,
-                    prefix
-                        + BankDefenseLocalization.choose(playerRef, "РЎР»РµРґСѓСЋС‰Р°СЏ РІРѕР»РЅР°: ", "Next wave: ")
-                        + context.state.currentWave
-                        + ". "
-                        + BankDefenseLocalization.choose(playerRef, "РџРѕРґРіРѕС‚РѕРІРєР° ", "Preparation ")
-                        + (int)Math.ceil(context.state.preparationRemainingSeconds)
-                        + BankDefenseLocalization.choose(playerRef, "СЃ.", "s.")
-                );
             }
             this.refreshVisualizationIfEnabled(world);
         }
@@ -6682,14 +6928,14 @@ public final class BankDefenseRuntime {
         Set<String> towerIds = new HashSet<>();
         for (TowerDefinition tower : snapshot.towers.towers) {
             if (tower.id == null || tower.id.isBlank()) {
-                issues.add("РЈ Р±Р°С€РЅРё РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ id.");
+                issues.add("У башни отсутствует id.");
                 continue;
             }
             if (!towerIds.add(tower.id)) {
-                issues.add("РџРѕРІС‚РѕСЂСЏРµС‚СЃСЏ id Р±Р°С€РЅРё: '" + tower.id + "'.");
+                issues.add("Повторяется id башни: '" + tower.id + "'.");
             }
             if (tower.levels.isEmpty()) {
-                issues.add("РЈ Р±Р°С€РЅРё '" + tower.id + "' РЅРµС‚ СѓСЂРѕРІРЅРµР№.");
+                issues.add("У башни '" + tower.id + "' нет уровней.");
                 continue;
             }
             if (tower.superTower) {
@@ -6703,52 +6949,52 @@ public final class BankDefenseRuntime {
             for (int index = 0; index < tower.levels.size(); index++) {
                 TowerLevel level = tower.levels.get(index);
                 if (level.level != index + 1) {
-                    issues.add("РЈ Р±Р°С€РЅРё '" + tower.id + "' РЅР°СЂСѓС€РµРЅ РїРѕСЂСЏРґРѕРє СѓСЂРѕРІРЅРµР№.");
+                    issues.add("У башни '" + tower.id + "' нарушен порядок уровней.");
                     break;
                 }
                 if (level.range < 0.0) {
-                    issues.add("РЈ Р±Р°С€РЅРё '" + tower.id + "' РЅР°Р№РґРµРЅ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Р№ СЂР°РґРёСѓСЃ Р°С‚Р°РєРё.");
+                    issues.add("У башни '" + tower.id + "' найден отрицательный радиус атаки.");
                     break;
                 }
             }
         }
 
         if (regularTowerCount < 6) {
-            issues.add("РћР¶РёРґР°Р»РѕСЃСЊ РјРёРЅРёРјСѓРј 6 РѕР±С‹С‡РЅС‹С… Р±Р°С€РµРЅ, РЅР°Р№РґРµРЅРѕ: " + regularTowerCount + ".");
+            issues.add("Ожидалось минимум 6 обычных башен, найдено: " + regularTowerCount + ".");
         }
         if (superTowerCount < 3) {
-            issues.add("РћР¶РёРґР°Р»РѕСЃСЊ РјРёРЅРёРјСѓРј 3 СЃСѓРїРµСЂ-Р±Р°С€РЅРё, РЅР°Р№РґРµРЅРѕ: " + superTowerCount + ".");
+            issues.add("Ожидалось минимум 3 супер-башни, найдено: " + superTowerCount + ".");
         }
         if (trapTowerCount < 3) {
-            issues.add("РћР¶РёРґР°Р»РѕСЃСЊ РјРёРЅРёРјСѓРј 3 Р»РѕРІСѓС€РєРё, РЅР°Р№РґРµРЅРѕ: " + trapTowerCount + ".");
+            issues.add("Ожидалось минимум 3 ловушки, найдено: " + trapTowerCount + ".");
         }
 
         if (snapshot.modules.modules.size() != 9) {
-            issues.add("РћР¶РёРґР°Р»РѕСЃСЊ 9 РјРѕРґСѓР»РµР№, РЅР°Р№РґРµРЅРѕ: " + snapshot.modules.modules.size() + ".");
+            issues.add("Ожидалось 9 модулей, найдено: " + snapshot.modules.modules.size() + ".");
         }
 
         if (snapshot.enemies.enemies.size() < 9) {
-            issues.add("РћР¶РёРґР°Р»РѕСЃСЊ РјРёРЅРёРјСѓРј 9 РІСЂР°РіРѕРІ, РЅР°Р№РґРµРЅРѕ: " + snapshot.enemies.enemies.size() + ".");
+            issues.add("Ожидалось минимум 9 врагов, найдено: " + snapshot.enemies.enemies.size() + ".");
         }
 
         Set<String> enemyIds = new HashSet<>();
         for (EnemyDefinition enemy : snapshot.enemies.enemies) {
             if (enemy.id == null || enemy.id.isBlank()) {
-                issues.add("РЈ РІСЂР°РіР° Р±РµР· РёРјРµРЅРё РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ id.");
+                issues.add("У врага без имени отсутствует id.");
                 continue;
             }
             if (!enemyIds.add(enemy.id)) {
-                issues.add("РџРѕРІС‚РѕСЂСЏРµС‚СЃСЏ id РІСЂР°РіР°: '" + enemy.id + "'.");
+                issues.add("Повторяется id врага: '" + enemy.id + "'.");
             }
         }
 
         for (WaveDefinition wave : snapshot.waves.waves) {
             if (wave.spawns.isEmpty()) {
-                issues.add("Р’РѕР»РЅР° " + wave.index + " РЅРµ СЃРѕРґРµСЂР¶РёС‚ СЃРїР°РІРЅРѕРІ.");
+                issues.add("Волна " + wave.index + " не содержит спавнов.");
             }
             for (WaveSpawn spawn : wave.spawns) {
                 if (!enemyIds.contains(spawn.enemyId)) {
-                    issues.add("Р’РѕР»РЅР° " + wave.index + " СЃСЃС‹Р»Р°РµС‚СЃСЏ РЅР° РЅРµРёР·РІРµСЃС‚РЅРѕРіРѕ РІСЂР°РіР° '" + spawn.enemyId + "'.");
+                    issues.add("Волна " + wave.index + " ссылается на неизвестного врага '" + spawn.enemyId + "'.");
                 }
             }
         }
@@ -6758,39 +7004,39 @@ public final class BankDefenseRuntime {
             || snapshot.map.spawnPointB != null
             || snapshot.map.spawnPointC != null;
         if (!hasAnySpawn) {
-            issues.add("РќРµ Р·Р°РґР°РЅ РЅРё РѕРґРёРЅ spawn marker. Р”РѕР±Р°РІСЊ С…РѕС‚СЏ Р±С‹ spawn_a.");
+            issues.add("Не задан ни один spawn marker. Добавь хотя бы spawn_a.");
         }
         if (snapshot.map.bankCenter == null) {
-            issues.add("РќРµ Р·Р°РґР°РЅ marker bank.");
+            issues.add("Не задан marker bank.");
         }
         if (snapshot.map.vaultPoint == null) {
-            issues.add("РќРµ Р·Р°РґР°РЅ marker vault.");
+            issues.add("Не задан marker vault.");
         }
         if (snapshot.map.playerStart == null) {
-            issues.add("РќРµ Р·Р°РґР°РЅ marker playerstart.");
+            issues.add("Не задан marker playerstart.");
         }
         boolean hasAnyRoute = (snapshot.map.routePoints != null && !snapshot.map.routePoints.isEmpty())
             || (snapshot.map.routePointsA != null && !snapshot.map.routePointsA.isEmpty())
             || (snapshot.map.routePointsB != null && !snapshot.map.routePointsB.isEmpty())
             || (snapshot.map.routePointsC != null && !snapshot.map.routePointsC.isEmpty());
         if (!hasAnyRoute) {
-            issues.add("РњР°СЂС€СЂСѓС‚ РІСЂР°РіРѕРІ РїСѓСЃС‚. Р”РѕР±Р°РІСЊ С‚РѕС‡РєРё РјР°СЂС€СЂСѓС‚Р° С…РѕС‚СЏ Р±С‹ РґР»СЏ Р»РёРЅРёРё A.");
+            issues.add("Маршрут врагов пуст. Добавь точки маршрута хотя бы для линии A.");
         }
 
         Set<String> slotIds = new HashSet<>();
         Set<String> slotPositions = new HashSet<>();
         for (BuildSlot slot : snapshot.buildSlots.slots) {
             if (slot.id == null || slot.id.isBlank()) {
-                issues.add("РќР°Р№РґРµРЅ СЃР»РѕС‚ Р±РµР· id.");
+                issues.add("Найден слот без id.");
             } else if (!slotIds.add(slot.id)) {
-                issues.add("РџРѕРІС‚РѕСЂСЏРµС‚СЃСЏ id СЃР»РѕС‚Р°: '" + slot.id + "'.");
+                issues.add("Повторяется id слота: '" + slot.id + "'.");
             }
             if (slot.position == null) {
-                issues.add("РЈ СЃР»РѕС‚Р° '" + (slot.id == null ? "<Р±РµР· id>" : slot.id) + "' РЅРµ Р·Р°РґР°РЅР° РїРѕР·РёС†РёСЏ.");
+                issues.add("У слота '" + (slot.id == null ? "<без id>" : slot.id) + "' не задана позиция.");
             } else {
                 String positionKey = this.key(slot.position);
                 if (!slotPositions.add(positionKey)) {
-                    issues.add("РџРѕРІС‚РѕСЂСЏРµС‚СЃСЏ РїРѕР·РёС†РёСЏ СЃР»РѕС‚Р°: " + positionKey + ".");
+                    issues.add("Повторяется позиция слота: " + positionKey + ".");
                 }
             }
         }
@@ -6930,6 +7176,7 @@ public final class BankDefenseRuntime {
         context.state.bankHp = maxBankHp;
         context.state.maxBankHp = maxBankHp;
         context.state.gameStarted = false;
+        context.state.paused = false;
         context.state.preparationRemainingSeconds = 0.0;
         return context;
     }
@@ -7589,13 +7836,13 @@ public final class BankDefenseRuntime {
 
     private String localizedNpcLabel(World world, String russianName) {
         return switch (russianName) {
-            case "РћРїРµСЂР°С‚РѕСЂ" -> this.tr(world, "npc.operator");
-            case "РҐСЂР°РЅРёС‚РµР»СЊ СѓР»СѓС‡С€РµРЅРёР№" -> this.tr(world, "npc.keeper");
-            case "Р’С‹Р±РѕСЂ СЂРµР¶РёРјР°", "РўРµР»РµРїРѕСЂС‚" -> this.tr(world, "npc.mode");
-            case "Р’С‹Р±РѕСЂ С†РІРµС‚Р°", "Р’С‹Р±РѕСЂ СЃС‚РѕСЂРѕРЅС‹" -> this.tr(world, "npc.duo_team");
-            case "Р’РѕР»С€РµР±РЅС‹Р№ РљРІРёР±РµРє" -> this.tr(world, "npc.wizard");
-            case "РџРµСЂРµС…РѕРґ РІ Duo Р РµР¶РёРј", "QubeCore" -> this.tr(world, "npc.duo");
-            case "РЎС‚Р°С‚РёСЃС‚РёРєР°" -> this.tr(world, "npc.stats");
+            case "Оператор" -> this.tr(world, "npc.operator");
+            case "Хранитель улучшений" -> this.tr(world, "npc.keeper");
+            case "Выбор режима", "Телепорт" -> this.tr(world, "npc.mode");
+            case "Выбор цвета", "Выбор стороны" -> this.tr(world, "npc.duo_team");
+            case "Волшебный Квибек" -> this.tr(world, "npc.wizard");
+            case "Переход в Duo Режим", "QubeCore" -> this.tr(world, "npc.duo");
+            case "Статистика" -> this.tr(world, "npc.stats");
             default -> this.text(russianName);
         };
     }
@@ -7776,13 +8023,23 @@ public final class BankDefenseRuntime {
         } catch (IOException ignored) {
         }
         if (reward > 0) {
-            BankDefenseLocalization.sendWorldMessage(world,
-                this.choose(world, "РџСЂРѕРіСЂРµСЃСЃРёСЏ: РїРѕР»СѓС‡РµРЅРѕ РЇРґРµСЂ РґСѓРїР»Р° ", "Progression: Hollow Cores gained ")
-                    + reward
-                    + this.choose(world, ". Р’СЃРµРіРѕ: ", ". Total: ")
-                    + context.progression.cores
-                    + "."
-            );
+            final int grantedReward = reward;
+            if (world != null) {
+                this.sendLocalizedWorldMessage(world, playerRef ->
+                    this.choose(playerRef, "Прогрессия: получено Ядер дупла ", "Progression: Hollow Cores gained ")
+                        + grantedReward
+                        + this.choose(playerRef, ". Всего: ", ". Total: ")
+                        + context.progression.cores
+                        + "."
+                );
+            }
+        }
+    }
+
+    private void finishMatchAsDefeat(World world, MatchContext context, String russian, String english) {
+        this.finishMatchAsDefeat(world, context, this.choose(world, russian, english));
+        if (world != null && russian != null && !russian.isBlank() && english != null && !english.isBlank()) {
+            this.sendLocalizedWorldMessage(world, russian, english);
         }
     }
 
@@ -7794,10 +8051,12 @@ public final class BankDefenseRuntime {
         context.state.gameState = GameState.Defeat;
         context.state.waveState = WaveState.Finished;
         context.state.gameStarted = false;
+        context.state.paused = false;
         context.state.preparationRemainingSeconds = 0.0;
         this.clearInstantAutoStartWarmup(context);
         context.defeatBannerRemainingSeconds = 4.5;
         this.clearRewardDraftState(context);
+        context.lastRewardPreparedWave = 0;
         context.pendingSpawns.clear();
         context.enemies.clear();
         context.activeWaveTotalEnemies = 0;
@@ -7807,9 +8066,6 @@ public final class BankDefenseRuntime {
         this.grantProgressionRewardIfNeeded(world, context, Math.max(0, Math.max(context.state.currentWave - 1, context.activeWaveNumber)), false);
         context.activeWaveNumber = 0;
         context.state.currentWave = this.selectedStartWave(world);
-        if (worldMessage != null && !worldMessage.isBlank()) {
-            BankDefenseLocalization.sendWorldMessage(world, worldMessage);
-        }
         this.playWorldUiSound(world, SOUND_DEFEAT);
         this.refreshVisualizationIfEnabled(world);
     }
@@ -7968,8 +8224,8 @@ public final class BankDefenseRuntime {
         }
         this.showEventToast(
             context,
-            this.choose(world, "РРґРѕР» СѓСЂРѕР¶Р°СЏ РІС‹РїР»Р°С‚РёР» ", "Harvest Idol paid out ") + payout
-                + this.choose(world, " РјРѕРЅРµС‚ (Р‘С‹Р»Рѕ РЅР°РєРѕРїР»РµРЅРѕ ", " gold (Stored ")
+            this.choose(world, "Идол урожая выплатил ", "Harvest Idol paid out ") + payout
+                + this.choose(world, " монет (Было накоплено ", " gold (Stored ")
                 + stored
                 + ")",
             EVENT_TOAST_ICON_MONEY
@@ -8083,8 +8339,8 @@ public final class BankDefenseRuntime {
         this.spawnObjectiveVisual(world, presentation, KEY_SPAWN_A, snapshot.map.spawnPointA, MODEL_SPAWN, 0.65f, 0.05, null);
         this.spawnObjectiveVisual(world, presentation, KEY_SPAWN_B, snapshot.map.spawnPointB, MODEL_SPAWN, 0.65f, 0.05, null);
         this.spawnObjectiveVisual(world, presentation, KEY_SPAWN_C, snapshot.map.spawnPointC, MODEL_SPAWN, 0.65f, 0.05, null);
-        this.spawnObjectiveVisual(world, presentation, KEY_CONSOLE_START, this.startConsolePoint(snapshot.map), MODEL_SPAWN, 0.78f, 0.05, this.choose(world, "РќР°С‡Р°С‚СЊ РІРѕР»РЅСѓ", "Start wave"));
-        this.spawnObjectiveVisual(world, presentation, KEY_CONSOLE_MENU, this.menuConsolePoint(snapshot.map), MODEL_WARP, 0.82f, 0.05, this.choose(world, "Р§РёС‚-РјРµРЅСЋ", "Cheat menu"));
+        this.spawnObjectiveVisual(world, presentation, KEY_CONSOLE_START, this.startConsolePoint(snapshot.map), MODEL_SPAWN, 0.78f, 0.05, this.choose(world, "Начать волну", "Start wave"));
+        this.spawnObjectiveVisual(world, presentation, KEY_CONSOLE_MENU, this.menuConsolePoint(snapshot.map), MODEL_WARP, 0.82f, 0.05, this.choose(world, "Чит-меню", "Cheat menu"));
 
         if (context != null) {
             for (TowerInstance tower : context.placedTowers.values()) {
@@ -8103,9 +8359,42 @@ public final class BankDefenseRuntime {
 
     private void syncRealtimeVisuals(World world, PresentationState presentation, double deltaSeconds) {
         MatchContext context = this.matchesByWorld.get(this.worldKey(world));
-        this.syncEnemyVisuals(world, presentation, context, deltaSeconds);
-        this.syncTowerVisualTransforms(world, presentation, context, deltaSeconds);
-        this.syncTowerRangePreview(world, presentation, context);
+        boolean shouldSyncEnemyVisuals = context == null
+            ? !presentation.enemyRefs.isEmpty()
+            : (!context.enemies.isEmpty() || !presentation.enemyRefs.isEmpty());
+        if (!shouldSyncEnemyVisuals) {
+            presentation.enemyRealtimeAccumulatedSeconds = 0.0;
+        } else {
+            presentation.enemyRealtimeAccumulatedSeconds += Math.max(0.0, deltaSeconds);
+            if (presentation.enemyRealtimeAccumulatedSeconds >= REALTIME_ENEMY_VISUAL_SYNC_SECONDS) {
+                double enemyDeltaSeconds = presentation.enemyRealtimeAccumulatedSeconds;
+                presentation.enemyRealtimeAccumulatedSeconds = 0.0;
+                this.syncEnemyVisuals(world, presentation, context, enemyDeltaSeconds);
+            }
+        }
+
+        boolean shouldSyncTowerVisuals = context != null
+            && (!context.placedTowers.isEmpty() || this.hasTrackedTowerVisuals(presentation));
+        if (!shouldSyncTowerVisuals) {
+            presentation.towerRealtimeAccumulatedSeconds = 0.0;
+        } else {
+            presentation.towerRealtimeAccumulatedSeconds += Math.max(0.0, deltaSeconds);
+            if (presentation.towerRealtimeAccumulatedSeconds >= REALTIME_TOWER_VISUAL_SYNC_SECONDS) {
+                double towerDeltaSeconds = presentation.towerRealtimeAccumulatedSeconds;
+                presentation.towerRealtimeAccumulatedSeconds = 0.0;
+                this.syncTowerVisualTransforms(world, presentation, context, towerDeltaSeconds);
+            }
+        }
+
+        if (!presentation.towerRangePreviewEnabled) {
+            presentation.rangePreviewAccumulatedSeconds = 0.0;
+        } else {
+            presentation.rangePreviewAccumulatedSeconds += Math.max(0.0, deltaSeconds);
+            if (presentation.rangePreviewAccumulatedSeconds >= REALTIME_RANGE_PREVIEW_SYNC_SECONDS) {
+                presentation.rangePreviewAccumulatedSeconds = 0.0;
+                this.syncTowerRangePreview(world, presentation, context);
+            }
+        }
         boolean noLogicalEnemies = this.hasNoLogicalEnemies(context);
         if (noLogicalEnemies) {
             if (presentation.hadLogicalEnemiesPreviousTick) {
@@ -8116,6 +8405,18 @@ public final class BankDefenseRuntime {
             return;
         }
         presentation.hadLogicalEnemiesPreviousTick = true;
+    }
+
+    private boolean hasTrackedTowerVisuals(PresentationState presentation) {
+        if (presentation == null || presentation.staticRefs.isEmpty()) {
+            return false;
+        }
+        for (String key : presentation.staticRefs.keySet()) {
+            if (key != null && key.startsWith(KEY_TOWER_PREFIX)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void clearEnemyVisualLayerAwayFromCombat(World world, PresentationState presentation, MatchContext context) {
@@ -8296,8 +8597,8 @@ public final class BankDefenseRuntime {
         this.ensureObjectiveVisual(world, presentation, KEY_SPAWN_A, snapshot.map.spawnPointA, MODEL_SPAWN, 0.65f, 0.05, null);
         this.ensureObjectiveVisual(world, presentation, KEY_SPAWN_B, snapshot.map.spawnPointB, MODEL_SPAWN, 0.65f, 0.05, null);
         this.ensureObjectiveVisual(world, presentation, KEY_SPAWN_C, snapshot.map.spawnPointC, MODEL_SPAWN, 0.65f, 0.05, null);
-        this.ensureObjectiveVisual(world, presentation, KEY_CONSOLE_START, this.startConsolePoint(snapshot.map), MODEL_SPAWN, 0.78f, 0.05, this.choose(world, "РќР°С‡Р°С‚СЊ РІРѕР»РЅСѓ", "Start wave"));
-        this.ensureObjectiveVisual(world, presentation, KEY_CONSOLE_MENU, this.menuConsolePoint(snapshot.map), MODEL_WARP, 0.82f, 0.05, this.choose(world, "Р§РёС‚-РјРµРЅСЋ", "Cheat menu"));
+        this.ensureObjectiveVisual(world, presentation, KEY_CONSOLE_START, this.startConsolePoint(snapshot.map), MODEL_SPAWN, 0.78f, 0.05, this.choose(world, "Начать волну", "Start wave"));
+        this.ensureObjectiveVisual(world, presentation, KEY_CONSOLE_MENU, this.menuConsolePoint(snapshot.map), MODEL_WARP, 0.82f, 0.05, this.choose(world, "Чит-меню", "Cheat menu"));
     }
 
     private void ensureObjectiveVisual(
@@ -8358,7 +8659,7 @@ public final class BankDefenseRuntime {
         this.syncNameplate(
             world.getEntityStore().getStore(),
             ref,
-            this.localizedNpcLabel(world, "РћРїРµСЂР°С‚РѕСЂ")
+            this.localizedNpcLabel(world, "Оператор")
         );
     }
 
@@ -8481,7 +8782,7 @@ public final class BankDefenseRuntime {
         }
         this.purgeOperatorArea(world, point, ref);
         this.updateTransform(world.getEntityStore().getStore(), ref, this.vendorOperatorWorldPosition(point), this.vendorOperatorRotation(snapshot.map));
-        this.syncNameplate(world.getEntityStore().getStore(), ref, this.localizedNpcLabel(world, "РҐСЂР°РЅРёС‚РµР»СЊ СѓР»СѓС‡С€РµРЅРёР№"));
+        this.syncNameplate(world.getEntityStore().getStore(), ref, this.localizedNpcLabel(world, "Хранитель улучшений"));
     }
 
     private void ensureModeSelectorVisual(World world, PresentationState presentation, BankDefenseRepository.Snapshot snapshot) {
@@ -8498,7 +8799,7 @@ public final class BankDefenseRuntime {
         }
         this.purgeOperatorArea(world, point, ref);
         this.updateTransform(world.getEntityStore().getStore(), ref, this.modeSelectorWorldPosition(point), this.modeSelectorRotation(snapshot.map));
-        this.syncNameplate(world.getEntityStore().getStore(), ref, this.localizedNpcLabel(world, "РўРµР»РµРїРѕСЂС‚"));
+        this.syncNameplate(world.getEntityStore().getStore(), ref, this.localizedNpcLabel(world, "Телепорт"));
     }
 
     private void ensureDuoTeamVisual(World world, PresentationState presentation, BankDefenseRepository.Snapshot snapshot) {
@@ -8515,7 +8816,7 @@ public final class BankDefenseRuntime {
         }
         this.purgeOperatorArea(world, point, ref);
         this.updateTransform(world.getEntityStore().getStore(), ref, this.duoTeamWorldPosition(point), this.duoTeamRotation(snapshot.map));
-        this.syncNameplate(world.getEntityStore().getStore(), ref, this.localizedNpcLabel(world, "Р’С‹Р±РѕСЂ СЃС‚РѕСЂРѕРЅС‹"));
+        this.syncNameplate(world.getEntityStore().getStore(), ref, this.localizedNpcLabel(world, "Выбор стороны"));
     }
 
     private void ensureDuoTransitionVisual(World world, PresentationState presentation, BankDefenseRepository.Snapshot snapshot) {
@@ -8549,7 +8850,7 @@ public final class BankDefenseRuntime {
         }
         this.purgeOperatorArea(world, point, ref);
         this.updateTransform(world.getEntityStore().getStore(), ref, this.statsWorldPosition(point), this.statsRotation(snapshot.map));
-        this.syncNameplate(world.getEntityStore().getStore(), ref, this.localizedNpcLabel(world, "РЎС‚Р°С‚РёСЃС‚РёРєР°"));
+        this.syncNameplate(world.getEntityStore().getStore(), ref, this.localizedNpcLabel(world, "Статистика"));
     }
 
     private String findPresentationKey(PresentationState presentation, Ref<EntityStore> targetRef) {
@@ -9474,7 +9775,7 @@ public final class BankDefenseRuntime {
             this.controlOperatorWorldPosition(point),
             this.controlOperatorRotation(snapshot.map),
             this.controlNpcSkin,
-            this.localizedNpcLabel(world, "РћРїРµСЂР°С‚РѕСЂ")
+            this.localizedNpcLabel(world, "Оператор")
         );
         if (ref != null) {
             this.ensureTrackedVisualEntity(world.getEntityStore().getStore(), ref);
@@ -9499,7 +9800,7 @@ public final class BankDefenseRuntime {
             this.vendorOperatorWorldPosition(point),
             this.vendorOperatorRotation(snapshot.map),
             this.vendorNpcSkin,
-            this.localizedNpcLabel(world, "РҐСЂР°РЅРёС‚РµР»СЊ СѓР»СѓС‡С€РµРЅРёР№")
+            this.localizedNpcLabel(world, "Хранитель улучшений")
         );
         if (ref != null) {
             this.ensureTrackedVisualEntity(world.getEntityStore().getStore(), ref);
@@ -9523,7 +9824,7 @@ public final class BankDefenseRuntime {
             model,
             this.modeSelectorWorldPosition(point),
             this.modeSelectorRotation(snapshot.map),
-            this.localizedNpcLabel(world, "РўРµР»РµРїРѕСЂС‚")
+            this.localizedNpcLabel(world, "Телепорт")
         );
         if (ref != null) {
             this.ensureTrackedVisualEntity(world.getEntityStore().getStore(), ref);
@@ -9547,8 +9848,8 @@ public final class BankDefenseRuntime {
             model,
             this.duoTeamWorldPosition(point),
             this.duoTeamRotation(snapshot.map),
-            this.controlNpcSkin,
-            this.localizedNpcLabel(world, "Р’С‹Р±РѕСЂ СЃС‚РѕСЂРѕРЅС‹")
+            this.duoTeamNpcSkin,
+            this.localizedNpcLabel(world, "Выбор стороны")
         );
         if (ref != null) {
             this.ensureTrackedVisualEntity(world.getEntityStore().getStore(), ref);
@@ -9598,7 +9899,7 @@ public final class BankDefenseRuntime {
             this.statsWorldPosition(point),
             this.statsRotation(snapshot.map),
             this.statsNpcSkin,
-            this.localizedNpcLabel(world, "РЎС‚Р°С‚РёСЃС‚РёРєР°")
+            this.localizedNpcLabel(world, "Статистика")
         );
         if (ref != null) {
             this.ensureTrackedVisualEntity(world.getEntityStore().getStore(), ref);
@@ -9663,7 +9964,7 @@ public final class BankDefenseRuntime {
         }
         this.purgeOperatorArea(world, point, ref);
         this.updateTransform(world.getEntityStore().getStore(), ref, this.tutorialWizardWorldPosition(point), this.tutorialWizardRotation(point, yaw, lookTarget));
-        this.syncNameplate(world.getEntityStore().getStore(), ref, this.localizedNpcLabel(world, "Р’РѕР»С€РµР±РЅС‹Р№ РљРІРёР±РµРє"));
+        this.syncNameplate(world.getEntityStore().getStore(), ref, this.localizedNpcLabel(world, "Волшебный Квибек"));
     }
 
     private Ref<EntityStore> createTutorialWizardEntity(World world, Vec3i point, Float yaw, Vec3i lookTarget) {
@@ -9676,7 +9977,7 @@ public final class BankDefenseRuntime {
             model,
             this.tutorialWizardWorldPosition(point),
             this.tutorialWizardRotation(point, yaw, lookTarget),
-            this.localizedNpcLabel(world, "Р’РѕР»С€РµР±РЅС‹Р№ РљРІРёР±РµРє")
+            this.localizedNpcLabel(world, "Волшебный Квибек")
         );
         if (ref != null) {
             this.ensureTrackedVisualEntity(world.getEntityStore().getStore(), ref);
@@ -10781,9 +11082,9 @@ public final class BankDefenseRuntime {
         PlayerRef playerRef = this.primaryPlayerRef(world);
         String towerName = BankDefenseLocalization.towerDisplayName(playerRef, tower.definition.id, this.text(tower.definition.displayName));
         String status = tower.disabledRemaining > 0.0
-            ? BankDefenseLocalization.choose(playerRef, " [РћРўРљР›]", " [DISABLED]")
+            ? BankDefenseLocalization.choose(playerRef, " [ОТКЛ.]", " [DISABLED]")
             : "";
-        return towerName + BankDefenseLocalization.choose(playerRef, " СѓСЂ. ", " lvl. ") + tower.getCurrentLevel().level + status;
+        return towerName + " " + BankDefenseLocalization.choose(playerRef, "Ур. ", "Lvl. ") + tower.getCurrentLevel().level + status;
     }
 
     private String enemyNameplate(World world, EnemyInstance enemy) {
@@ -10799,10 +11100,10 @@ public final class BankDefenseRuntime {
         }
         return switch (enemy.definition.id) {
             case ENEMY_RIFT_TWIN_ALPHA, ENEMY_RIFT_TWIN_BETA -> enemy.damageableTwin
-                ? this.choose(world, " [РЈРЇР—Р’]", " [OPEN]")
-                : this.choose(world, " [Р©РРў]", " [SHIELDED]");
+                ? this.choose(world, " [УЯЗВ.]", " [OPEN]")
+                : this.choose(world, " [ЩИТ]", " [SHIELDED]");
             case ENEMY_NODE_ARBITER -> " [" + this.romanLifeLabel(enemy.extraLivesRemaining + 1) + "]";
-            case ENEMY_SEAL_NODE -> this.choose(world, " [РЈР—Р•Р›]", " [NODE]");
+            case ENEMY_SEAL_NODE -> this.choose(world, " [УЗЕЛ]", " [NODE]");
             default -> "";
         };
     }
@@ -11314,6 +11615,38 @@ public final class BankDefenseRuntime {
         }
     }
 
+    private void tickPinnedSpawnChunkSync(World world, double deltaSeconds) {
+        if (world == null) {
+            return;
+        }
+        String key = this.worldKey(world);
+        if (!this.matchesByWorld.containsKey(key) && !this.pinnedSpawnChunkIndexesByWorld.containsKey(key)) {
+            this.pinnedSpawnChunkSyncAccumulatedSecondsByWorld.remove(key);
+            return;
+        }
+        double accumulated = this.pinnedSpawnChunkSyncAccumulatedSecondsByWorld.getOrDefault(key, PINNED_SPAWN_CHUNK_SYNC_SECONDS);
+        accumulated += Math.max(0.0, deltaSeconds);
+        if (accumulated < PINNED_SPAWN_CHUNK_SYNC_SECONDS) {
+            this.pinnedSpawnChunkSyncAccumulatedSecondsByWorld.put(key, accumulated);
+            return;
+        }
+        this.pinnedSpawnChunkSyncAccumulatedSecondsByWorld.put(key, 0.0);
+        this.syncPinnedSpawnChunks(world);
+    }
+
+    private void tickWorldInteractionSync(World world, MatchContext context, double deltaSeconds) {
+        if (world == null || context == null || context.snapshot == null) {
+            return;
+        }
+        context.worldInteractionSyncAccumulatedSeconds += Math.max(0.0, deltaSeconds);
+        if (context.worldInteractionSyncAccumulatedSeconds < WORLD_INTERACTION_SYNC_SECONDS) {
+            return;
+        }
+        context.worldInteractionSyncAccumulatedSeconds = 0.0;
+        this.syncSlotInteractionBlocks(world, context.snapshot.buildSlots, context);
+        this.syncChestInteractionBlocks(world, context.snapshot.map, context);
+    }
+
     private void pinSpawnChunk(World world, String worldKey, long chunkIndex) {
         if (world == null) {
             return;
@@ -11412,7 +11745,7 @@ public final class BankDefenseRuntime {
         if (text == null || text.isBlank()) {
             return false;
         }
-        return text.contains(" \u0443\u0440. ") || text.contains(" lvl. ");
+        return text.contains(" \u0423\u0440. ") || text.contains(" Lvl. ");
     }
 
     private boolean isDetachedEnemyVisual(Store<EntityStore> store, Ref<EntityStore> ref) {
@@ -11445,7 +11778,7 @@ public final class BankDefenseRuntime {
         if (text == null || text.isBlank()) {
             return true;
         }
-        return !text.contains(" lvl. ") && !text.contains(" \u0443\u0440. ");
+        return !text.contains(" Lvl. ") && !text.contains(" \u0423\u0440. ");
     }
 
     private boolean isDetachedProjectileVisual(Store<EntityStore> store, Ref<EntityStore> ref) {
@@ -11604,56 +11937,56 @@ public final class BankDefenseRuntime {
             hud.setState(
                 "Duplo TD",
                 BankDefenseLocalization.tr(playerRef, "hud.creator"),
-                BankDefenseLocalization.translateFreeform(playerRef, this.hudWaveLabel(playerRef, snapshot, context)),
-                BankDefenseLocalization.translateFreeform(playerRef, this.hudStatusLabel(world, playerRef, context)),
-                BankDefenseLocalization.translateFreeform(playerRef, this.hudPromptLabel(playerRef, context)),
+                this.hudWaveLabel(playerRef, snapshot, context),
+                this.hudStatusLabel(world, playerRef, context),
+                this.hudPromptLabel(playerRef, context),
                 this.hudWaveVisible(snapshot, context),
                 this.hudStatusVisible(snapshot, context),
                 this.hudPromptVisible(snapshot, context),
                 this.hudSealCursePanelVisible(context),
-                BankDefenseLocalization.translateFreeform(playerRef, this.hudSealCursePanelTitle(playerRef, context)),
-                BankDefenseLocalization.translateFreeform(playerRef, this.hudSealCursePanelLine(playerRef, context, 0)),
-                BankDefenseLocalization.translateFreeform(playerRef, this.hudSealCursePanelLine(playerRef, context, 1)),
-                BankDefenseLocalization.translateFreeform(playerRef, this.hudSealCursePanelLine(playerRef, context, 2)),
+                this.hudSealCursePanelTitle(playerRef, context),
+                this.hudSealCursePanelLine(playerRef, context, 0),
+                this.hudSealCursePanelLine(playerRef, context, 1),
+                this.hudSealCursePanelLine(playerRef, context, 2),
                 this.hudRightStatsVisible(snapshot, context),
                 this.hudSuperMiniVisible(context, playerRef),
                 this.moneyLabel(playerRef, context),
                 this.seedIdolWardIncomePaused(context),
                 this.coresLabel(context),
                 this.bankLabel(state, snapshot.gameRules.bankHp),
-                BankDefenseLocalization.translateFreeform(playerRef, this.bankStateLabel(playerRef, state, snapshot.gameRules.bankHp)),
+                this.bankStateLabel(playerRef, state, snapshot.gameRules.bankHp),
                 this.bankDangerStage(state, snapshot.gameRules.bankHp),
                 this.waveEnemiesLabel(context),
-                BankDefenseLocalization.translateFreeform(playerRef, this.enemyStateLabel(playerRef, context)),
+                this.enemyStateLabel(playerRef, context),
                 this.enemyPressureStage(context),
                 this.hudTutorialQuestVisible(snapshot, context),
-                BankDefenseLocalization.translateFreeform(playerRef, this.hudTutorialQuestText(world, snapshot, context)),
+                this.hudTutorialQuestText(world, snapshot, context),
                 this.nextWavePanelVisible(context),
-                BankDefenseLocalization.translateFreeform(playerRef, this.nextWaveLabel(playerRef, context)),
-                BankDefenseLocalization.translateFreeform(playerRef, this.nextWaveCountdownLabel(playerRef, context)),
+                this.nextWaveLabel(playerRef, context),
+                this.nextWaveCountdownLabel(playerRef, context),
                 this.nextWaveDifficultyLevel(context),
                 false,
                 "",
-                BankDefenseLocalization.translateFreeform(playerRef, this.superHudTitle(playerRef, context, 0)),
-                BankDefenseLocalization.translateFreeform(playerRef, this.superHudTitle(playerRef, context, 1)),
-                BankDefenseLocalization.translateFreeform(playerRef, this.superHudTitle(playerRef, context, 2)),
+                this.superHudTitle(playerRef, context, 0),
+                this.superHudTitle(playerRef, context, 1),
+                this.superHudTitle(playerRef, context, 2),
                 this.superHudIconKind(context, playerRef, 0),
-                BankDefenseLocalization.translateFreeform(playerRef, this.superHudDetail(playerRef, context, 0)),
+                this.superHudDetailClean(playerRef, context, 0),
                 this.superHudIconKind(context, playerRef, 1),
-                BankDefenseLocalization.translateFreeform(playerRef, this.superHudDetail(playerRef, context, 1)),
+                this.superHudDetailClean(playerRef, context, 1),
                 this.superHudIconKind(context, playerRef, 2),
-                BankDefenseLocalization.translateFreeform(playerRef, this.superHudDetail(playerRef, context, 2)),
+                this.superHudDetailClean(playerRef, context, 2),
                 this.eventToastVisible(context),
                 BankDefenseLocalization.translateFreeform(playerRef, this.eventToastText(context)),
                 this.eventToastStage(context),
                 this.eventToastIconType(context),
                 this.duoHudVisible(context, playerRef),
                 this.duoHudTeamIconKind(context, playerRef),
-                BankDefenseLocalization.translateFreeform(playerRef, this.duoHudTeamLabel(playerRef, context)),
+                this.duoHudTeamLabel(playerRef, context),
                 this.duoPartnerMoneyLabel(context, playerRef),
                 this.defeatBannerVisible(context),
-                BankDefenseLocalization.translateFreeform(playerRef, this.defeatBannerText(playerRef, context)),
-                BankDefenseLocalization.translateFreeform(playerRef, this.defeatBannerHint(playerRef, context)),
+                this.defeatBannerText(playerRef, context),
+                this.defeatBannerHint(playerRef, context),
                 this.defeatBannerShardsValue(context)
             );
             if (player.getHudManager().getCustomHud() != hud) {
@@ -11769,7 +12102,7 @@ public final class BankDefenseRuntime {
         if (!this.hudSealCursePanelVisible(context)) {
             return "";
         }
-        return this.choose(playerRef, "РџСЂРѕРєР»СЏС‚РёСЏ РџРµС‡Р°С‚Рё", "Seal Curses");
+        return this.choose(playerRef, "Проклятия Печати", "Seal Curses");
     }
 
     private String hudSealCursePanelLine(PlayerRef playerRef, MatchContext context, int index) {
@@ -11779,11 +12112,11 @@ public final class BankDefenseRuntime {
         }
         SealCurseState curse = active.get(index);
         return this.sealCurseDisplayName(playerRef, curse.type)
-            + " вЂў "
+            + " • "
             + this.sealCurseShortLabel(playerRef, curse.type)
-            + " вЂў "
+            + " • "
             + curse.remainingWaves
-            + this.choose(playerRef, " РІРѕР»РЅ", " waves left");
+            + this.choose(playerRef, " волн", " waves left");
     }
 
     private boolean hudSuperMiniVisible(MatchContext context, PlayerRef playerRef) {
@@ -12133,33 +12466,37 @@ public final class BankDefenseRuntime {
     }
 
     private String superHudDetail(PlayerRef playerRef, MatchContext context, int index) {
+        return this.superHudDetailClean(playerRef, context, index);
+    }
+
+    private String superHudDetailClean(PlayerRef playerRef, MatchContext context, int index) {
         TowerInstance tower = this.superHudTower(context, playerRef, index);
         if (tower == null || tower.definition == null) {
             return "";
         }
         String activations = this.remainingSuperActivations(context, tower) + "/" + this.maxSuperActivations(context, tower);
         if ("heart_of_roots".equals(tower.definition.id)) {
-            return BankDefenseLocalization.choose(playerRef, "Р—Р°СЂСЏРґС‹: ", "Charges: ")
+            return BankDefenseLocalization.choose(playerRef, "Заряды: ", "Charges: ")
                 + activations
-                + BankDefenseLocalization.choose(playerRef, tower.superReady ? " вЂў РіРѕС‚РѕРІРѕ" : " вЂў РїРµСЂРµР·Р°СЂСЏРґРєР°", tower.superReady ? " вЂў ready" : " вЂў recharging");
+                + BankDefenseLocalization.choose(playerRef, tower.superReady ? " | Готово" : " | Перезарядка", tower.superReady ? " | Ready" : " | Recharging");
         }
         if ("storm_monolith".equals(tower.definition.id)) {
-            return BankDefenseLocalization.choose(playerRef, "Р—Р°СЂСЏРґС‹: ", "Charges: ")
+            return BankDefenseLocalization.choose(playerRef, "Заряды: ", "Charges: ")
                 + activations
-                + BankDefenseLocalization.choose(playerRef, tower.superReady ? " вЂў РіРѕС‚РѕРІ" : " вЂў РїРµСЂРµР·Р°СЂСЏРґРєР°", tower.superReady ? " вЂў ready" : " вЂў recharging");
+                + BankDefenseLocalization.choose(playerRef, tower.superReady ? " | Готово" : " | Перезарядка", tower.superReady ? " | Ready" : " | Recharging");
         }
         if ("seed_idol".equals(tower.definition.id)) {
             if (tower.specialMode == SEED_IDOL_MODE_WARD) {
-                return BankDefenseLocalization.choose(playerRef, "РќР°РєРѕРїР».: ", "Stored: ")
+                return BankDefenseLocalization.choose(playerRef, "Накоплено: ", "Stored: ")
                     + Math.max(0, tower.idolStoredCurrency)
-                    + BankDefenseLocalization.choose(playerRef, " Р·РѕР»РѕС‚Р° вЂў Р’С‹РїР»Р°С‚Р° С‡РµСЂРµР·: ", " gold вЂў Payout in: ")
+                    + BankDefenseLocalization.choose(playerRef, " золота | Выплата через: ", " gold | Payout in: ")
                     + Math.max(0, tower.idolSavingsWavesRemaining)
-                    + BankDefenseLocalization.choose(playerRef, " РІРѕР»РЅ", " waves");
+                    + BankDefenseLocalization.choose(playerRef, " волн", " waves");
             }
             if (tower.specialMode == SEED_IDOL_MODE_HARVEST) {
-                return BankDefenseLocalization.choose(playerRef, "+10% Р·РѕР»РѕС‚Р°", "+10% gold");
+                return BankDefenseLocalization.choose(playerRef, "+10% золота", "+10% gold");
             }
-            return BankDefenseLocalization.choose(playerRef, "Р’С‹Р±РµСЂРё СЂРµР¶РёРј", "Choose a mode");
+            return BankDefenseLocalization.choose(playerRef, "Выберите режим", "Choose a mode");
         }
         return "";
     }
@@ -12253,6 +12590,8 @@ public final class BankDefenseRuntime {
             && state.gameState == GameState.Ready
             && BankDefenseMatchPhaseSupport.isBuildPhase(state)
             && state.currentWave > 0
+            && !state.rewardPending
+            && !this.hasPendingIdolModeChoice(context)
             && state.preparationRemainingSeconds > 0.0;
     }
 
@@ -12452,6 +12791,9 @@ public final class BankDefenseRuntime {
         if (state.gameState == GameState.Defeat || state.gameState == GameState.Victory) {
             return "";
         }
+        if (state.paused) {
+            return BankDefenseLocalization.tr(playerRef, "hud.paused_match");
+        }
         if (BankDefenseMatchPhaseSupport.isWaitingForSetup(state)) {
             return BankDefenseLocalization.tr(playerRef, "hud.start_waiting");
         }
@@ -12489,6 +12831,12 @@ public final class BankDefenseRuntime {
             base = this.rewardPendingPrompt(playerRef, context);
             return base;
         }
+        if (this.hasPendingIdolModeChoice(context, playerRef)) {
+            return this.choose(playerRef, "Выберите режим Идола урожая.", "Choose the Harvest Idol mode.");
+        }
+        if (this.hasPendingIdolModeChoice(context)) {
+            return this.choose(playerRef, "Союзник выбирает режим Идола урожая.", "Your ally is choosing the Harvest Idol mode.");
+        }
         if (context != null
             && !context.tutorialActive
             && state.gameStarted
@@ -12522,21 +12870,32 @@ public final class BankDefenseRuntime {
             return BankDefenseLocalization.tr(playerRef, "hud.prompt.choose_reward");
         }
         if (!this.isDuoMode(context) || this.isDuoSoloTestEnabled(context)) {
-            return this.choose(playerRef, "Р’С‹Р±РµСЂРёС‚Рµ РјРѕРґСѓР»СЊ РЅР°РіСЂР°РґС‹ Сѓ РѕРїРµСЂР°С‚РѕСЂР°.", "Choose the reward module at the operator.");
+            return this.choose(playerRef, "Выберите модуль у оператора.", "Choose the module at the operator.");
         }
         String pickerTeam = this.normalizeTeam(context.rewardPickerTeam);
         String viewerTeam = this.normalizeTeam(this.teamForPlayer(context, playerRef));
         if (pickerTeam.equals(viewerTeam)) {
-            return this.choose(playerRef, "Р’С‹Р±РµСЂРёС‚Рµ РјРѕРґСѓР»СЊ РЅР°РіСЂР°РґС‹ Сѓ РѕРїРµСЂР°С‚РѕСЂР°.", "Choose the reward module at the operator.");
+            return this.choose(playerRef, "Выберите модуль у оператора.", "Choose the module at the operator.");
         }
         String teamLabel = TEAM_GREEN.equals(pickerTeam)
-            ? this.choose(playerRef, "Р·РµР»С‘РЅРѕР№", "green")
-            : this.choose(playerRef, "СЃРёРЅРµР№", "blue");
-        return this.choose(playerRef, "РРіСЂРѕРє " + teamLabel + " РєРѕРјР°РЅРґС‹ РЅРµ РІС‹Р±СЂР°Р» РјРѕРґСѓР»СЊ. РћРЅ РјРѕР¶РµС‚ РІР·СЏС‚СЊ РµРіРѕ Сѓ РѕРїРµСЂР°С‚РѕСЂР°.", "The " + teamLabel + " team player has not chosen a module yet. They can take it from the operator.");
+            ? this.choose(playerRef, "зелёной", "green")
+            : this.choose(playerRef, "синей", "blue");
+        return this.choose(playerRef, "Игрок " + teamLabel + " команды ещё не выбрал модуль. Его можно выбрать у оператора.", "The " + teamLabel + " team player has not chosen a module yet. It can be chosen at the operator.");
     }
 
     private boolean hasAnyPlacedTowerOrTrap(MatchContext context) {
         return context != null && !context.placedTowers.isEmpty();
+    }
+
+    private boolean hasPendingIdolModeChoice(MatchContext context) {
+        return context != null && !context.pendingIdolModeSlotByPlayer.isEmpty();
+    }
+
+    private boolean hasPendingIdolModeChoice(MatchContext context, PlayerRef playerRef) {
+        return context != null
+            && playerRef != null
+            && playerRef.getUuid() != null
+            && context.pendingIdolModeSlotByPlayer.containsKey(playerRef.getUuid());
     }
 
     private boolean progressionLocked(MatchContext context) {
@@ -12647,6 +13006,31 @@ public final class BankDefenseRuntime {
         skin.skinFeature = null;
         skin.gloves = "Spiked_Bracelets.Black.Default";
         skin.cape = null;
+        return skin;
+    }
+
+    private PlayerSkin defaultDuoTeamNpcSkin() {
+        PlayerSkin skin = new PlayerSkin();
+        skin.bodyCharacteristic = "Muscular.10";
+        skin.underwear = "Suit.Purple";
+        skin.face = "Face_MakeUp_Freckles";
+        skin.ears = "Default";
+        skin.mouth = "Mouth_Makeup";
+        skin.haircut = "SuperSlickback.Copper";
+        skin.facialHair = null;
+        skin.eyebrows = "Thick.Copper";
+        skin.eyes = "Plain_Square_Eyes.GreenLight";
+        skin.pants = "Pants_Slim.Black";
+        skin.overpants = "LongSocks_BasicWrap.Green";
+        skin.undertop = "Forest_Guardian_LongShirt.Lime";
+        skin.overtop = "Forest_Guardian_Poncho.Mossy";
+        skin.shoes = "LeatherBoots.BrownDark";
+        skin.headAccessory = "Goggles.Green";
+        skin.faceAccessory = null;
+        skin.earAccessory = "SilverHoopsBead.Purple+Violet+Lime";
+        skin.skinFeature = null;
+        skin.gloves = "Bracer_Daisy.Red";
+        skin.cape = "Cape_Forest_Guardian.Green.Neck_Piece";
         return skin;
     }
 
@@ -13136,16 +13520,19 @@ public final class BankDefenseRuntime {
         if ("root_snare".equals(tower.definition.id)) {
             double radius = 20.8;
             double rootDuration = Math.max(3.8, level.slowDuration + 1.2);
+            this.playSound3d(world, SOUND_GOBLIN_DOWNGRADE, towerPosition);
             this.emitFreezeAoeFeedback(world, tower, towerPosition, radius);
             this.rootEnemiesInRadius(world, context, tower, towerPosition, radius, rootDuration, Math.max(0.0, level.damage));
             this.releaseTutorialTrapTargets(context, tower.slot.id, towerPosition, radius);
         } else if ("spore_mine".equals(tower.definition.id)) {
             double radius = 17.6;
+            this.playSound3d(world, SOUND_GOBLIN_DESTROY, towerPosition);
             this.emitImpactFeedback(world, tower.definition.id, towerPosition);
             this.applySplashDamage(world, context, tower, null, towerPosition, level.damage * 1.05, 0.0, 0.0, radius);
             this.releaseTutorialTrapTargets(context, tower.slot.id, towerPosition, radius);
         } else if ("frost_seal".equals(tower.definition.id)) {
             double radius = 16.8;
+            this.playSound3d(world, SOUND_FIRE_FROST, towerPosition);
             this.emitFreezeAoeFeedback(world, tower, towerPosition, radius);
             this.applySplashDamage(world, context, tower, null, towerPosition, level.damage, level.slowPercent, level.slowDuration, radius);
             this.releaseTutorialTrapTargets(context, tower.slot.id, towerPosition, radius);
@@ -13269,7 +13656,7 @@ public final class BankDefenseRuntime {
         int remainingActivations = this.remainingSuperActivations(context, monolith);
         this.showEventToast(
             context,
-            this.choose(world, "РЁС‚РѕСЂРјРѕРІРѕР№ РјРѕРЅРѕР»РёС‚ РѕС‚Р±СЂРѕСЃРёР» РѕСЂРґСѓ РЅР°Р·Р°Рґ.", "The Storm Monolith threw the horde back."),
+            this.choose(world, "Штормовой монолит отбросил орду назад.", "The Storm Monolith threw the horde back."),
             EVENT_TOAST_ICON_CORES
         );
         this.playSound3d(world, SOUND_MONOLITH_BURST, this.towerWorldPosition(monolith.slot));
@@ -13280,10 +13667,14 @@ public final class BankDefenseRuntime {
             breachedEnemy.slowRemaining = 0.0;
             breachedEnemy.rootedRemaining = 0.0;
             breachedEnemy.specialCooldownRemaining = breachedEnemy.initialCooldown(breachedEnemy.definition);
-            BankDefenseLocalization.sendWorldMessage(world,
+            this.sendLocalizedWorldMessage(
+                world,
                 remainingActivations > 0
-                    ? this.choose(world, "РЁС‚РѕСЂРјРѕРІРѕР№ РјРѕРЅРѕР»РёС‚ РѕС‚Р±СЂРѕСЃРёР» Р Р°Р·РѕСЂРёС‚РµР»СЏ РЅР°Р·Р°Рґ Рё РїРѕС‡С‚Рё РґРѕР±РёР» РµРіРѕ. Р”РѕР±РµР№ Р±РѕСЃСЃР°, С‡С‚РѕР±С‹ Р·Р°РІРµСЂС€РёС‚СЊ РІРѕР»РЅСѓ.", "The Storm Monolith threw the Ravager back and nearly finished it. Kill the boss to end the wave.")
-                    : this.choose(world, "РЁС‚РѕСЂРјРѕРІРѕР№ РјРѕРЅРѕР»РёС‚ РѕС‚Р±СЂРѕСЃРёР» Р Р°Р·РѕСЂРёС‚РµР»СЏ РЅР°Р·Р°Рґ, РЅРѕ РІСЃРµ РµРіРѕ Р°РєС‚РёРІР°С†РёРё РёСЃС‡РµСЂРїР°РЅС‹.", "The Storm Monolith threw the Ravager back, but all of its activations are spent.")
+                    ? "Штормовой монолит отбросил Разорителя назад и почти добил его. Добей босса, чтобы завершить волну."
+                    : "Штормовой монолит отбросил Разорителя назад, но все его активации исчерпаны.",
+                remainingActivations > 0
+                    ? "The Storm Monolith threw the Ravager back and nearly finished it. Kill the boss to end the wave."
+                    : "The Storm Monolith threw the Ravager back, but all of its activations are spent."
             );
         } else {
             for (EnemyInstance enemy : context.enemies) {
@@ -13297,10 +13688,14 @@ public final class BankDefenseRuntime {
                 enemy.rootedRemaining = 0.0;
                 enemy.specialCooldownRemaining = enemy.initialCooldown(enemy.definition);
             }
-            BankDefenseLocalization.sendWorldMessage(world,
+            this.sendLocalizedWorldMessage(
+                world,
                 remainingActivations > 0
-                    ? this.choose(world, "РЁС‚РѕСЂРјРѕРІРѕР№ РјРѕРЅРѕР»РёС‚ РїСЂРёРЅСЏР» СѓРґР°СЂ. Р”СѓРїР»Рѕ СѓС†РµР»РµР»Рѕ, РѕСЂРґР° РѕС‚Р±СЂРѕС€РµРЅР° РЅР°Р·Р°Рґ Рё РїРѕС‚РµСЂСЏР»Р° 50% С‚РµРєСѓС‰РµРіРѕ Р·РґРѕСЂРѕРІСЊСЏ. РњРѕРЅРѕР»РёС‚ РјРѕР¶РЅРѕ СЂРµР°РєС‚РёРІРёСЂРѕРІР°С‚СЊ РїРѕР·Р¶Рµ.", "The Storm Monolith absorbed the hit. The Hollow survived, the horde was pushed back, and each enemy lost 50% of its current health. The Monolith can be reactivated later.")
-                    : this.choose(world, "РЁС‚РѕСЂРјРѕРІРѕР№ РјРѕРЅРѕР»РёС‚ РїСЂРёРЅСЏР» СѓРґР°СЂ. Р”СѓРїР»Рѕ СѓС†РµР»РµР»Рѕ, РѕСЂРґР° РѕС‚Р±СЂРѕС€РµРЅР° РЅР°Р·Р°Рґ Рё РїРѕС‚РµСЂСЏР»Р° 50% С‚РµРєСѓС‰РµРіРѕ Р·РґРѕСЂРѕРІСЊСЏ, РЅРѕ РІСЃРµ Р°РєС‚РёРІР°С†РёРё РёСЃС‡РµСЂРїР°РЅС‹.", "The Storm Monolith absorbed the hit. The Hollow survived, the horde was pushed back, and each enemy lost 50% of its current health, but all activations are spent.")
+                    ? "Штормовой монолит принял удар. Дупло уцелело, орда отброшена назад и потеряла 50% текущего здоровья. Монолит можно реактивировать позже."
+                    : "Штормовой монолит принял удар. Дупло уцелело, орда отброшена назад и потеряла 50% текущего здоровья, но все активации исчерпаны.",
+                remainingActivations > 0
+                    ? "The Storm Monolith absorbed the hit. The Hollow survived, the horde was pushed back, and each enemy lost 50% of its current health. The Monolith can be reactivated later."
+                    : "The Storm Monolith absorbed the hit. The Hollow survived, the horde was pushed back, and each enemy lost 50% of its current health, but all activations are spent."
             );
         }
         this.playWorldUiSound(world, SOUND_LEAK);
@@ -13309,6 +13704,9 @@ public final class BankDefenseRuntime {
     }
 
     private void applyEnemySupportEffects(World world, MatchContext context, double deltaSeconds) {
+        if (context == null || !context.hasEnemyRegenAuras) {
+            return;
+        }
         for (EnemyInstance source : context.enemies) {
             if (source.dying
                 || source.definition.regenPercentPerSecond <= 0.0
@@ -13391,7 +13789,7 @@ public final class BankDefenseRuntime {
         this.playSound3d(world, SOUND_RIFT_TWIN_SWAP, this.enemyWorldPosition(context, activeTwin));
         this.showEventToast(
             context,
-            this.choose(world, "РћРєРЅРѕ СѓСЏР·РІРёРјРѕСЃС‚Рё: ", "Vulnerability window: ") + this.enemyDisplayName(world, activeTwin.definition) + ".",
+            this.choose(world, "Окно уязвимости: ", "Vulnerability window: ") + this.enemyDisplayName(world, activeTwin.definition) + ".",
             EVENT_TOAST_ICON_ALERT
         );
         return false;
@@ -13432,17 +13830,17 @@ public final class BankDefenseRuntime {
             this.emitBossCastReleaseFeedback(world, context, enemy);
             String message = this.choose(
                 world,
-                "РњР°СЃС‚РµСЂ РџРµС‡Р°С‚Рё РїСЂРѕСЂРІР°Р»СЃСЏ РіР»СѓР±Р¶Рµ Рё СѓСЃРєРѕСЂРёР»СЃСЏ.",
+                "Мастер Печати прорвался глубже и ускорился.",
                 "The Seal Master pushed deeper and accelerated."
             );
             this.showEventToast(context, message, EVENT_TOAST_ICON_ALERT);
-            BankDefenseLocalization.sendWorldMessage(world, message);
+            this.sendLocalizedWorldMessage(world, "Мастер Печати прорвался глубже и ускорился.", "The Seal Master pushed deeper and accelerated.");
             return;
         }
         this.emitBossCastStartFeedback(world, context, enemy);
         this.showEventToast(
             context,
-            this.choose(world, "РџРµС‡Р°С‚СЊ РїСЂРѕР±СѓР¶РґР°РµС‚СЃСЏ.", "The seal is awakening."),
+            this.choose(world, "Печать пробуждается.", "The seal is awakening."),
             EVENT_TOAST_ICON_ALERT
         );
     }
@@ -13604,17 +14002,22 @@ public final class BankDefenseRuntime {
     }
 
     private boolean handleBossDisablePulse(World world, MatchContext context, EnemyInstance enemy) {
+        boolean vaultBreaker = enemy != null && "vault_breaker".equals(enemy.definition.id);
         if (enemy.definition.towerDisablePulseRadius <= 0.0
             || enemy.definition.towerDisablePulseDuration <= 0.0
             || enemy.definition.towerDisablePulsePercent <= 0.0
             || enemy.definition.towerDisablePulseIntervalSeconds <= 0.0
-            || (enemy.definition.towerDisablePulseMaxTriggers > 0 && enemy.remainingDisablePulses <= 0)
+            || (!vaultBreaker && enemy.definition.towerDisablePulseMaxTriggers > 0 && enemy.remainingDisablePulses <= 0)
             || enemy.specialCooldownRemaining > 0.0) {
             return false;
         }
-        List<TowerInstance> towers = this.findTowersInRadius(context, this.enemyWorldPosition(context, enemy), enemy.definition.towerDisablePulseRadius);
+        List<TowerInstance> towers = vaultBreaker
+            ? new ArrayList<>(context.placedTowers.values())
+            : this.findTowersInRadius(context, this.enemyWorldPosition(context, enemy), enemy.definition.towerDisablePulseRadius);
         if (towers.isEmpty()) {
-            enemy.specialCooldownRemaining = Math.max(1.0, enemy.definition.towerDisablePulseIntervalSeconds * 0.5);
+            enemy.specialCooldownRemaining = vaultBreaker
+                ? VAULT_BREAKER_DISABLE_INTERVAL_SECONDS
+                : Math.max(1.0, enemy.definition.towerDisablePulseIntervalSeconds * 0.5);
             return false;
         }
         return this.beginBossCast(world, context, enemy, BOSS_CAST_VAULT_BREAKER_DISABLE, BOSS_CAST_VAULT_BREAKER_SECONDS);
@@ -13694,36 +14097,60 @@ public final class BankDefenseRuntime {
             this.playSound3d(world, SOUND_BOSS_CAST_NECRO_KING, this.enemyWorldPosition(context, enemy));
             this.showEventToast(
                 context,
-                this.choose(world, "РќРµРєСЂРѕРєРѕСЂРѕР»СЊ РїСЂРёР·РІР°Р» СЃС‚СЂР°Р¶РµР№ Р±РµР·РґРЅС‹. РџРѕРєР° РѕРЅРё Р¶РёРІС‹, РѕРЅ РЅРµСѓСЏР·РІРёРј.", "The Necro King summoned abyss guardians. While they live, he is invulnerable."),
+                this.choose(world, "Некрокороль призвал стражей бездны. Пока они живы, он неуязвим.", "The Necro King summoned abyss guardians. While they live, he is invulnerable."),
                 EVENT_TOAST_ICON_ALERT
             );
-            BankDefenseLocalization.sendWorldMessage(world, this.choose(world, "РќРµРєСЂРѕРєРѕСЂРѕР»СЊ РїРѕРґРЅСЏР» РєРѕСЃС‚СЏРЅС‹С… СЃС‚СЂР°Р¶РµР№. РџРѕРєР° РѕРЅРё Р¶РёРІС‹, РѕРЅ РЅРµСѓСЏР·РІРёРј!", "The Necro King raised ritual guardians. While they live, he is invulnerable!"));
+            this.sendLocalizedWorldMessage(world, "Некрокороль поднял костяных стражей. Пока они живы, он неуязвим!", "The Necro King raised ritual guardians. While they live, he is invulnerable!");
             enemy.specialCooldownRemaining = enemy.definition.summonIntervalSeconds;
         }
     }
 
     private void resolveVaultBreakerDisablePulse(World world, MatchContext context, EnemyInstance enemy) {
-        List<TowerInstance> towers = this.findTowersInRadius(context, this.enemyWorldPosition(context, enemy), enemy.definition.towerDisablePulseRadius);
+        boolean vaultBreaker = enemy != null && "vault_breaker".equals(enemy.definition.id);
+        List<TowerInstance> towers = vaultBreaker
+            ? new ArrayList<>(context.placedTowers.values())
+            : this.findTowersInRadius(context, this.enemyWorldPosition(context, enemy), enemy.definition.towerDisablePulseRadius);
         if (towers.isEmpty()) {
-            enemy.specialCooldownRemaining = Math.max(1.0, enemy.definition.towerDisablePulseIntervalSeconds * 0.5);
+            enemy.specialCooldownRemaining = vaultBreaker
+                ? VAULT_BREAKER_DISABLE_INTERVAL_SECONDS
+                : Math.max(1.0, enemy.definition.towerDisablePulseIntervalSeconds * 0.5);
             return;
         }
-        Collections.shuffle(towers, ThreadLocalRandom.current());
-        int disableCount = Math.max(1, (int)Math.ceil(towers.size() * enemy.definition.towerDisablePulsePercent));
+        if (!vaultBreaker) {
+            Collections.shuffle(towers, ThreadLocalRandom.current());
+        }
+        int disableCount = vaultBreaker
+            ? towers.size()
+            : Math.max(1, (int)Math.ceil(towers.size() * enemy.definition.towerDisablePulsePercent));
+        double disableDuration = vaultBreaker
+            ? VAULT_BREAKER_DISABLE_DURATION_SECONDS
+            : enemy.definition.towerDisablePulseDuration;
         for (int i = 0; i < disableCount && i < towers.size(); i++) {
-            this.applyTowerDisable(world, towers.get(i), enemy.definition.towerDisablePulseDuration, this.rgb(255, 112, 64), 1.05);
+            this.applyTowerDisable(world, towers.get(i), disableDuration, this.rgb(255, 112, 64), 1.05);
         }
         this.playSound3d(world, SOUND_BOSS_CAST_VAULT_BREAKER, this.enemyWorldPosition(context, enemy));
         this.showEventToast(
             context,
-            this.enemyDisplayName(world, enemy.definition) + this.choose(world, " РѕС‚РєР»СЋС‡РёР» Р±Р°С€РЅРё РІРѕР·Р»Рµ СЃРµР±СЏ.", " disabled towers near itself."),
+            vaultBreaker
+                ? this.choose(world, "Разоритель дупла отключил все башни на 3 секунды.", "The Hollow Ravager disabled all towers for 3 seconds.")
+                : this.enemyDisplayName(world, enemy.definition) + this.choose(world, " отключил башни возле себя.", " disabled towers near itself."),
             EVENT_TOAST_ICON_ALERT
         );
-        BankDefenseLocalization.sendWorldMessage(world, this.choose(world, "Р Р°Р·РѕСЂРёС‚РµР»СЊ РґСѓРїР»Р° РѕС‚РєР»СЋС‡РёР» С‡Р°СЃС‚СЊ Р±Р°С€РµРЅ РїРѕР±Р»РёР·РѕСЃС‚Рё!", "The Hollow Ravager disabled some nearby towers!"));
-        if (enemy.definition.towerDisablePulseMaxTriggers > 0) {
+        this.sendLocalizedWorldMessage(
+            world,
+            vaultBreaker
+                ? "Разоритель дупла отключил все башни на 3 секунды!"
+                : "Разоритель дупла отключил часть башен поблизости!",
+            vaultBreaker
+                ? "The Hollow Ravager disabled all towers for 3 seconds!"
+                : "The Hollow Ravager disabled some nearby towers!"
+        );
+        if (!vaultBreaker && enemy.definition.towerDisablePulseMaxTriggers > 0) {
             enemy.remainingDisablePulses = Math.max(0, enemy.remainingDisablePulses - 1);
         }
-        enemy.specialCooldownRemaining = enemy.definition.towerDisablePulseIntervalSeconds;
+        enemy.specialCooldownRemaining = vaultBreaker
+            ? VAULT_BREAKER_DISABLE_INTERVAL_SECONDS
+            : enemy.definition.towerDisablePulseIntervalSeconds;
     }
 
     private void emitBossCastStartFeedback(World world, MatchContext context, EnemyInstance enemy) {
@@ -13891,6 +14318,9 @@ public final class BankDefenseRuntime {
 
     private double enemyFireRateMultiplier(MatchContext context, Vector3d towerPosition) {
         double multiplier = 1.0;
+        if (context == null || !context.hasEnemyTowerFireRateAuras) {
+            return multiplier;
+        }
         for (EnemyInstance enemy : context.enemies) {
             if (enemy.dying || enemy.definition.towerFireRateSlowPercent <= 0.0 || enemy.definition.towerFireRateSlowRadius <= 0.0) {
                 continue;
@@ -13913,6 +14343,9 @@ public final class BankDefenseRuntime {
 
     private double enemyRangeMultiplier(MatchContext context, Vector3d towerPosition) {
         double multiplier = 1.0;
+        if (context == null || !context.hasEnemyTowerRangeAuras) {
+            return multiplier;
+        }
         for (EnemyInstance enemy : context.enemies) {
             if (enemy.dying || enemy.definition.towerRangeSlowPercent <= 0.0 || enemy.definition.towerRangeSlowRadius <= 0.0) {
                 continue;
@@ -13936,25 +14369,27 @@ public final class BankDefenseRuntime {
     private double enemyMovementMultiplier(MatchContext context, EnemyInstance target) {
         double multiplier = 1.0;
         Vector3d targetPosition = this.enemyWorldPosition(context, target);
-        for (EnemyInstance enemy : context.enemies) {
-            if (enemy == target
-                || enemy.dying
-                || enemy.definition.allySpeedAuraPercent <= 0.0
-                || enemy.definition.allySpeedAuraRadius <= 0.0) {
-                continue;
+        if (context != null && context.hasEnemyAllySpeedAuras) {
+            for (EnemyInstance enemy : context.enemies) {
+                if (enemy == target
+                    || enemy.dying
+                    || enemy.definition.allySpeedAuraPercent <= 0.0
+                    || enemy.definition.allySpeedAuraRadius <= 0.0) {
+                    continue;
+                }
+                Vector3d sourcePosition = this.enemyWorldPosition(context, enemy);
+                double dx = sourcePosition.x - targetPosition.x;
+                double dy = sourcePosition.y - targetPosition.y;
+                double dz = sourcePosition.z - targetPosition.z;
+                double radius = enemy.definition.allySpeedAuraRadius * this.contractAuraRadiusMultiplier(context, enemy.definition);
+                if ((dx * dx) + (dy * dy) + (dz * dz) > radius * radius) {
+                    continue;
+                }
+                multiplier = Math.max(
+                    multiplier,
+                    1.0 + enemy.definition.allySpeedAuraPercent * this.contractAuraEffectMultiplier(context, enemy.definition)
+                );
             }
-            Vector3d sourcePosition = this.enemyWorldPosition(context, enemy);
-            double dx = sourcePosition.x - targetPosition.x;
-            double dy = sourcePosition.y - targetPosition.y;
-            double dz = sourcePosition.z - targetPosition.z;
-            double radius = enemy.definition.allySpeedAuraRadius * this.contractAuraRadiusMultiplier(context, enemy.definition);
-            if ((dx * dx) + (dy * dy) + (dz * dz) > radius * radius) {
-                continue;
-            }
-            multiplier = Math.max(
-                multiplier,
-                1.0 + enemy.definition.allySpeedAuraPercent * this.contractAuraEffectMultiplier(context, enemy.definition)
-            );
         }
         if (target.definition.berserkHpThreshold > 0.0
             && target.definition.berserkSpeedMultiplier > 1.0
@@ -13995,30 +14430,80 @@ public final class BankDefenseRuntime {
         double effectiveFlatReduction = Math.max(0.0, enemy.flatDamageReduction - enemy.armorBreakFlatReduction);
         adjustedDamage = Math.max(0.0, adjustedDamage - effectiveFlatReduction);
         double auraMultiplier = 1.0;
-        Vector3d targetPosition = this.enemyWorldPosition(context, enemy);
-        for (EnemyInstance source : context.enemies) {
-            if (source == enemy
-                || source.dying
-                || source.definition.allyDamageReductionAuraPercent <= 0.0
-                || source.definition.allyDamageReductionAuraRadius <= 0.0) {
-                continue;
+        if (context != null && context.hasEnemyDamageReductionAuras) {
+            Vector3d targetPosition = this.enemyWorldPosition(context, enemy);
+            for (EnemyInstance source : context.enemies) {
+                if (source == enemy
+                    || source.dying
+                    || source.definition.allyDamageReductionAuraPercent <= 0.0
+                    || source.definition.allyDamageReductionAuraRadius <= 0.0) {
+                    continue;
+                }
+                Vector3d sourcePosition = this.enemyWorldPosition(context, source);
+                double dx = sourcePosition.x - targetPosition.x;
+                double dy = sourcePosition.y - targetPosition.y;
+                double dz = sourcePosition.z - targetPosition.z;
+                double radius = source.definition.allyDamageReductionAuraRadius * this.contractAuraRadiusMultiplier(context, source.definition);
+                if ((dx * dx) + (dy * dy) + (dz * dz) > radius * radius) {
+                    continue;
+                }
+                auraMultiplier = Math.min(
+                    auraMultiplier,
+                    Math.max(0.35, 1.0 - source.definition.allyDamageReductionAuraPercent * this.contractAuraEffectMultiplier(context, source.definition))
+                );
             }
-            Vector3d sourcePosition = this.enemyWorldPosition(context, source);
-            double dx = sourcePosition.x - targetPosition.x;
-            double dy = sourcePosition.y - targetPosition.y;
-            double dz = sourcePosition.z - targetPosition.z;
-            double radius = source.definition.allyDamageReductionAuraRadius * this.contractAuraRadiusMultiplier(context, source.definition);
-            if ((dx * dx) + (dy * dy) + (dz * dz) > radius * radius) {
-                continue;
-            }
-            auraMultiplier = Math.min(
-                auraMultiplier,
-                Math.max(0.35, 1.0 - source.definition.allyDamageReductionAuraPercent * this.contractAuraEffectMultiplier(context, source.definition))
-            );
         }
         double effectivePercentReduction = Math.max(0.0, Math.min(0.92, enemy.damageReductionPercent - enemy.armorBreakPercentReduction));
         double reductionMultiplier = 1.0 - effectivePercentReduction;
         return Math.max(0.0, adjustedDamage * reductionMultiplier * auraMultiplier);
+    }
+
+    private void refreshEnemyAuraFlags(MatchContext context) {
+        if (context == null) {
+            return;
+        }
+        context.hasEnemyRegenAuras = false;
+        context.hasEnemyAllySpeedAuras = false;
+        context.hasEnemyTowerFireRateAuras = false;
+        context.hasEnemyTowerRangeAuras = false;
+        context.hasEnemyDamageReductionAuras = false;
+        for (EnemyInstance enemy : context.enemies) {
+            if (enemy == null || enemy.dying || enemy.definition == null) {
+                continue;
+            }
+            if (!context.hasEnemyRegenAuras
+                && enemy.definition.regenPercentPerSecond > 0.0
+                && enemy.definition.regenAuraRadius > 0.0) {
+                context.hasEnemyRegenAuras = true;
+            }
+            if (!context.hasEnemyAllySpeedAuras
+                && enemy.definition.allySpeedAuraPercent > 0.0
+                && enemy.definition.allySpeedAuraRadius > 0.0) {
+                context.hasEnemyAllySpeedAuras = true;
+            }
+            if (!context.hasEnemyTowerFireRateAuras
+                && enemy.definition.towerFireRateSlowPercent > 0.0
+                && enemy.definition.towerFireRateSlowRadius > 0.0) {
+                context.hasEnemyTowerFireRateAuras = true;
+            }
+            if (!context.hasEnemyTowerRangeAuras
+                && enemy.definition.towerRangeSlowPercent > 0.0
+                && enemy.definition.towerRangeSlowRadius > 0.0) {
+                context.hasEnemyTowerRangeAuras = true;
+            }
+            if (!context.hasEnemyDamageReductionAuras
+                && enemy.definition.allyDamageReductionAuraPercent > 0.0
+                && enemy.definition.allyDamageReductionAuraRadius > 0.0) {
+                context.hasEnemyDamageReductionAuras = true;
+            }
+            if (context.hasEnemyRegenAuras
+                && context.hasEnemyAllySpeedAuras
+                && context.hasEnemyTowerFireRateAuras
+                && context.hasEnemyTowerRangeAuras
+                && context.hasEnemyDamageReductionAuras) {
+                return;
+            }
+        }
     }
 
     private void emitShotFeedback(World world, TowerInstance tower, Vector3d from, Vector3d to) {
@@ -14152,10 +14637,16 @@ public final class BankDefenseRuntime {
         this.playSound3d(world, SOUND_NODE_ARBITER_RESPAWN, this.enemyWorldPosition(context, enemy));
         String lifeLabel = this.romanLifeLabel(enemy.extraLivesRemaining + 1);
         String message = onFinalLane
-            ? this.choose(world, "РђСЂР±РёС‚СЂ РЈР·Р»РѕРІ РІРѕР·СЂРѕР¶РґР°РµС‚СЃСЏ Р±Р»РёР¶Рµ Рє РґСѓРїР»Сѓ. Р¤РѕСЂРјР° ", "The Node Arbiter reforms closer to the Hollow. Form ")
-            : this.choose(world, "РђСЂР±РёС‚СЂ РЈР·Р»РѕРІ РїРµСЂРµСЃРєР°РєРёРІР°РµС‚ РЅР° РґСЂСѓРіРѕР№ С„СЂРѕРЅС‚. Р¤РѕСЂРјР° ", "The Node Arbiter jumps to the other front. Form ");
+            ? this.choose(world, "Арбитр Узлов возрождается ближе к дуплу. Форма ", "The Node Arbiter reforms closer to the Hollow. Form ")
+            : this.choose(world, "Арбитр Узлов перескакивает на другой фронт. Форма ", "The Node Arbiter jumps to the other front. Form ");
         this.showEventToast(context, message + lifeLabel + ".", EVENT_TOAST_ICON_ALERT);
-        BankDefenseLocalization.sendWorldMessage(world, message + lifeLabel + ".");
+        this.sendLocalizedWorldMessage(world, viewerRef ->
+            (onFinalLane
+                ? this.choose(viewerRef, "Арбитр Узлов возрождается ближе к дуплу. Форма ", "The Node Arbiter reforms closer to the Hollow. Form ")
+                : this.choose(viewerRef, "Арбитр Узлов перескакивает на другой фронт. Форма ", "The Node Arbiter jumps to the other front. Form "))
+                + lifeLabel
+                + "."
+        );
         return true;
     }
 
@@ -14529,15 +15020,15 @@ public final class BankDefenseRuntime {
         this.showEventToast(
             context,
             WEATHER_CRIMSON_STORM.equals(normalizedWeatherId)
-                ? this.choose(world, "61 РІРѕР»РЅР°. РќРµР±Рѕ СЃС‚Р°Р»Рѕ Р±Р°РіСЂРѕРІС‹Рј.", "Wave 61. The sky turns crimson.")
-                : this.choose(world, "31 РІРѕР»РЅР°. РќРµР±Рѕ РѕС‚СЂР°РІРёР»РѕСЃСЊ.", "Wave 31. The sky turns toxic."),
+                ? this.choose(world, "61 волна. Небо стало багровым.", "Wave 61. The sky turns crimson.")
+                : this.choose(world, "31 волна. Небо отравилось.", "Wave 31. The sky turns toxic."),
             EVENT_TOAST_ICON_ALERT
         );
         BankDefenseLocalization.sendWorldMessage(
             world,
             WEATHER_CRIMSON_STORM.equals(normalizedWeatherId)
-                ? this.choose(world, "РџРѕСЃР»Рµ 60 РІРѕР»РЅС‹ Р°СЂРµРЅСѓ РЅР°РєСЂС‹РІР°РµС‚ Р±Р°РіСЂРѕРІР°СЏ Р±СѓСЂСЏ.", "After wave 60, a crimson storm engulfs the arena.")
-                : this.choose(world, "РЎ 31 РІРѕР»РЅС‹ РЅР°Рґ Р°СЂРµРЅРѕР№ Р±СѓС€СѓРµС‚ РєРёСЃР»РѕС‚РЅР°СЏ Р±СѓСЂСЏ.", "From wave 31 onward, an acid storm rages over the arena.")
+                ? this.choose(world, "После 60 волны арену накрывает багровая буря.", "After wave 60, a crimson storm engulfs the arena.")
+                : this.choose(world, "С 31 волны над ареной бушует кислотная буря.", "From wave 31 onward, an acid storm rages over the arena.")
         );
     }
 
@@ -14889,7 +15380,12 @@ public final class BankDefenseRuntime {
             double totalSlowResistance = Math.max(0.0, Math.min(0.95, enemy.slowResistancePercent));
             double appliedSlow = slowPercent * (1.0 - totalSlowResistance) * this.contractSlowEffectMultiplier(context, enemy);
             if (appliedSlow > 0.0) {
-                enemy.slowPercent = Math.max(enemy.slowPercent, appliedSlow);
+                boolean stackingCryo = tower != null
+                    && "cryo_capsule".equals(tower.equippedModuleId);
+                double nextSlow = stackingCryo
+                    ? enemy.slowPercent + appliedSlow
+                    : Math.max(enemy.slowPercent, appliedSlow);
+                enemy.slowPercent = Math.min(0.95, nextSlow);
                 enemy.slowRemaining = Math.max(enemy.slowRemaining, slowDuration);
             }
         }
@@ -15243,7 +15739,8 @@ public final class BankDefenseRuntime {
         TowerLevel level = tower.getCurrentLevel();
         ModuleDefinition module = this.equippedModule(context, tower);
         Vector3d towerPosition = this.towerWorldPosition(tower.slot);
-        double range = level.range + this.moduleBonusValue(context, module == null ? 0.0 : module.rangeBonus);
+        double range = (level.range * this.moduleRelativeMultiplier(context, module == null ? 1.0 : module.rangeMultiplier))
+            + this.moduleBonusValue(context, module == null ? 0.0 : module.rangeBonus);
         range *= this.enemyRangeMultiplier(context, towerPosition);
         if (this.hasActiveSealCurse(context, SealCurseType.Range)) {
             range *= DUO_SEAL_CURSE_RANGE_MULTIPLIER;
@@ -15257,26 +15754,32 @@ public final class BankDefenseRuntime {
             return tutorialValidation;
         }
         if (!this.canPlayerUseSlot(world, context, actor, slot)) {
-            return ActionResult.fail(this.deniedSlotAccessMessage(world, slot));
+            return ActionResult.fail(this.deniedSlotAccessMessage(actor, slot));
         }
         if (slot.allowedTowerIds != null && !slot.allowedTowerIds.isEmpty() && !slot.allowedTowerIds.contains(tower.id)) {
-            return ActionResult.fail(this.choose(world, "Р‘Р°С€РЅСЏ ", "Tower ") + this.towerDisplayName(world, tower) + this.choose(world, " РЅРµ РїРѕРґС…РѕРґРёС‚ РґР»СЏ СЃР»РѕС‚Р° ", " does not fit slot ") + slot.id + ".");
+            return ActionResult.fail(
+                this.choose(actor, "Башня ", "Tower ")
+                    + this.towerDisplayName(actor, tower)
+                    + this.choose(actor, " не подходит для площадки ", " cannot be built on pad ")
+                    + this.slotDisplayName(slot)
+                    + "."
+            );
         }
         if (this.isTrapSlot(slot) != tower.trapTower) {
             return ActionResult.fail(this.isTrapSlot(slot)
-                ? this.choose(world, "РќР° СЌС‚РѕРј СЃР»РѕС‚Рµ РјРѕР¶РЅРѕ СЃС‚Р°РІРёС‚СЊ С‚РѕР»СЊРєРѕ Р»РѕРІСѓС€РєРё.", "Only traps can be placed in this slot.")
-                : this.choose(world, "Р›РѕРІСѓС€РєРё СЃС‚Р°РІСЏС‚СЃСЏ С‚РѕР»СЊРєРѕ РІ Р»РѕРІСѓС€РµС‡РЅС‹Рµ СЃР»РѕС‚С‹.", "Traps can only be placed in trap slots."));
+                ? this.choose(actor, "На этом слоте можно ставить только ловушки.", "Only traps can be placed in this slot.")
+                : this.choose(actor, "Ловушки ставятся только в ловушечные слоты.", "Traps can only be placed in trap slots."));
         }
         if ("seed_idol".equals(tower.id) && this.hasSeedIdol(context)) {
-            return ActionResult.fail(this.choose(world, "РРґРѕР» СѓСЂРѕР¶Р°СЏ РјРѕР¶РЅРѕ РїРѕСЃС‚Р°РІРёС‚СЊ С‚РѕР»СЊРєРѕ РѕРґРёРЅ СЂР°Р· Р·Р° РјР°С‚С‡.", "The Harvest Idol can only be built once per match."));
+            return ActionResult.fail(this.choose(actor, "Идол урожая можно поставить только один раз за матч.", "The Harvest Idol can only be built once per match."));
         }
         int buildCost = this.towerLevelCost(context, tower, 0);
         int currentCurrency = this.currencyForPlayer(context, actor);
         if (currentCurrency < buildCost) {
-            return ActionResult.fail(this.choose(world, "РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ СЃСЂРµРґСЃС‚РІ. РќСѓР¶РЅРѕ: ", "Not enough currency. Need: ") + buildCost + this.choose(world, ", СЃРµР№С‡Р°СЃ: ", ", current: ") + currentCurrency + ".");
+            return ActionResult.fail(this.choose(actor, "Недостаточно средств. Нужно: ", "Not enough currency. Need: ") + buildCost + this.choose(actor, ", сейчас: ", ", current: ") + currentCurrency + ".");
         }
         if (!this.spendCurrency(context, actor, buildCost)) {
-            return ActionResult.fail(this.choose(world, "РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ СЃСЂРµРґСЃС‚РІ.", "Not enough currency."));
+            return ActionResult.fail(this.choose(actor, "Недостаточно средств.", "Not enough currency."));
         }
         this.trackLifetimeSpentCurrency(context, buildCost);
         TowerInstance instance = new TowerInstance(slot, tower, buildMode);
@@ -15298,15 +15801,21 @@ public final class BankDefenseRuntime {
         context.placedTowers.put(slot.id, instance);
         this.playSound3d(world, tower.trapTower ? SOUND_TRAP_PLACE : SOUND_BUILD, this.towerWorldPosition(slot));
         this.refreshVisualizationIfEnabled(world);
-        String placedName = this.towerDisplayName(world, tower);
+        String placedName = this.towerDisplayName(actor, tower);
         if ("seed_idol".equals(tower.id) && instance.specialMode != SEED_IDOL_MODE_DEFAULT) {
-            placedName += " [" + this.seedIdolModeName(world, instance.specialMode) + "]";
+            placedName += " [" + this.seedIdolModeName(actor, instance.specialMode) + "]";
         }
         this.updateTutorialProgressionFromContext(world, context);
         return ActionResult.ok(
-            this.choose(world, "РџРѕСЃС‚СЂРѕРµРЅ ", "Built ") + placedName + this.choose(world, " РІ СЃР»РѕС‚Рµ ", " in slot ") + slot.id
-                + this.choose(world, " Р·Р° ", " for ") + buildCost
-                + this.choose(world, ". Р‘Р°Р»Р°РЅСЃ: ", ". Balance: ") + this.currencyForPlayer(context, actor) + "."
+            this.choose(actor, "Башня построена: ", "Tower built: ")
+                + placedName
+                + this.choose(actor, ". Площадка: ", ". Pad: ")
+                + this.slotDisplayName(slot)
+                + this.choose(actor, ". Стоимость: ", ". Cost: ")
+                + buildCost
+                + this.choose(actor, ". Баланс: ", ". Balance: ")
+                + this.currencyForPlayer(context, actor)
+                + "."
         );
     }
 
@@ -15316,31 +15825,31 @@ public final class BankDefenseRuntime {
             return tutorialValidation;
         }
         if (instance != null && instance.slot != null && !this.canPlayerUseSlot(world, context, actor, instance.slot)) {
-            return ActionResult.fail(this.deniedSlotAccessMessage(world, instance.slot));
+            return ActionResult.fail(this.deniedSlotAccessMessage(actor, instance.slot));
         }
         if ("heart_of_roots".equals(instance.definition.id)) {
-            return this.activateHeartOfRoots(world, context, instance);
+            return this.activateHeartOfRoots(world, context, actor, instance);
         }
         if (instance.definition.superTower) {
-            return ActionResult.fail(this.towerDisplayName(world, instance.definition) + this.choose(world, " РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚ СѓСЂРѕРІРЅРё.", " does not use levels."));
+            return ActionResult.fail(this.towerDisplayName(actor, instance.definition) + this.choose(actor, " не использует уровни.", " does not use levels."));
         }
         int unlockedCap = this.unlockedTowerLevelCap(context, instance.definition);
         if (instance.levelIndex + 1 >= unlockedCap) {
             if (unlockedCap < instance.definition.levels.size() && !instance.definition.superTower) {
-                return ActionResult.fail(this.choose(world, "Р”Р°Р»СЊРЅРµР№С€РёРµ СѓСЂРѕРІРЅРё РґР»СЏ ", "Further levels for ") + this.towerDisplayName(world, instance.definition) + this.choose(world, " РµС‰С‘ РЅРµ РѕС‚РєСЂС‹С‚С‹ РІ РґСЂРµРІРµ РїСЂРѕРіСЂРµСЃСЃРёРё.", " are not unlocked yet in the progression tree."));
+                return ActionResult.fail(this.choose(actor, "Дальнейшие уровни для ", "Further levels for ") + this.towerDisplayName(actor, instance.definition) + this.choose(actor, " ещё не открыты в древе прогрессии.", " are not unlocked yet in the progression tree."));
             }
-            return ActionResult.fail(this.towerDisplayName(world, instance.definition) + this.choose(world, " СѓР¶Рµ РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ СѓСЂРѕРІРЅСЏ.", " is already at the maximum level."));
+            return ActionResult.fail(this.towerDisplayName(actor, instance.definition) + this.choose(actor, " уже максимального уровня.", " is already at the maximum level."));
         }
         if (instance.levelIndex >= instance.definition.levels.size() - 1) {
-            return ActionResult.fail(this.towerDisplayName(world, instance.definition) + this.choose(world, " СѓР¶Рµ РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ СѓСЂРѕРІРЅСЏ.", " is already at the maximum level."));
+            return ActionResult.fail(this.towerDisplayName(actor, instance.definition) + this.choose(actor, " уже максимального уровня.", " is already at the maximum level."));
         }
         int upgradeCost = this.towerLevelCost(context, instance.definition, instance.levelIndex + 1);
         int currentCurrency = this.currencyForPlayer(context, actor);
         if (currentCurrency < upgradeCost) {
-            return ActionResult.fail(this.choose(world, "РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ СЃСЂРµРґСЃС‚РІ. РќСѓР¶РЅРѕ: ", "Not enough currency. Need: ") + upgradeCost + this.choose(world, ", СЃРµР№С‡Р°СЃ: ", ", current: ") + currentCurrency + ".");
+            return ActionResult.fail(this.choose(actor, "Недостаточно средств. Нужно: ", "Not enough currency. Need: ") + upgradeCost + this.choose(actor, ", сейчас: ", ", current: ") + currentCurrency + ".");
         }
         if (!this.spendCurrency(context, actor, upgradeCost)) {
-            return ActionResult.fail(this.choose(world, "РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ СЃСЂРµРґСЃС‚РІ.", "Not enough currency."));
+            return ActionResult.fail(this.choose(actor, "Недостаточно средств.", "Not enough currency."));
         }
         this.trackLifetimeSpentCurrency(context, upgradeCost);
         instance.levelIndex++;
@@ -15348,24 +15857,30 @@ public final class BankDefenseRuntime {
         this.refreshVisualizationIfEnabled(world);
         this.updateTutorialProgressionFromContext(world, context);
         return ActionResult.ok(
-            this.choose(world, "РЈР»СѓС‡С€РµРЅ ", "Upgraded ") + this.towerDisplayName(world, instance.definition) + this.choose(world, " РІ СЃР»РѕС‚Рµ ", " in slot ") + instance.slot.id
-                + this.choose(world, " РґРѕ СѓСЂ. ", " to lvl. ") + instance.getCurrentLevel().level
-                + this.choose(world, ". Р‘Р°Р»Р°РЅСЃ: ", ". Balance: ") + this.currencyForPlayer(context, actor) + "."
+            this.choose(actor, "Башня улучшена: ", "Tower upgraded: ")
+                + this.towerDisplayName(actor, instance.definition)
+                + this.choose(actor, ". Площадка: ", ". Pad: ")
+                + this.slotDisplayName(instance.slot)
+                + this.choose(actor, ". Ур. ", ". Lvl. ")
+                + instance.getCurrentLevel().level
+                + this.choose(actor, ". Баланс: ", ". Balance: ")
+                + this.currencyForPlayer(context, actor)
+                + "."
         );
     }
 
-    private ActionResult activateHeartOfRoots(World world, MatchContext context, TowerInstance instance) {
+    private ActionResult activateHeartOfRoots(World world, MatchContext context, PlayerRef actor, TowerInstance instance) {
         if (instance == null || !"heart_of_roots".equals(instance.definition.id)) {
-            return ActionResult.fail(this.choose(world, "РЎРµСЂРґС†Рµ РєРѕСЂРЅРµР№ РЅРµ РЅР°Р№РґРµРЅРѕ.", "Heart of Roots not found."));
+            return ActionResult.fail(this.choose(actor, "Сердце корней не найдено.", "Heart of Roots not found."));
         }
         if (!instance.superReady) {
             if (this.remainingSuperActivations(context, instance) > 0) {
-                return ActionResult.fail(this.choose(world, "РЎРµСЂРґС†Рµ РєРѕСЂРЅРµР№ РёСЃС‚РѕС‰РµРЅРѕ. РЎРЅР°С‡Р°Р»Р° СЂРµР°РєС‚РёРІРёСЂСѓР№ РµРіРѕ.", "Heart of Roots is exhausted. Reactivate it first."));
+                return ActionResult.fail(this.choose(actor, "Сердце корней истощено. Сначала реактивируй его.", "Heart of Roots is exhausted. Reactivate it first."));
             }
-            return ActionResult.fail(this.choose(world, "Р’СЃРµ Р°РєС‚РёРІР°С†РёРё РЎРµСЂРґС†Р° РєРѕСЂРЅРµР№ СѓР¶Рµ РёР·СЂР°СЃС…РѕРґРѕРІР°РЅС‹.", "All Heart of Roots activations are already spent."));
+            return ActionResult.fail(this.choose(actor, "Все активации Сердца корней уже израсходованы.", "All Heart of Roots activations are already spent."));
         }
         if (context.state.gameState != GameState.InMatch || context.activeWaveNumber <= 0) {
-            return ActionResult.fail(this.choose(world, "РЎРµСЂРґС†Рµ РєРѕСЂРЅРµР№ РјРѕР¶РЅРѕ Р°РєС‚РёРІРёСЂРѕРІР°С‚СЊ С‚РѕР»СЊРєРѕ РІРѕ РІСЂРµРјСЏ РІРѕР»РЅС‹.", "Heart of Roots can only be activated during a wave."));
+            return ActionResult.fail(this.choose(actor, "Сердце корней можно активировать только во время волны.", "Heart of Roots can only be activated during a wave."));
         }
         context.rootsHeartBuffWaveNumber = context.activeWaveNumber;
         context.rootsHeartBuffMultiplier = ROOTS_HEART_DAMAGE_BUFF_MULTIPLIER;
@@ -15373,17 +15888,17 @@ public final class BankDefenseRuntime {
         instance.superReady = false;
         this.showEventToast(
             context,
-            this.choose(world, "РЎРµСЂРґС†Рµ РєРѕСЂРЅРµР№ Р°РєС‚РёРІРёСЂРѕРІР°РЅРѕ.", "Heart of Roots activated."),
+            this.choose(world, "Сердце корней активировано.", "Heart of Roots activated."),
             EVENT_TOAST_ICON_CORES
         );
         this.playSound3d(world, SOUND_HEART_ACTIVATE, this.towerWorldPosition(instance.slot));
-        BankDefenseLocalization.sendWorldMessage(world, this.choose(world, "РЎРµСЂРґС†Рµ РєРѕСЂРЅРµР№ Р°РєС‚РёРІРёСЂРѕРІР°РЅРѕ: РІСЃРµ Р±Р°С€РЅРё РїРѕР»СѓС‡Р°СЋС‚ +30% СѓСЂРѕРЅР° РґРѕ РєРѕРЅС†Р° С‚РµРєСѓС‰РµР№ РІРѕР»РЅС‹.", "Heart of Roots activated: all towers gain +30% damage until the end of the current wave."));
+        this.sendLocalizedWorldMessage(world, "Сердце корней активировано: все башни получают +30% урона до конца текущей волны.", "Heart of Roots activated: all towers gain +30% damage until the end of the current wave.");
         this.refreshVisualizationIfEnabled(world);
         int remainingActivations = this.remainingSuperActivations(context, instance);
         return ActionResult.ok(
             remainingActivations > 0
-                ? this.choose(world, "РЎРµСЂРґС†Рµ РєРѕСЂРЅРµР№ СЂР°СЃРєСЂС‹Р»Рѕ СЃРёР»Сѓ РґСѓРїР»Р°. РџРѕСЃР»Рµ РІРѕР»РЅС‹ РµРіРѕ РјРѕР¶РЅРѕ СЂРµР°РєС‚РёРІРёСЂРѕРІР°С‚СЊ. РћСЃС‚Р°Р»РѕСЃСЊ Р°РєС‚РёРІР°С†РёР№: ", "Heart of Roots unleashed the Hollow's power. It can be reactivated after the wave. Activations left: ") + remainingActivations + "."
-                : this.choose(world, "РЎРµСЂРґС†Рµ РєРѕСЂРЅРµР№ СЂР°СЃРєСЂС‹Р»Рѕ СЃРёР»Сѓ РґСѓРїР»Р°. Р’СЃРµ Р°РєС‚РёРІР°С†РёРё РёСЃС‡РµСЂРїР°РЅС‹.", "Heart of Roots unleashed the Hollow's power. All activations are spent.")
+                ? this.choose(actor, "Сердце корней раскрыло силу дупла. После волны его можно реактивировать. Осталось активаций: ", "Heart of Roots unleashed the Hollow's power. It can be reactivated after the wave. Activations left: ") + remainingActivations + "."
+                : this.choose(actor, "Сердце корней раскрыло силу дупла. Все активации исчерпаны.", "Heart of Roots unleashed the Hollow's power. All activations are spent.")
         );
     }
 
@@ -15395,79 +15910,82 @@ public final class BankDefenseRuntime {
         MatchContext context = this.getOrCreateContext(world);
         TowerInstance instance = this.findNearestPlacedTower(context, targetPosition, radius);
         if (instance == null || !"seed_idol".equals(instance.definition.id)) {
-            return ActionResult.fail(this.choose(world, "Р СЏРґРѕРј РЅРµС‚ РРґРѕР»Р° СѓСЂРѕР¶Р°СЏ.", "No Harvest Idol found nearby."));
+            return ActionResult.fail(this.choose(actor, "Рядом нет Идола урожая.", "No Harvest Idol found nearby."));
         }
         if (!this.canPlayerUseSlot(world, context, actor, instance.slot)) {
-            return ActionResult.fail(this.deniedSlotAccessMessage(world, instance.slot));
+            return ActionResult.fail(this.deniedSlotAccessMessage(actor, instance.slot));
         }
         if (mode != SEED_IDOL_MODE_HARVEST && mode != SEED_IDOL_MODE_WARD) {
-            return ActionResult.fail(this.choose(world, "РќРµРёР·РІРµСЃС‚РЅС‹Р№ СЂРµР¶РёРј РёРґРѕР»Р°.", "Unknown idol mode."));
+            return ActionResult.fail(this.choose(actor, "Неизвестный режим идола.", "Unknown idol mode."));
         }
         if (instance.specialMode == mode) {
-            return ActionResult.ok(this.choose(world, "РРґРѕР» СѓР¶Рµ СЂР°Р±РѕС‚Р°РµС‚ РІ СЂРµР¶РёРјРµ [", "The idol is already in mode [") + this.seedIdolModeName(world, mode) + "].");
+            return ActionResult.ok(this.choose(actor, "Идол уже работает в режиме [", "The idol is already in mode [") + this.seedIdolModeName(actor, mode) + "].");
         }
         if (instance.specialMode == SEED_IDOL_MODE_WARD && mode != SEED_IDOL_MODE_WARD && instance.idolSavingsWavesRemaining > 0) {
             return ActionResult.fail(
-                this.choose(world, "Р РµР¶РёРј [РљРѕРїРёР»РєР°] РЅРµР»СЊР·СЏ РѕС‚РєР»СЋС‡РёС‚СЊ РµС‰С‘ ", "The [Savings] mode cannot be disabled for another ")
+                this.choose(actor, "Режим [Накопление] нельзя отключить ещё ", "The [Savings] mode cannot be disabled for another ")
                     + instance.idolSavingsWavesRemaining
-                    + this.choose(world, " РІРѕР»РЅ.", " waves.")
+                    + this.choose(actor, " волн.", " waves.")
             );
         }
         if (instance.specialMode == SEED_IDOL_MODE_WARD && instance.idolStoredCurrency > 0) {
             this.grantTeamIncome(context, instance.idolStoredCurrency);
-            BankDefenseLocalization.sendWorldMessage(world,
-                this.choose(world, "РРґРѕР» СѓСЂРѕР¶Р°СЏ РїРµСЂРµРІС‘Р» РЅР°РєРѕРїР»РµРЅРЅС‹Рµ ", "The Harvest Idol moved ") + instance.idolStoredCurrency + this.choose(world, " РјРѕРЅРµС‚ РІ Р±Р°Р»Р°РЅСЃ РїСЂРё СЃРјРµРЅРµ СЂРµР¶РёРјР°.", " stored gold into the balance when changing modes.")
+            this.sendLocalizedWorldMessage(world, playerRef ->
+                this.choose(playerRef, "Идол урожая перевёл накопленные ", "The Harvest Idol moved ")
+                    + instance.idolStoredCurrency
+                    + this.choose(playerRef, " монет в баланс при смене режима.", " stored gold into the balance when changing modes.")
             );
             instance.idolStoredCurrency = 0;
         }
         instance.specialMode = mode;
         instance.idolSavingsWavesRemaining = mode == SEED_IDOL_MODE_WARD ? 5 : 0;
         context.pendingIdolModeSlotByPlayer.values().removeIf(instance.slot.id::equals);
+        context.pendingIdolModeOpenDelayByPlayer.keySet().removeIf(uuid -> !context.pendingIdolModeSlotByPlayer.containsKey(uuid));
         this.showEventToast(
             context,
-            this.choose(world, "РРґРѕР» СѓСЂРѕР¶Р°СЏ: СЂРµР¶РёРј [", "Harvest Idol: mode [") + this.seedIdolModeName(world, mode) + "].",
+            this.choose(world, "Идол урожая: режим [", "Harvest Idol: mode [") + this.seedIdolModeName(world, mode) + "].",
             EVENT_TOAST_ICON_CORES
         );
         this.playSound3d(world, SOUND_IDOL_MODE_SWITCH, this.towerWorldPosition(instance.slot));
-        return ActionResult.ok(this.choose(world, "РРґРѕР» СѓСЂРѕР¶Р°СЏ РїРµСЂРµРєР»СЋС‡С‘РЅ РІ СЂРµР¶РёРј [", "Harvest Idol switched to mode [") + this.seedIdolModeName(world, mode) + "].");
+        return ActionResult.ok(this.choose(actor, "Идол урожая переключён в режим [", "Harvest Idol switched to mode [") + this.seedIdolModeName(actor, mode) + "].");
     }
 
-    private ActionResult reactivateSuperTower(World world, MatchContext context, TowerInstance instance) {
+    private ActionResult reactivateSuperTower(World world, MatchContext context, PlayerRef actor, TowerInstance instance) {
         if (instance == null || !instance.definition.superTower || "seed_idol".equals(instance.definition.id)) {
-            return ActionResult.fail(this.choose(world, "Р­С‚Сѓ Р±Р°С€РЅСЋ РЅРµР»СЊР·СЏ СЂРµР°РєС‚РёРІРёСЂРѕРІР°С‚СЊ.", "This tower cannot be reactivated."));
+            return ActionResult.fail(this.choose(actor, "Эту башню нельзя реактивировать.", "This tower cannot be reactivated."));
         }
         if (instance.superReady) {
-            return ActionResult.fail(this.towerDisplayName(world, instance.definition) + this.choose(world, " СѓР¶Рµ Р°РєС‚РёРІРµРЅ.", " is already active."));
+            return ActionResult.fail(this.towerDisplayName(actor, instance.definition) + this.choose(actor, " уже активен.", " is already active."));
         }
         if (!BankDefenseMatchPhaseSupport.isBuildPhase(context.state)) {
-            return ActionResult.fail(this.choose(world, "Р РµР°РєС‚РёРІР°С†РёСЏ РґРѕСЃС‚СѓРїРЅР° С‚РѕР»СЊРєРѕ РІ С„Р°Р·Сѓ РїРѕРґРіРѕС‚РѕРІРєРё.", "Reactivation is only available during preparation."));
+            return ActionResult.fail(this.choose(actor, "Реактивация доступна только в фазу подготовки.", "Reactivation is only available during preparation."));
         }
         int remainingActivations = this.remainingSuperActivations(context, instance);
         if (remainingActivations <= 0) {
-            return ActionResult.fail(this.choose(world, "Р’СЃРµ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ Р°РєС‚РёРІР°С†РёРё СѓР¶Рµ РёР·СЂР°СЃС…РѕРґРѕРІР°РЅС‹.", "All extra activations are already spent."));
+            return ActionResult.fail(this.choose(actor, "Все дополнительные активации уже израсходованы.", "All extra activations are already spent."));
         }
         instance.superReady = true;
         this.showEventToast(
             context,
-            this.towerDisplayName(world, instance.definition) + this.choose(world, " СЂРµР°РєС‚РёРІРёСЂРѕРІР°РЅ.", " reactivated."),
+            this.towerDisplayName(world, instance.definition) + this.choose(world, " реактивирован.", " reactivated."),
             EVENT_TOAST_ICON_CORES
         );
         this.playSound3d(world, SOUND_SUPER_REACTIVATE, this.towerWorldPosition(instance.slot));
         this.refreshVisualizationIfEnabled(world);
         return ActionResult.ok(
-            this.towerDisplayName(world, instance.definition) + this.choose(world, " СЂРµР°РєС‚РёРІРёСЂРѕРІР°РЅ. Р”РѕСЃС‚СѓРїРЅРѕ Р°РєС‚РёРІР°С†РёР№: ", " reactivated. Activations available: ") + remainingActivations + "."
+            this.towerDisplayName(actor, instance.definition) + this.choose(actor, " реактивирован. Доступно активаций: ", " reactivated. Activations available: ") + remainingActivations + "."
         );
     }
 
     private ActionResult sellTowerInstance(World world, MatchContext context, PlayerRef actor, TowerInstance instance) {
         if (instance.definition.superTower && !this.isDuoMode(context)) {
-            return ActionResult.fail(this.choose(world, "РЎСѓРїРµСЂ-Р±Р°С€РЅРё РїСЂРѕРґР°РІР°С‚СЊ РЅРµР»СЊР·СЏ.", "Super towers cannot be sold."));
+            return ActionResult.fail(this.choose(actor, "Супер-башни продавать нельзя.", "Super towers cannot be sold."));
         }
         if (!BankDefenseMatchPhaseSupport.isBuildPhase(context.state)) {
-            return ActionResult.fail(this.choose(world, "РџСЂРѕРґР°РІР°С‚СЊ Р±Р°С€РЅРё РјРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ РІ С„Р°Р·Сѓ РїРѕРґРіРѕС‚РѕРІРєРё.", "Towers can only be sold during preparation."));
+            return ActionResult.fail(this.choose(actor, "Продавать башни можно только в фазу подготовки.", "Towers can only be sold during preparation."));
         }
         if (instance.slot != null && !this.canPlayerUseSlot(world, context, actor, instance.slot)) {
-            return ActionResult.fail(this.deniedSlotAccessMessage(world, instance.slot));
+            return ActionResult.fail(this.deniedSlotAccessMessage(actor, instance.slot));
         }
         int refund = (int)Math.floor(this.totalInvestedCost(context, instance) * this.sellRefundRate(context));
         String returnedModule = instance.equippedModuleId;
@@ -15483,11 +16001,18 @@ public final class BankDefenseRuntime {
         this.refundCurrencyToTeam(context, this.slotOwnerTeam(instance.slot), refund);
         this.playSound3d(world, SOUND_SELL, this.towerWorldPosition(instance.slot));
         this.refreshVisualizationIfEnabled(world);
-        String moduleSuffix = returnedModule != null ? this.choose(world, " РњРѕРґСѓР»СЊ РІРѕР·РІСЂР°С‰С‘РЅ РІ Р·Р°РїР°СЃ.", " Module returned to storage.") : "";
+        String moduleSuffix = returnedModule != null ? this.choose(actor, " Модуль возвращён в запас.", " Module returned to storage.") : "";
         return ActionResult.ok(
-            this.choose(world, "РџСЂРѕРґР°РЅ ", "Sold ") + this.towerDisplayName(world, instance.definition) + this.choose(world, " РёР· СЃР»РѕС‚Р° ", " from slot ") + instance.slot.id
-                + this.choose(world, ". Р’РѕР·РІСЂР°С‚: ", ". Refund: ") + refund
-                + this.choose(world, ". Р‘Р°Р»Р°РЅСЃ: ", ". Balance: ") + this.currencyForPlayer(context, actor) + "." + moduleSuffix
+            this.choose(actor, "Башня продана: ", "Tower sold: ")
+                + this.towerDisplayName(actor, instance.definition)
+                + this.choose(actor, ". Площадка: ", ". Pad: ")
+                + this.slotDisplayName(instance.slot)
+                + this.choose(actor, ". Возврат: ", ". Refund: ")
+                + refund
+                + this.choose(actor, ". Баланс: ", ". Balance: ")
+                + this.currencyForPlayer(context, actor)
+                + "."
+                + moduleSuffix
         );
     }
 
@@ -15648,14 +16173,14 @@ public final class BankDefenseRuntime {
     private String superTowerDescription(PlayerRef playerRef, String towerId) {
         return switch (towerId) {
             case "heart_of_roots" -> this.choose(playerRef,
-                "Р’Рѕ РІСЂРµРјСЏ РІРѕР»РЅС‹ Р·Р°РїСѓСЃРєР°РµС‚ РґСЂРµРІРЅРёР№ СЂРёС‚СѓР°Р» Рё СѓСЃРёР»РёРІР°РµС‚ РІСЃСЋ Р»РёРЅРёСЋ РґРѕ РєРѕРЅС†Р° С‚РµРєСѓС‰РµР№ РІРѕР»РЅС‹.",
+                "Во время волны запускает древний ритуал и усиливает всю линию до конца текущей волны.",
                 "During a wave, it triggers an ancient ritual and empowers the whole lane until the end of the current wave.");
             case "storm_monolith" -> this.choose(playerRef,
-                "РџСЂРё Р°РєС‚РёРІР°С†РёРё РјРіРЅРѕРІРµРЅРЅРѕ СЃРЅРёРјР°РµС‚ 50% РѕС‚ С‚РµРєСѓС‰РµРіРѕ Р·РґРѕСЂРѕРІСЊСЏ Сѓ РІСЃРµС… Р¶РёРІС‹С… РІСЂР°РіРѕРІ Рё РїРѕРјРѕРіР°РµС‚ СЃС‚Р°Р±РёР»РёР·РёСЂРѕРІР°С‚СЊ Р»РёРЅРёСЋ.",
+                "При активации мгновенно снимает 50% от текущего здоровья у всех живых врагов и помогает стабилизировать линию.",
                 "When activated, it instantly removes 50% of the current health from all living enemies and helps stabilize the lane.");
             case "seed_idol" -> this.choose(playerRef,
-                "Р­РєРѕРЅРѕРјРёС‡РµСЃРєР°СЏ СЃСѓРїРµСЂ-Р±Р°С€РЅСЏ. Р РµР¶РёРј 1 РґР°С‘С‚ РїРѕСЃС‚РѕСЏРЅРЅС‹Р№ Р±РѕРЅСѓСЃ Рє Р·РѕР»РѕС‚Сѓ, Р° СЂРµР¶РёРј 2 РєРѕРїРёС‚ РґРѕС…РѕРґ 4 РІРѕР»РЅС‹ Рё РІС‹РїР»Р°С‡РёРІР°РµС‚ 1.5x РЅР° 5-Р№.",
-                "An economic super tower. Mode 1 grants a steady income bonus, and Mode 2 stores income for 4 waves and pays out 1.5x on the 5th.");
+                "Экономическая супер-башня. Режим [Премия] даёт постоянный бонус к золоту, а режим [Накопление] собирает доход несколько волн и затем выплачивает его разом.",
+                "An economic super tower. [Bounty] grants a steady gold bonus, while [Savings] stores income for several waves and then pays it out in one burst.");
             default -> "";
         };
     }
@@ -15691,11 +16216,16 @@ public final class BankDefenseRuntime {
             tower.specialMode = SEED_IDOL_MODE_DEFAULT;
             if (payout > 0) {
                 this.grantTeamIncome(context, payout);
-                BankDefenseLocalization.sendWorldMessage(world,
-                    this.choose(world, "РРґРѕР» СѓСЂРѕР¶Р°СЏ [РќР°РєРѕРїР»РµРЅРёРµ] РІС‹РґР°Р» ", "Harvest Idol [Savings] paid out ") + payout + this.choose(world, " РјРѕРЅРµС‚ РїРѕСЃР»Рµ РЅР°РєРѕРїР»РµРЅРёСЏ ", " gold after storing ") + stored + "."
+                this.sendLocalizedWorldMessage(world, playerRef ->
+                    this.choose(playerRef, "Идол урожая [Накопление] выдал ", "Harvest Idol [Savings] paid out ")
+                        + payout
+                        + this.choose(playerRef, " монет после накопления ", " gold after storing ")
+                        + stored
+                        + "."
                 );
                 this.showIdolPayoutToast(world, context, payout, stored);
                 this.playWorldUiSound(world, SOUND_REWARD);
+                this.playWorldSfxSound(world, SOUND_COIN);
             }
             this.queueSeedIdolModePrompt(world, context, tower.slot == null ? null : tower.slot.id);
         }
@@ -15847,20 +16377,32 @@ public final class BankDefenseRuntime {
     }
 
     private void triggerGoblinSaboteur(World world, MatchContext context, EnemyInstance enemy) {
-        TowerInstance target = this.randomPlacedTower(context, true);
+        this.playSound3d(world, SOUND_ENEMY_SPAWN_GOBLIN, this.enemyWorldPosition(context, enemy));
+        TowerInstance target = this.randomPlacedTower(context, false, context.lastSaboteurDestroyedSlotId);
         if (target == null) {
-            BankDefenseLocalization.sendWorldMessage(world, this.choose(world, "Р“РѕР±Р»РёРЅ-СЃР°Р±РѕС‚Р°Р¶РЅРёРє РІС‹СЃРєРѕС‡РёР» РЅР° РїРѕР»Рµ, РЅРѕ РЅРµ РЅР°С€С‘Р» Р±Р°С€РЅСЋ РґР»СЏ РїРѕРґСЂС‹РІР°.", "The goblin saboteur rushed onto the field but found no tower to blow up."));
+            this.sendLocalizedWorldMessage(world, "Гоблин-саботажник выскочил на поле, но не нашёл башню для подрыва.", "The goblin saboteur rushed onto the field but found no tower to blow up.");
             return;
         }
+        int destroyedLevel = target.getCurrentLevel().level;
         int refund = this.destroyTowerWithRefund(world, context, target, SABOTEUR_REFUND_RATE, false);
-        BankDefenseLocalization.sendWorldMessage(world,
-            this.choose(world, "Р“РѕР±Р»РёРЅ-СЃР°Р±РѕС‚Р°Р¶РЅРёРє СѓРЅРёС‡С‚РѕР¶РёР» ", "The goblin saboteur destroyed ") + this.towerDisplayName(world, target.definition)
-                + this.choose(world, " РІ СЃР»РѕС‚Рµ ", " in slot ") + target.slot.id
-                + this.choose(world, ". Р’РѕР·РІСЂР°С‚ С‚РѕР»СЊРєРѕ ", ". Refund: only ") + refund + this.choose(world, " РјРѕРЅРµС‚.", " gold.")
+        context.lastSaboteurDestroyedSlotId = target.slot == null ? "" : target.slot.id;
+        this.sendLocalizedWorldMessage(world, playerRef ->
+            this.choose(playerRef, "Гоблин-саботажник уничтожил ", "The goblin saboteur destroyed ")
+                + this.towerDisplayName(playerRef, target.definition)
+                + this.choose(playerRef, " (Ур. ", " (Lvl. ")
+                + destroyedLevel
+                + ")."
+                + this.choose(playerRef, " Возврат: только ", " Refund: only ")
+                + refund
+                + this.choose(playerRef, " монет.", " gold.")
         );
         this.showEventToast(
             context,
-            this.choose(world, "Р“РѕР±Р»РёРЅ-СЃР°Р±РѕС‚Р°Р¶РЅРёРє СѓРЅРёС‡С‚РѕР¶РёР» ", "The goblin saboteur destroyed ") + this.towerDisplayName(world, target.definition) + ".",
+            this.choose(world, "Гоблин-саботажник уничтожил ", "The goblin saboteur destroyed ")
+                + this.towerDisplayName(world, target.definition)
+                + this.choose(world, " (Ур. ", " (Lvl. ")
+                + destroyedLevel
+                + ").",
             EVENT_TOAST_ICON_ALERT
         );
         this.playWorldUiSound(world, SOUND_LEAK);
@@ -15884,6 +16426,10 @@ public final class BankDefenseRuntime {
     }
 
     private TowerInstance randomPlacedTower(MatchContext context, boolean includeSupers) {
+        return this.randomPlacedTower(context, includeSupers, null);
+    }
+
+    private TowerInstance randomPlacedTower(MatchContext context, boolean includeSupers, String excludedSlotId) {
         List<TowerInstance> candidates = new ArrayList<>();
         for (TowerInstance tower : context.placedTowers.values()) {
             if (!includeSupers && tower.definition.superTower) {
@@ -15894,10 +16440,26 @@ public final class BankDefenseRuntime {
         if (candidates.isEmpty()) {
             return null;
         }
+        if (excludedSlotId != null && !excludedSlotId.isBlank() && candidates.size() > 1) {
+            List<TowerInstance> filtered = new ArrayList<>();
+            for (TowerInstance tower : candidates) {
+                if (tower == null || tower.slot == null || excludedSlotId.equals(tower.slot.id)) {
+                    continue;
+                }
+                filtered.add(tower);
+            }
+            if (!filtered.isEmpty()) {
+                candidates = filtered;
+            }
+        }
         return candidates.get(ThreadLocalRandom.current().nextInt(candidates.size()));
     }
 
     private TowerInstance randomDowngradeTarget(MatchContext context) {
+        return this.randomDowngradeTarget(context, null);
+    }
+
+    private TowerInstance randomDowngradeTarget(MatchContext context, String excludedSlotId) {
         List<TowerInstance> candidates = new ArrayList<>();
         for (TowerInstance tower : context.placedTowers.values()) {
             if (tower.definition.superTower || tower.levelIndex <= 0) {
@@ -15907,6 +16469,18 @@ public final class BankDefenseRuntime {
         }
         if (candidates.isEmpty()) {
             return null;
+        }
+        if (excludedSlotId != null && !excludedSlotId.isBlank() && candidates.size() > 1) {
+            List<TowerInstance> filtered = new ArrayList<>();
+            for (TowerInstance tower : candidates) {
+                if (tower == null || tower.slot == null || excludedSlotId.equals(tower.slot.id)) {
+                    continue;
+                }
+                filtered.add(tower);
+            }
+            if (!filtered.isEmpty()) {
+                candidates = filtered;
+            }
         }
         return candidates.get(ThreadLocalRandom.current().nextInt(candidates.size()));
     }
@@ -15933,30 +16507,35 @@ public final class BankDefenseRuntime {
         if (enemy.goblinDowngradeStage >= GOBLIN_BOSS_DOWNGRADE_THRESHOLDS.length) {
             return;
         }
-        TowerInstance target = this.randomDowngradeTarget(context);
+        TowerInstance target = this.randomDowngradeTarget(context, context.lastGoblinBomberDowngradedSlotId);
         enemy.goblinDowngradeStage++;
         this.playSound3d(world, SOUND_BOSS_CAST_GOBLIN, this.enemyWorldPosition(context, enemy));
         if (target == null) {
-            BankDefenseLocalization.sendWorldMessage(world, this.choose(world, "Р“РѕР±Р»РёРЅ-Р±РѕСЃСЃ СЂР°Р·РІРѕСЂРѕС€РёР» Р·Р°С‰РёС‚Сѓ, РЅРѕ РЅРµ РЅР°С€С‘Р» Р±Р°С€РЅСЋ РґР»СЏ РїРѕРЅРёР¶РµРЅРёСЏ СѓСЂРѕРІРЅСЏ.", "The goblin boss disrupted the defense but found no tower to downgrade."));
+            this.sendLocalizedWorldMessage(world, "Гоблин-босс разворошил защиту, но не нашёл башню для понижения уровня.", "The goblin boss disrupted the defense but found no tower to downgrade.");
             return;
         }
+        context.lastGoblinBomberDowngradedSlotId = target.slot == null ? "" : target.slot.id;
         target.levelIndex = Math.max(0, target.levelIndex - 1);
         target.cooldownRemaining = Math.max(target.cooldownRemaining, 0.25);
         this.playSound3d(world, SOUND_GOBLIN_DOWNGRADE, this.towerWorldPosition(target.slot));
         this.refreshVisualizationIfEnabled(world);
-        BankDefenseLocalization.sendWorldMessage(world,
-            this.choose(world, "Р“РѕР±Р»РёРЅ-Р±РѕСЃСЃ РѕСЃР»Р°Р±РёР» ", "The goblin boss weakened ") + this.towerDisplayName(world, target.definition)
-                + this.choose(world, " РІ СЃР»РѕС‚Рµ ", " in slot ") + target.slot.id
-                + this.choose(world, " РґРѕ СѓСЂ. ", " to lvl. ") + target.getCurrentLevel().level
-                + this.choose(world, ". РЈРєСЂР°РґРµРЅРѕ РјРѕРЅРµС‚: ", ". Gold stolen: ") + enemy.goblinCurrencyStolen + "."
+        this.sendLocalizedWorldMessage(world, playerRef ->
+            this.choose(playerRef, "Гоблин-босс ослабил ", "The goblin boss weakened ")
+                + this.towerDisplayName(playerRef, target.definition)
+                + this.choose(playerRef, " до Ур. ", " to Lvl. ")
+                + target.getCurrentLevel().level
+                + this.choose(playerRef, ". Украдено монет: ", ". Gold stolen: ")
+                + enemy.goblinCurrencyStolen
+                + "."
         );
-        this.showEventToast(
-            context,
-            this.choose(world, "Р“РѕР±Р»РёРЅ-Р±РѕСЃСЃ РїРѕРЅРёР·РёР» ", "The goblin boss downgraded ") + this.towerDisplayName(world, target.definition)
-                + this.choose(world, " РґРѕ СѓСЂ. ", " to lvl. ") + target.getCurrentLevel().level + ".",
-            EVENT_TOAST_ICON_ALERT
-        );
-        this.playWorldUiSound(world, SOUND_LEAK);
+        String downgradeToast = this.choose(world, "Гоблин-босс понизил ", "The goblin boss downgraded ")
+            + this.towerDisplayName(world, target.definition)
+            + this.choose(world, " до Ур. ", " to Lvl. ")
+            + target.getCurrentLevel().level
+            + ".";
+        this.showEventToast(context, downgradeToast, EVENT_TOAST_ICON_ALERT);
+        this.scheduleEventToast(context, downgradeToast, EVENT_TOAST_ICON_ALERT, 0.9);
+        this.playWorldUiSound(world, SOUND_NOTIFICATION);
     }
 
     private double progressionValue(MatchContext context, String effectType, String targetId) {
@@ -16054,6 +16633,9 @@ public final class BankDefenseRuntime {
         } else if (completedWaveNumber % context.snapshot.gameRules.moduleRewardIntervalWaves != 0) {
             return;
         }
+        if (context.lastRewardPreparedWave == completedWaveNumber) {
+            return;
+        }
         List<String> pool = new ArrayList<>();
         for (ModuleDefinition module : context.snapshot.modules.modules) {
             if (module.id != null && !module.id.isBlank()) {
@@ -16066,21 +16648,39 @@ public final class BankDefenseRuntime {
         Collections.shuffle(pool, ThreadLocalRandom.current());
         this.prepareRewardChoices(context, pool, completedWaveNumber);
         this.playWorldUiSound(world, SOUND_REWARD);
-        if (this.isDuoMode(context)) {
-            String firstPicker = TEAM_GREEN.equals(context.rewardPickerTeam) ? this.choose(world, "Р·РµР»С‘РЅРѕР№", "green") : this.choose(world, "СЃРёРЅРµР№", "blue");
-            BankDefenseLocalization.sendWorldMessage(world,
-                this.choose(world, "Р’РѕР»РЅР° ", "Wave ")
-                    + completedWaveNumber
-                    + this.choose(world, " Р·Р°РІРµСЂС€РµРЅР°. РРіСЂРѕРє ", " completed. The ")
-                    + firstPicker
-                    + this.choose(world, " РєРѕРјР°РЅРґС‹ РґРѕР»Р¶РµРЅ РІС‹Р±СЂР°С‚СЊ РјРѕРґСѓР»СЊ Сѓ РѕРїРµСЂР°С‚РѕСЂР°.", " team player must choose a module at the operator.")
+        if (world != null) {
+            if (this.isDuoMode(context)) {
+                this.sendLocalizedWorldMessage(world, playerRef -> {
+                    String firstPicker = TEAM_GREEN.equals(context.rewardPickerTeam)
+                        ? this.choose(playerRef, "зелёной", "green")
+                        : this.choose(playerRef, "синей", "blue");
+                    return this.choose(playerRef, "Волна ", "Wave ")
+                        + completedWaveNumber
+                        + this.choose(playerRef, " завершена. ", " completed. ")
+                        + this.choose(playerRef, "Игрок ", "The ")
+                        + firstPicker
+                        + this.choose(playerRef, " команды должен выбрать модуль у оператора.", " team player must choose a module at the operator.");
+                });
+            } else {
+                this.sendLocalizedWorldMessage(world, playerRef ->
+                    this.choose(playerRef, "Волна ", "Wave ")
+                        + completedWaveNumber
+                        + this.choose(playerRef, " завершена. Выберите модуль у оператора.", " completed. Choose the module at the operator.")
+                );
+            }
+            this.showEventToast(
+                context,
+                this.choose(world, "Выберите модуль у оператора.", "Choose the module at the operator."),
+                EVENT_TOAST_ICON_ALERT
             );
-        } else {
-            BankDefenseLocalization.sendWorldMessage(world,
-                this.choose(world, "Р’РѕР»РЅР° ", "Wave ")
-                    + completedWaveNumber
-                    + this.choose(world, " Р·Р°РІРµСЂС€РµРЅР°. Р’С‹Р±РµСЂРёС‚Рµ 1 РјРѕРґСѓР»СЊ РЅР°РіСЂР°РґС‹ Сѓ РѕРїРµСЂР°С‚РѕСЂР°.", " completed. Choose 1 reward module at the operator.")
+            this.scheduleEventToast(
+                context,
+                this.choose(world, "Выберите модуль у оператора.", "Choose the module at the operator."),
+                EVENT_TOAST_ICON_ALERT,
+                1.0
             );
+            this.openRewardPages(world);
+            return;
         }
         this.openRewardPages(world);
     }
@@ -16177,7 +16777,46 @@ public final class BankDefenseRuntime {
             if (player == null) {
                 continue;
             }
+            this.playUiSoundForPlayer(world, playerRef, SOUND_NOTIFICATION);
             player.getPageManager().openCustomPage(ref, store, new BankDefenseRewardPage(playerRef, this));
+        }
+    }
+
+    private void tickPendingRewardPageOpens(World world, MatchContext context, double deltaSeconds) {
+        if (world == null || context == null || context.pendingRewardPageOpenDelayByPlayer.isEmpty()) {
+            return;
+        }
+        Iterator<Map.Entry<UUID, Double>> iterator = context.pendingRewardPageOpenDelayByPlayer.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<UUID, Double> entry = iterator.next();
+            UUID playerUuid = entry.getKey();
+            if (playerUuid == null) {
+                iterator.remove();
+                continue;
+            }
+            double remaining = Math.max(0.0, entry.getValue() - Math.max(0.0, deltaSeconds));
+            if (remaining > 0.0) {
+                entry.setValue(remaining);
+                continue;
+            }
+            iterator.remove();
+            if (context.pendingRewardChoices.isEmpty()) {
+                continue;
+            }
+            PlayerRef target = null;
+            for (PlayerRef playerRef : world.getPlayerRefs()) {
+                if (playerRef != null && playerUuid.equals(playerRef.getUuid())) {
+                    target = playerRef;
+                    break;
+                }
+            }
+            if (target == null) {
+                continue;
+            }
+            try {
+                this.reopenPendingRewardPage(world, target);
+            } catch (IOException ignored) {
+            }
         }
     }
 
@@ -16197,39 +16836,108 @@ public final class BankDefenseRuntime {
         }
     }
 
-    private boolean openPendingSeedIdolModeChoices(World world, MatchContext context) {
+    private void schedulePendingSeedIdolModeChoiceOpens(World world, MatchContext context, double delaySeconds) {
         if (world == null || context == null || context.pendingIdolModeSlotByPlayer.isEmpty()) {
-            return false;
+            return;
         }
-        Store<EntityStore> store = world.getEntityStore().getStore();
-        boolean opened = false;
-        List<UUID> handled = new ArrayList<>();
+        double safeDelay = Math.max(0.05, delaySeconds);
         for (PlayerRef playerRef : world.getPlayerRefs()) {
             if (playerRef == null || playerRef.getUuid() == null) {
                 continue;
             }
-            String slotId = context.pendingIdolModeSlotByPlayer.get(playerRef.getUuid());
-            if (slotId == null || slotId.isBlank()) {
+            if (!context.pendingIdolModeSlotByPlayer.containsKey(playerRef.getUuid())) {
                 continue;
             }
-            Ref<EntityStore> ref = playerRef.getReference();
-            if (ref == null || !ref.isValid()) {
-                handled.add(playerRef.getUuid());
-                continue;
-            }
-            Player player = store.getComponent(ref, Player.getComponentType());
-            if (player == null) {
-                handled.add(playerRef.getUuid());
-                continue;
-            }
-            player.getPageManager().openCustomPage(ref, store, new BankDefenseSuperSlotPage(playerRef, this, slotId));
-            handled.add(playerRef.getUuid());
-            opened = true;
+            context.pendingIdolModeOpenDelayByPlayer.put(playerRef.getUuid(), safeDelay);
         }
-        for (UUID uuid : handled) {
-            context.pendingIdolModeSlotByPlayer.remove(uuid);
+    }
+
+    public boolean openPendingSeedIdolModeChoice(World world, PlayerRef playerRef) throws IOException {
+        MatchContext context = this.getOrCreateContext(world);
+        return this.openPendingSeedIdolModeChoice(world, context, playerRef);
+    }
+
+    public void schedulePendingSeedIdolModeChoiceOpen(World world, PlayerRef playerRef, double delaySeconds) {
+        if (world == null || playerRef == null || playerRef.getUuid() == null) {
+            return;
+        }
+        MatchContext context = this.matchesByWorld.get(this.worldKey(world));
+        if (context == null || !context.pendingIdolModeSlotByPlayer.containsKey(playerRef.getUuid())) {
+            return;
+        }
+        context.pendingIdolModeOpenDelayByPlayer.put(playerRef.getUuid(), Math.max(0.05, delaySeconds));
+    }
+
+    private boolean openPendingSeedIdolModeChoices(World world, MatchContext context) {
+        if (world == null || context == null || context.pendingIdolModeSlotByPlayer.isEmpty()) {
+            return false;
+        }
+        boolean opened = false;
+        for (PlayerRef playerRef : world.getPlayerRefs()) {
+            opened |= this.openPendingSeedIdolModeChoice(world, context, playerRef);
         }
         return opened;
+    }
+
+    private boolean openPendingSeedIdolModeChoice(World world, MatchContext context, PlayerRef playerRef) {
+        if (world == null || context == null || playerRef == null || playerRef.getUuid() == null) {
+            return false;
+        }
+        String slotId = context.pendingIdolModeSlotByPlayer.get(playerRef.getUuid());
+        if (slotId == null || slotId.isBlank()) {
+            return false;
+        }
+        Store<EntityStore> store = world.getEntityStore().getStore();
+        Ref<EntityStore> ref = playerRef.getReference();
+        if (ref == null || !ref.isValid()) {
+            context.pendingIdolModeSlotByPlayer.remove(playerRef.getUuid());
+            return false;
+        }
+        Player player = store.getComponent(ref, Player.getComponentType());
+        if (player == null) {
+            context.pendingIdolModeSlotByPlayer.remove(playerRef.getUuid());
+            return false;
+        }
+        context.pendingIdolModeOpenDelayByPlayer.remove(playerRef.getUuid());
+        this.playUiSoundForPlayer(world, playerRef, SOUND_ALERT);
+        player.getPageManager().openCustomPage(ref, store, new BankDefenseSuperSlotPage(playerRef, this, slotId));
+        return true;
+    }
+
+    private void tickPendingSeedIdolModeChoiceOpens(World world, MatchContext context, double deltaSeconds) {
+        if (world == null || context == null || context.pendingIdolModeOpenDelayByPlayer.isEmpty()) {
+            return;
+        }
+        Iterator<Map.Entry<UUID, Double>> iterator = context.pendingIdolModeOpenDelayByPlayer.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<UUID, Double> entry = iterator.next();
+            UUID playerUuid = entry.getKey();
+            if (playerUuid == null || !context.pendingIdolModeSlotByPlayer.containsKey(playerUuid)) {
+                iterator.remove();
+                continue;
+            }
+            double remaining = Math.max(0.0, entry.getValue() - Math.max(0.0, deltaSeconds));
+            if (remaining > 0.0) {
+                entry.setValue(remaining);
+                continue;
+            }
+            if (context.state != null && context.state.rewardPending) {
+                entry.setValue(0.08);
+                continue;
+            }
+            PlayerRef target = null;
+            for (PlayerRef playerRef : world.getPlayerRefs()) {
+                if (playerRef != null && playerUuid.equals(playerRef.getUuid())) {
+                    target = playerRef;
+                    break;
+                }
+            }
+            iterator.remove();
+            if (target == null) {
+                continue;
+            }
+            this.openPendingSeedIdolModeChoice(world, context, target);
+        }
     }
 
     private TowerInstance findNearestPlacedTower(MatchContext context, Vec3i position, int radius) {
@@ -16295,7 +17003,12 @@ public final class BankDefenseRuntime {
         if (animationId.equals(currentMovementAnimationId)) {
             return animationId;
         }
-        AnimationUtils.playAnimation(ref, AnimationSlot.Movement, animationId, store);
+        AnimationUtils.playAnimation(
+            ref,
+            enemy.isBossCasting() ? AnimationSlot.Action : AnimationSlot.Movement,
+            animationId,
+            store
+        );
         return animationId;
     }
 
@@ -16304,9 +17017,13 @@ public final class BankDefenseRuntime {
             return null;
         }
         if (enemy.isBossCasting()) {
-            String cast = model.getFirstBoundAnimationId(new String[]{"Attack", "Cast", "Spell", "Special", "Roar", "Shout", "Idle"});
+            String cast = model.getFirstBoundAnimationId(new String[]{"Attack", "Cast", "Spell", "Special", "Roar", "Shout", "Smash", "Slam", "Melee", "Punch", "Action"});
             if (cast != null && !cast.isBlank()) {
                 return cast;
+            }
+            String idle = model.getFirstBoundAnimationId(new String[]{"Idle"});
+            if (idle != null && !idle.isBlank()) {
+                return idle;
             }
         }
         if (enemy.dying || enemy.rootedRemaining > 0.0) {
@@ -16618,30 +17335,30 @@ public final class BankDefenseRuntime {
 
     private RoleModelProfile enemyProfile(String enemyId) {
         return switch (enemyId) {
-            case "thief" -> new RoleModelProfile(new String[]{"Skeleton"}, MODEL_PLAYER, 0.92f);
-            case "runner" -> new RoleModelProfile(new String[]{"Zombie"}, MODEL_PLAYER, 0.88f);
-            case "runner_bomber" -> new RoleModelProfile(new String[]{"Zombie"}, MODEL_PLAYER, 0.94f);
-            case "bruiser" -> new RoleModelProfile(new String[]{"Zombie", "Skeleton"}, MODEL_PLAYER, 1.10f);
-            case "bone_guard" -> new RoleModelProfile(new String[]{"Skeleton"}, MODEL_PLAYER, 1.00f);
-            case "berserker_rotter" -> new RoleModelProfile(new String[]{"Zombie"}, MODEL_PLAYER, 0.98f);
-            case ENEMY_GOBLIN_SABOTEUR -> new RoleModelProfile(new String[]{"Goblin", "Goblin_Duke"}, MODEL_PLAYER, 0.96f);
-            case "jammer" -> new RoleModelProfile(new String[]{"Skeleton"}, MODEL_PLAYER, 1.02f);
-            case "necro_thief" -> new RoleModelProfile(new String[]{"Skeleton"}, MODEL_PLAYER, 0.98f);
-            case "vault_priest" -> new RoleModelProfile(new String[]{"Skeleton"}, MODEL_PLAYER, 1.04f);
-            case "bone_trumpeter" -> new RoleModelProfile(new String[]{"Skeleton"}, MODEL_PLAYER, 1.02f);
-            case "plague_standard" -> new RoleModelProfile(new String[]{"Zombie"}, MODEL_PLAYER, 1.08f);
-            case "curse_weaver" -> new RoleModelProfile(new String[]{"Skeleton", "Zombie"}, MODEL_PLAYER, 1.00f);
-            case "elite_robber" -> new RoleModelProfile(new String[]{"Skeleton"}, MODEL_PLAYER, 1.12f);
-            case "grave_spawn" -> new RoleModelProfile(new String[]{"Zombie"}, MODEL_PLAYER, 0.74f);
-            case ENEMY_NECRO_GUARDIAN -> new RoleModelProfile(new String[]{"Skeleton", "Zombie"}, MODEL_PLAYER, 1.04f);
+            case "thief" -> new RoleModelProfile(new String[]{"Skeleton_Scout", "Skeleton"}, MODEL_PLAYER, 0.92f);
+            case "runner" -> new RoleModelProfile(new String[]{"Zombie_Sand", "Zombie"}, MODEL_PLAYER, 0.88f);
+            case "runner_bomber" -> new RoleModelProfile(new String[]{"Zombie_Burnt", "Zombie"}, MODEL_PLAYER, 0.94f);
+            case "bruiser" -> new RoleModelProfile(new String[]{"Skeleton_Burnt_Praetorian", "Skeleton_Knight", "Skeleton"}, MODEL_PLAYER, 1.10f);
+            case "bone_guard" -> new RoleModelProfile(new String[]{"Skeleton_Soldier", "Skeleton"}, MODEL_PLAYER, 1.00f);
+            case "berserker_rotter" -> new RoleModelProfile(new String[]{"Zombie_Frost", "Zombie"}, MODEL_PLAYER, 0.98f);
+            case ENEMY_GOBLIN_SABOTEUR -> new RoleModelProfile(new String[]{"Skeleton_Sand_Assassin", "Skeleton_Scout", "Skeleton"}, MODEL_PLAYER, 0.98f);
+            case "jammer" -> new RoleModelProfile(new String[]{"Skeleton_Mage", "Skeleton"}, MODEL_PLAYER, 1.02f);
+            case "necro_thief" -> new RoleModelProfile(new String[]{"Skeleton_Ranger", "Skeleton"}, MODEL_PLAYER, 0.98f);
+            case "vault_priest" -> new RoleModelProfile(new String[]{"Skeleton_Archmage", "Skeleton_Mage", "Skeleton"}, MODEL_PLAYER, 1.04f);
+            case "bone_trumpeter" -> new RoleModelProfile(new String[]{"Skeleton_Burnt_Gunner", "Skeleton_Archer", "Skeleton"}, MODEL_PLAYER, 1.02f);
+            case "plague_standard" -> new RoleModelProfile(new String[]{"Zombie", "Zombie_Sand"}, MODEL_PLAYER, 1.08f);
+            case "curse_weaver" -> new RoleModelProfile(new String[]{"Skeleton_Burnt_Wizard", "Skeleton_Mage", "Skeleton"}, MODEL_PLAYER, 1.00f);
+            case "elite_robber" -> new RoleModelProfile(new String[]{"Skeleton_Fighter", "Skeleton"}, MODEL_PLAYER, 1.12f);
+            case "grave_spawn" -> new RoleModelProfile(new String[]{"Skeleton_Sand_Scout", "Skeleton_Scout", "Skeleton"}, MODEL_PLAYER, 0.74f);
+            case ENEMY_NECRO_GUARDIAN -> new RoleModelProfile(new String[]{"Skeleton_Burnt_Soldier", "Skeleton"}, MODEL_PLAYER, 1.04f);
             case ENEMY_RIFT_TWIN_ALPHA -> new RoleModelProfile(new String[]{"Zombie_Aberrant", "Zombie"}, MODEL_PLAYER, 1.32f);
-            case ENEMY_RIFT_TWIN_BETA -> new RoleModelProfile(new String[]{"Hedera", "Zombie_Aberrant"}, MODEL_PLAYER, 1.32f);
-            case ENEMY_NODE_ARBITER -> new RoleModelProfile(new String[]{"Goblin_Duke", "Hedera"}, MODEL_PLAYER, 1.36f);
-            case ENEMY_SEAL_MASTER -> new RoleModelProfile(new String[]{"Hedera", "Skeleton"}, MODEL_PLAYER, 1.28f);
-            case ENEMY_SEAL_NODE -> new RoleModelProfile(new String[]{"Skeleton", "Zombie"}, MODEL_PLAYER, 0.78f);
+            case ENEMY_RIFT_TWIN_BETA -> new RoleModelProfile(new String[]{"Zombie", "Zombie_Aberrant"}, MODEL_PLAYER, 1.32f);
+            case ENEMY_NODE_ARBITER -> new RoleModelProfile(new String[]{"Skeleton_burnt_soldier", "Skeleton"}, MODEL_PLAYER, 1.36f);
+            case ENEMY_SEAL_MASTER -> new RoleModelProfile(new String[]{"Skeleton_burnt_soldier", "Skeleton"}, MODEL_PLAYER, 1.28f);
+            case ENEMY_SEAL_NODE -> new RoleModelProfile(new String[]{"Skeleton_Incandescent_Head", "Skeleton"}, MODEL_PLAYER, 0.78f);
             case "vault_breaker" -> new RoleModelProfile(new String[]{"Zombie_Aberrant"}, MODEL_PLAYER, 1.45f);
-            case "necro_king" -> new RoleModelProfile(new String[]{"Hedera", "Zombie_Aberrant"}, MODEL_PLAYER, 1.34f);
-            case "goblin_bomber_boss" -> new RoleModelProfile(new String[]{"Goblin", "Goblin_Duke"}, MODEL_PLAYER, 1.42f);
+            case "necro_king" -> new RoleModelProfile(new String[]{"Skeleton_burnt_soldier", "Zombie_Aberrant"}, MODEL_PLAYER, 1.34f);
+            case "goblin_bomber_boss" -> new RoleModelProfile(new String[]{"Goblin_Duke", "Goblin"}, MODEL_PLAYER, 1.42f);
             default -> new RoleModelProfile(new String[]{"Skeleton", "Zombie"}, MODEL_PLAYER, 0.96f);
         };
     }
@@ -16939,6 +17656,7 @@ public final class BankDefenseRuntime {
         public boolean gameStarted = false;
         public boolean rewardPending = false;
         public boolean instantAutoStart = false;
+        public boolean paused = false;
         public double preparationRemainingSeconds = 0.0;
 
         public MatchState copy() {
@@ -16953,6 +17671,7 @@ public final class BankDefenseRuntime {
             copy.gameStarted = this.gameStarted;
             copy.rewardPending = this.rewardPending;
             copy.instantAutoStart = this.instantAutoStart;
+            copy.paused = this.paused;
             copy.preparationRemainingSeconds = this.preparationRemainingSeconds;
             return copy;
         }
@@ -17247,7 +17966,9 @@ public final class BankDefenseRuntime {
         private final Map<String, Integer> moduleInventory = new LinkedHashMap<>();
         private final Map<String, ActiveChest> activeChests = new LinkedHashMap<>();
         private final List<String> pendingRewardChoices = new ArrayList<>();
+        private final Map<UUID, Double> pendingRewardPageOpenDelayByPlayer = new LinkedHashMap<>();
         private final Map<UUID, String> pendingIdolModeSlotByPlayer = new LinkedHashMap<>();
+        private final Map<UUID, Double> pendingIdolModeOpenDelayByPlayer = new LinkedHashMap<>();
         private final Map<UUID, String> teamByPlayerUuid = new LinkedHashMap<>();
         private final Map<String, String> rewardSelectionsByTeam = new LinkedHashMap<>();
         private final List<ScheduledSpawn> pendingSpawns = new ArrayList<>();
@@ -17272,6 +17993,9 @@ public final class BankDefenseRuntime {
         private int blueCurrency;
         private int greenCurrency;
         private int rewardDraftRound;
+        private int lastRewardPreparedWave;
+        private String lastSaboteurDestroyedSlotId = "";
+        private String lastGoblinBomberDowngradedSlotId = "";
         private boolean oddIncomeRemainderToBlue = true;
         private boolean duoSoloTestEnabled;
         private String rewardPickerTeam = TEAM_SHARED;
@@ -17285,6 +18009,11 @@ public final class BankDefenseRuntime {
         private long nextEnemyId = 1L;
         private boolean bonusChestsSpawned;
         private boolean progressionRewardGranted;
+        private boolean hasEnemyRegenAuras;
+        private boolean hasEnemyAllySpeedAuras;
+        private boolean hasEnemyTowerFireRateAuras;
+        private boolean hasEnemyTowerRangeAuras;
+        private boolean hasEnemyDamageReductionAuras;
         private double defeatBannerRemainingSeconds;
         private String eventToastText = "";
         private double eventToastRemainingSeconds;
@@ -17304,6 +18033,8 @@ public final class BankDefenseRuntime {
         private String activeStormWeatherId;
         private double acidStormLightningCooldownRemaining;
         private double acidStormOmenCooldownRemaining;
+        private double worldInteractionSyncAccumulatedSeconds;
+        private double duoPlayerCountCheckAccumulatedSeconds;
 
         private MatchContext(
             BankDefenseRepository.Snapshot snapshot,
@@ -17452,6 +18183,9 @@ public final class BankDefenseRuntime {
         private boolean hadLogicalEnemiesPreviousTick;
         private boolean playersNearCombatLastTick;
         private double accumulatedSeconds;
+        private double enemyRealtimeAccumulatedSeconds;
+        private double towerRealtimeAccumulatedSeconds;
+        private double rangePreviewAccumulatedSeconds;
         private double enemyVisualGarbageSweepRemaining;
         private boolean legacyDebugBlocksCleared;
         private boolean visualGarbageSanitized;
@@ -17679,6 +18413,9 @@ public final class BankDefenseRuntime {
         private double initialCooldown(EnemyDefinition definition) {
             if (definition == null) {
                 return 0.0;
+            }
+            if ("vault_breaker".equals(definition.id)) {
+                return VAULT_BREAKER_DISABLE_INTERVAL_SECONDS;
             }
             if (definition.towerDisablePulseIntervalSeconds > 0.0) {
                 return definition.towerDisablePulseIntervalSeconds * 0.9;

@@ -8,10 +8,12 @@ This repository contains the source project used to build the playable mod, its 
 
 Current project focus:
 - Solo mode
-- Duo mode
 - Full in-game tutorial
 - Tower, trap, boss, and progression systems
 - Russian and English localization
+
+Planned / in development:
+- Duo mode
 
 Project identity:
 - Project name: Duplo TD

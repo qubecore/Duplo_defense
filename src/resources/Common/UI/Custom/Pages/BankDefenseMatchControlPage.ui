@@ -197,6 +197,7 @@ $C.@Container {
         $C.@SecondaryTextButton #RewardButton { @Anchor = (Width: 316, Height: 40, Bottom: 8); @Text = "Choose module"; Visible: false; }
         $C.@SecondaryTextButton #StartWave { @Anchor = (Width: 316, Height: 40, Bottom: 8); @Text = "Start wave"; }
         $C.@SecondaryTextButton #AutoStartToggle { @Anchor = (Width: 316, Height: 40, Bottom: 8); @Text = "Instant auto-start"; }
+        $C.@SecondaryTextButton #PauseToggle { @Anchor = (Width: 316, Height: 40, Bottom: 8); @Text = "Pause game"; Visible: false; }
         $C.@CancelTextButton #ResetMatch { @Anchor = (Width: 316, Height: 40); @Text = "End match"; }
       }
     }

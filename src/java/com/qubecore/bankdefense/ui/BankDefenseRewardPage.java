@@ -68,6 +68,7 @@ public final class BankDefenseRewardPage extends InteractiveCustomUIPage<BankDef
             }
             if (result.success && data.action.startsWith("reward:")) {
                 this.close();
+                this.runtime.schedulePendingSeedIdolModeChoiceOpen(player.getWorld(), this.viewerRef, 0.12);
                 return;
             }
         } catch (IOException e) {

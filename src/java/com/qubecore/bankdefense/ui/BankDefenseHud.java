@@ -9,6 +9,9 @@ import java.util.Objects;
 public final class BankDefenseHud extends CustomUIHud {
     private static final String UI_HUD = "Hud/BankDefenseHud.ui";
     private static final long FLASH_DURATION_MS = 900L;
+    private static final int SUPER_ICON_HEART = 1;
+    private static final int SUPER_ICON_MONOLITH = 2;
+    private static final int SUPER_ICON_IDOL = 3;
     private String title = "Duplo TD";
     private String creator = "By QubeCore";
     private String wave = "Wave 1";
@@ -377,34 +380,56 @@ public final class BankDefenseHud extends CustomUIHud {
         ui.set("#CurseLine1.Visible", !curseLine1Text.isBlank());
         ui.set("#CurseLine2.Visible", !curseLine2Text.isBlank());
         ui.set("#CurseLine3.Visible", !curseLine3Text.isBlank());
-        ui.set("#RightStats.Visible", this.rightStatsVisible);
+        ui.set("#RightStats.Visible", this.rightStatsVisible && !this.defeatBannerVisible);
         ui.set("#SuperMiniPanel.Visible", false);
-        ui.set("#SuperStatusPanel.Visible", this.superMiniVisible);
+        SuperCard[] superCards = this.visibleSuperCards(
+            superHeartStateText,
+            superHeartMiniLabelText,
+            this.superHeartStage,
+            superMonolithStateText,
+            superMonolithMiniLabelText,
+            this.superMonolithStage,
+            superIdolStateText,
+            superIdolMiniLabelText,
+            this.superIdolStage
+        );
+        int superCardCount = 0;
+        for (SuperCard card : superCards) {
+            if (card != null) {
+                superCardCount++;
+            }
+        }
+        boolean superPanelVisible = this.superMiniVisible && superCardCount > 0;
+        ui.set("#SuperStatusPanel.Visible", superPanelVisible);
+        ui.set("#SuperStatusBg1.Visible", false);
+        ui.set("#SuperStatusBg2.Visible", false);
+        ui.set("#SuperStatusBg3.Visible", false);
+        ui.set("#SuperStatusCaption.Text", BankDefenseLocalization.tr(this.playerRef, "hud.super.caption"));
 
-        boolean superRow1Visible = this.superMiniVisible && this.superHeartState != null && !this.superHeartState.isBlank();
-        boolean superRow2Visible = this.superMiniVisible && this.superMonolithState != null && !this.superMonolithState.isBlank();
-        boolean superRow3Visible = this.superMiniVisible && this.superIdolState != null && !this.superIdolState.isBlank();
+        SuperCard row1 = superCards.length > 0 ? superCards[0] : null;
+        SuperCard row2 = superCards.length > 1 ? superCards[1] : null;
+        SuperCard row3 = superCards.length > 2 ? superCards[2] : null;
 
-        ui.set("#SuperHeartRow.Visible", superRow1Visible);
-        ui.set("#SuperHeartName.Text", superHeartStateText);
-        ui.set("#SuperHeartState.Text", superHeartMiniLabelText);
-        ui.set("#SuperHeartIconHeart.Visible", this.superHeartStage == 1);
-        ui.set("#SuperHeartIconMonolith.Visible", this.superHeartStage == 2);
-        ui.set("#SuperHeartIconIdol.Visible", this.superHeartStage == 3);
+        ui.set("#SuperHeartRow.Visible", row1 != null);
+        ui.set("#SuperHeartName.Text", row1 == null ? "" : row1.title);
+        ui.set("#SuperHeartState.Text", row1 == null ? "" : row1.detail);
+        ui.set("#SuperHeartIconHeart.Visible", row1 != null && row1.iconKind == SUPER_ICON_HEART);
+        ui.set("#SuperHeartIconMonolith.Visible", row1 != null && row1.iconKind == SUPER_ICON_MONOLITH);
+        ui.set("#SuperHeartIconIdol.Visible", row1 != null && row1.iconKind == SUPER_ICON_IDOL);
 
-        ui.set("#SuperMonolithRow.Visible", superRow2Visible);
-        ui.set("#SuperMonolithName.Text", superMonolithStateText);
-        ui.set("#SuperMonolithState.Text", superMonolithMiniLabelText);
-        ui.set("#SuperMonolithIconHeart.Visible", this.superMonolithStage == 1);
-        ui.set("#SuperMonolithIconMonolith.Visible", this.superMonolithStage == 2);
-        ui.set("#SuperMonolithIconIdol.Visible", this.superMonolithStage == 3);
+        ui.set("#SuperMonolithRow.Visible", row2 != null);
+        ui.set("#SuperMonolithName.Text", row2 == null ? "" : row2.title);
+        ui.set("#SuperMonolithState.Text", row2 == null ? "" : row2.detail);
+        ui.set("#SuperMonolithIconHeart.Visible", row2 != null && row2.iconKind == SUPER_ICON_HEART);
+        ui.set("#SuperMonolithIconMonolith.Visible", row2 != null && row2.iconKind == SUPER_ICON_MONOLITH);
+        ui.set("#SuperMonolithIconIdol.Visible", row2 != null && row2.iconKind == SUPER_ICON_IDOL);
 
-        ui.set("#SuperIdolRow.Visible", superRow3Visible);
-        ui.set("#SuperIdolName.Text", superIdolStateText);
-        ui.set("#SuperIdolState.Text", superIdolMiniLabelText);
-        ui.set("#SuperIdolIconHeart.Visible", this.superIdolStage == 1);
-        ui.set("#SuperIdolIconMonolith.Visible", this.superIdolStage == 2);
-        ui.set("#SuperIdolIconIdol.Visible", this.superIdolStage == 3);
+        ui.set("#SuperIdolRow.Visible", row3 != null);
+        ui.set("#SuperIdolName.Text", row3 == null ? "" : row3.title);
+        ui.set("#SuperIdolState.Text", row3 == null ? "" : row3.detail);
+        ui.set("#SuperIdolIconHeart.Visible", row3 != null && row3.iconKind == SUPER_ICON_HEART);
+        ui.set("#SuperIdolIconMonolith.Visible", row3 != null && row3.iconKind == SUPER_ICON_MONOLITH);
+        ui.set("#SuperIdolIconIdol.Visible", row3 != null && row3.iconKind == SUPER_ICON_IDOL);
 
         ui.set("#MoneyActive.Text", this.moneyValue);
         ui.set("#MoneyPaused.Text", this.moneyValue);
@@ -482,9 +507,38 @@ public final class BankDefenseHud extends CustomUIHud {
         ui.set("#DuoPartnerValue.Text", this.duoPartnerMoneyValue);
 
         ui.set("#DefeatBanner.Visible", this.defeatBannerVisible);
+        ui.set("#DefeatShardPanel.Visible", this.defeatBannerVisible);
         ui.set("#DefeatText.Text", defeatBannerText);
         ui.set("#DefeatHint.Text", defeatBannerHintText);
         ui.set("#DefeatShardHeading.Text", BankDefenseLocalization.tr(this.playerRef, "hud.defeat.cores"));
         ui.set("#DefeatShardValue.Text", this.defeatBannerShardsValue);
+    }
+
+    private SuperCard[] visibleSuperCards(
+        String heartTitle,
+        String heartDetail,
+        int heartIconKind,
+        String monolithTitle,
+        String monolithDetail,
+        int monolithIconKind,
+        String idolTitle,
+        String idolDetail,
+        int idolIconKind
+    ) {
+        SuperCard[] ordered = new SuperCard[3];
+        int index = 0;
+        if (heartTitle != null && !heartTitle.isBlank()) {
+            ordered[index++] = new SuperCard(heartTitle, Objects.requireNonNullElse(heartDetail, ""), heartIconKind);
+        }
+        if (monolithTitle != null && !monolithTitle.isBlank()) {
+            ordered[index++] = new SuperCard(monolithTitle, Objects.requireNonNullElse(monolithDetail, ""), monolithIconKind);
+        }
+        if (idolTitle != null && !idolTitle.isBlank()) {
+            ordered[index] = new SuperCard(idolTitle, Objects.requireNonNullElse(idolDetail, ""), idolIconKind);
+        }
+        return ordered;
+    }
+
+    private record SuperCard(String title, String detail, int iconKind) {
     }
 }

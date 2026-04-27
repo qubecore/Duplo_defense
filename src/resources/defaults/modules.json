@@ -4,8 +4,8 @@
     {
       "id": "overload",
       "displayName": "Перегрузка",
-      "note": "+20% к скорострельности.",
-      "fireRateMultiplier": 1.20,
+      "note": "+25% к скорострельности.",
+      "fireRateMultiplier": 1.25,
       "damageMultiplier": 1.0,
       "chargedDamageMultiplier": 1.0
     },
@@ -20,14 +20,15 @@
     {
       "id": "long_optics",
       "displayName": "Дальняя оптика",
-      "note": "+дальность для прицельных башен.",
-      "rangeBonus": 2.2,
+      "note": "+6% к дальности для прицельных башен.",
+      "rangeMultiplier": 1.06,
+      "rangeBonus": 0.0,
       "chargedDamageMultiplier": 1.0
     },
     {
       "id": "cryo_capsule",
       "displayName": "Крио-капсула",
-      "note": "Атаки дополнительно замедляют цель.",
+      "note": "Попадания дополнительно замедляют цель на 12% на 0.9 с. С Ледяным тотемом эффект складывается.",
       "slowPercentBonus": 0.12,
       "slowDurationBonus": 0.9,
       "chargedDamageMultiplier": 1.0
@@ -35,7 +36,7 @@
     {
       "id": "fragment_charge",
       "displayName": "Осколочный заряд",
-      "note": "Попадания наносят урон по площади в радиусе, увеличенном в 3 раза, вокруг цели.",
+      "note": "Попадания наносят урон по площади в широком радиусе вокруг цели.",
       "splashDamageRatio": 0.35,
       "splashRadius": 6.0,
       "chargedDamageMultiplier": 1.0
@@ -58,17 +59,17 @@
     {
       "id": "dual_camera",
       "displayName": "Двойная камера",
-      "note": "Каждый 5-й выстрел даёт дополнительный выстрел на 120% урона.",
-      "doubleShotEvery": 5,
-      "doubleShotDamageMultiplier": 1.20,
+      "note": "Каждый 3-й выстрел даёт дополнительный выстрел на 100% урона.",
+      "doubleShotEvery": 3,
+      "doubleShotDamageMultiplier": 1.0,
       "chargedDamageMultiplier": 1.0
     },
     {
       "id": "reserve_capacitor",
       "displayName": "Резервный конденсатор",
-      "note": "После 2.2 секунд простоя следующий выстрел получает +90% урона.",
-      "chargeSeconds": 2.2,
-      "chargedDamageMultiplier": 1.9
+      "note": "После 3 секунд простоя следующий выстрел получает +800% урона.",
+      "chargeSeconds": 3.0,
+      "chargedDamageMultiplier": 9.0
     }
   ]
 }

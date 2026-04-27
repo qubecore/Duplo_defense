@@ -1,12 +1,10 @@
-﻿package com.qubecore.bankdefense.command;
+package com.qubecore.bankdefense.command;
 
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
-import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.protocol.MovementSettings;
 import com.hypixel.hytale.server.core.Message;
-import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.arguments.system.DefaultArg;
 import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
@@ -19,7 +17,6 @@ import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementMa
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
-import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.qubecore.bankdefense.BankDefensePlugin;
 import com.qubecore.bankdefense.data.BankDefenseRepository;
@@ -36,29 +33,13 @@ import com.qubecore.bankdefense.ui.BankDefenseProgressionPage;
 import com.qubecore.bankdefense.ui.BankDefenseRewardPage;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 public final class BankDefenseCommand extends AbstractCommandCollection {
-    private static final String SLOT_INTERACTION_BLOCK = "Utility_BankDefense_SlotMarker";
-    private static final String SLOT_INTERACTION_BLOCK_OCCUPIED = "Utility_BankDefense_SlotMarkerOccupied";
-    private static final String SLOT_INTERACTION_BLOCK_BLUE = "Utility_BankDefense_SlotMarkerBlue";
-    private static final String SLOT_INTERACTION_BLOCK_BLUE_OCCUPIED = "Utility_BankDefense_SlotMarkerBlueOccupied";
-    private static final String SLOT_INTERACTION_BLOCK_GREEN = "Utility_BankDefense_SlotMarkerGreen";
-    private static final String SLOT_INTERACTION_BLOCK_GREEN_OCCUPIED = "Utility_BankDefense_SlotMarkerGreenOccupied";
-    private static final String TRAP_SLOT_INTERACTION_BLOCK = "Utility_BankDefense_TrapSlotMarker";
-    private static final String TRAP_SLOT_INTERACTION_BLOCK_OCCUPIED = "Utility_BankDefense_TrapSlotMarkerOccupied";
-    private static final String SUPER_SLOT_INTERACTION_BLOCK = "Utility_BankDefense_SuperSlotMarker";
-
     public BankDefenseCommand(BankDefenseRepository repository, BankDefenseRuntime runtime) {
         super("bankdefense", "РРЅСЃС‚СЂСѓРјРµРЅС‚С‹ QubeCore: DUPLO Defense");
         this.addSubCommand(new StatusCommand(repository, runtime));
-        this.addSubCommand(new DuoStatusCommand(runtime));
-        this.addSubCommand(new DuoTestCommand(runtime));
-        this.addSubCommand(new HudCommand(runtime));
-        this.addSubCommand(new DuoFillMaxCommand(runtime));
         this.addSubCommand(new ValidateCommand(runtime));
         this.addSubCommand(new MatchCommand(runtime));
         this.addSubCommand(new MenuCommand(runtime));
@@ -106,7 +87,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
         this.addSubCommand(new FixedMarkerSetCommand(repository, "tutorialvendor", "marktutorialkeeper", "РџРѕСЃС‚Р°РІРёС‚СЊ С…СЂР°РЅРёС‚РµР»СЏ РѕР±СѓС‡РµРЅРёСЏ"));
         this.addSubCommand(new FixedMarkerSetCommand(repository, "wizardintro", "markwizardintro", "РџРѕСЃС‚Р°РІРёС‚СЊ РІСЃС‚СѓРїРёС‚РµР»СЊРЅРѕРіРѕ РљРІРёР±РµРєР°"));
         this.addSubCommand(new FixedMarkerSetCommand(repository, "tutorialwizard", "marktutorialwizard", "РџРѕСЃС‚Р°РІРёС‚СЊ РљРІРёР±РµРєР° РѕР±СѓС‡РµРЅРёСЏ"));
-        this.addSubCommand(new TutorialChestSetCommand(repository));
         this.addSubCommand(new FixedMarkerClearCommand(repository, "tutorialstart", "cleartutorialstart", "РћС‡РёСЃС‚РёС‚СЊ СЃС‚Р°СЂС‚ РѕР±СѓС‡РµРЅРёСЏ"));
         this.addSubCommand(new FixedMarkerClearCommand(repository, "tutorialstart", "cleartutorialplayerstart", "РћС‡РёСЃС‚РёС‚СЊ С‚РѕС‡РєСѓ СЃС‚Р°СЂС‚Р° РёРіСЂРѕРєР° РІ РѕР±СѓС‡РµРЅРёРё"));
         this.addSubCommand(new FixedMarkerClearCommand(repository, "tutorialspawna", "cleartutorialspawna", "РћС‡РёСЃС‚РёС‚СЊ tutorial spawn A"));
@@ -120,7 +100,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
         this.addSubCommand(new FixedMarkerClearCommand(repository, "tutorialvendor", "cleartutorialkeeper", "РћС‡РёСЃС‚РёС‚СЊ С…СЂР°РЅРёС‚РµР»СЏ РѕР±СѓС‡РµРЅРёСЏ"));
         this.addSubCommand(new FixedMarkerClearCommand(repository, "wizardintro", "clearwizardintro", "РћС‡РёСЃС‚РёС‚СЊ РІСЃС‚СѓРїРёС‚РµР»СЊРЅРѕРіРѕ РљРІРёР±РµРєР°"));
         this.addSubCommand(new FixedMarkerClearCommand(repository, "tutorialwizard", "cleartutorialwizard", "РћС‡РёСЃС‚РёС‚СЊ РљРІРёР±РµРєР° РѕР±СѓС‡РµРЅРёСЏ"));
-        this.addSubCommand(new TutorialChestClearCommand(repository));
         this.addSubCommand(new FixedMarkerSetCommand(repository, "spawn_a", "markspawna", "РџРѕСЃС‚Р°РІРёС‚СЊ spawn A"));
         this.addSubCommand(new FixedMarkerSetCommand(repository, "spawn_b", "markspawnb", "РџРѕСЃС‚Р°РІРёС‚СЊ spawn B"));
         this.addSubCommand(new FixedMarkerSetCommand(repository, "spawn_c", "markspawnc", "РџРѕСЃС‚Р°РІРёС‚СЊ spawn C"));
@@ -130,18 +109,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
         this.addSubCommand(new FixedMarkerSetCommand(repository, "control", "markcontrol", "РџРѕСЃС‚Р°РІРёС‚СЊ control NPC"));
         this.addSubCommand(new FixedMarkerSetCommand(repository, "vendor", "markvendor", "РџРѕСЃС‚Р°РІРёС‚СЊ vendor NPC"));
         this.addSubCommand(new FixedMarkerSetCommand(repository, "mode", "markmode", "РџРѕСЃС‚Р°РІРёС‚СЊ NPC РІС‹Р±РѕСЂР° СЂРµР¶РёРјР°"));
-        this.addSubCommand(new FixedMarkerSetCommand(repository, "qubecoresolo", "markqubecoresolo", "Поставить QubeCore на SOLO карте"));
-        this.addSubCommand(new FixedMarkerSetCommand(repository, "qubecoreduo", "markqubecoreduo", "Поставить QubeCore на DUO карте"));
-        this.addSubCommand(new FixedMarkerSetCommand(repository, "statistics", "marksolostats", "Поставить NPC статистики Solo"));
-        this.addSubCommand(new FixedMarkerSetCommand(repository, "duoplayerblue", "markduoplayerblue", "Поставить старт синего игрока Duo"));
-        this.addSubCommand(new FixedMarkerSetCommand(repository, "duoplayergreen", "markduoplayergreen", "Поставить старт зелёного игрока Duo"));
-        this.addSubCommand(new FixedMarkerSetCommand(repository, "duospawnblue", "markduospawnblue", "Поставить spawn синего маршрута Duo"));
-        this.addSubCommand(new FixedMarkerSetCommand(repository, "duospawngreen", "markduospawngreen", "Поставить spawn зелёного маршрута Duo"));
-        this.addSubCommand(new FixedMarkerSetCommand(repository, "duobank", "markduobank", "Поставить центр Duo карты"));
-        this.addSubCommand(new FixedMarkerSetCommand(repository, "duovault", "markduovault", "Поставить Hollow Duo карты"));
-        this.addSubCommand(new FixedMarkerSetCommand(repository, "duosealblue", "markduosealblue", "Поставить seal node синего фронта"));
-        this.addSubCommand(new FixedMarkerSetCommand(repository, "duosealgreen", "markduosealgreen", "Поставить seal node зелёного фронта"));
-        this.addSubCommand(new FixedMarkerSetCommand(repository, "duostats", "markduostats", "Поставить NPC статистики Duo"));
         this.addSubCommand(new FixedMarkerClearCommand(repository, "spawn_a", "clearspawna", "РћС‡РёСЃС‚РёС‚СЊ spawn A"));
         this.addSubCommand(new FixedMarkerClearCommand(repository, "spawn_b", "clearspawnb", "РћС‡РёСЃС‚РёС‚СЊ spawn B"));
         this.addSubCommand(new FixedMarkerClearCommand(repository, "spawn_c", "clearspawnc", "РћС‡РёСЃС‚РёС‚СЊ spawn C"));
@@ -151,26 +118,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
         this.addSubCommand(new FixedMarkerClearCommand(repository, "control", "clearcontrol", "РћС‡РёСЃС‚РёС‚СЊ control NPC"));
         this.addSubCommand(new FixedMarkerClearCommand(repository, "vendor", "clearvendor", "РћС‡РёСЃС‚РёС‚СЊ vendor NPC"));
         this.addSubCommand(new FixedMarkerClearCommand(repository, "mode", "clearmode", "РћС‡РёСЃС‚РёС‚СЊ NPC РІС‹Р±РѕСЂР° СЂРµР¶РёРјР°"));
-        this.addSubCommand(new FixedMarkerClearCommand(repository, "qubecoresolo", "clearqubecoresolo", "Очистить QubeCore на SOLO карте"));
-        this.addSubCommand(new FixedMarkerClearCommand(repository, "qubecoreduo", "clearqubecoreduo", "Очистить QubeCore на DUO карте"));
-        this.addSubCommand(new FixedMarkerClearCommand(repository, "statistics", "clearsolostats", "Очистить NPC статистики Solo"));
-        this.addSubCommand(new FixedMarkerClearCommand(repository, "duoplayerblue", "clearduoplayerblue", "Очистить старт синего игрока Duo"));
-        this.addSubCommand(new FixedMarkerClearCommand(repository, "duoplayergreen", "clearduoplayergreen", "Очистить старт зелёного игрока Duo"));
-        this.addSubCommand(new FixedMarkerClearCommand(repository, "duospawnblue", "clearduospawnblue", "Очистить spawn синего маршрута Duo"));
-        this.addSubCommand(new FixedMarkerClearCommand(repository, "duospawngreen", "clearduospawngreen", "Очистить spawn зелёного маршрута Duo"));
-        this.addSubCommand(new FixedMarkerClearCommand(repository, "duobank", "clearduobank", "Очистить центр Duo карты"));
-        this.addSubCommand(new FixedMarkerClearCommand(repository, "duovault", "clearduovault", "Очистить Hollow Duo карты"));
-        this.addSubCommand(new FixedMarkerClearCommand(repository, "duosealblue", "clearduosealblue", "Очистить seal node синего фронта"));
-        this.addSubCommand(new FixedMarkerClearCommand(repository, "duosealgreen", "clearduosealgreen", "Очистить seal node зелёного фронта"));
-        this.addSubCommand(new FixedMarkerClearCommand(repository, "duostats", "clearduostats", "Очистить NPC статистики Duo"));
-        this.addSubCommand(new FixedMarkerSetCommand(repository, "duoteam", "markduoteam", "Поставить NPC выбора стороны на DUO карте"));
-        this.addSubCommand(new FixedMarkerSetCommand(repository, "duoteleportnpc", "markduoteleportnpc", "Поставить NPC телепорта на DUO карте"));
-        this.addSubCommand(new FixedMarkerSetCommand(repository, "teleportduo", "markteleportduo", "Поставить точку телепорта на DUO карте"));
-        this.addSubCommand(new FixedMarkerSetCommand(repository, "teleportsolo", "markteleportsolo", "Поставить точку телепорта на SOLO карте"));
-        this.addSubCommand(new FixedMarkerClearCommand(repository, "duoteam", "clearduoteam", "Очистить NPC выбора стороны на DUO карте"));
-        this.addSubCommand(new FixedMarkerClearCommand(repository, "duoteleportnpc", "clearduoteleportnpc", "Очистить NPC телепорта на DUO карте"));
-        this.addSubCommand(new FixedMarkerClearCommand(repository, "teleportduo", "clearteleportduo", "Очистить точку телепорта на DUO карте"));
-        this.addSubCommand(new FixedMarkerClearCommand(repository, "teleportsolo", "clearteleportsolo", "Очистить точку телепорта на SOLO карте"));
         this.addSubCommand(new RouteAddAliasCommand(repository));
         this.addSubCommand(new RouteAddLaneAliasCommand(repository, "a"));
         this.addSubCommand(new RouteAddLaneAliasCommand(repository, "b"));
@@ -201,18 +148,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
         this.addSubCommand(new RouteListLaneAliasCommand(repository, "tb"));
         this.addSubCommand(new RouteListLaneAliasCommand(repository, "tc"));
         this.addSubCommand(new RouteListLaneAliasCommand(repository, "all"));
-        this.addSubCommand(new DuoRouteAddAliasCommand(repository, "blue"));
-        this.addSubCommand(new DuoRouteAddAliasCommand(repository, "green"));
-        this.addSubCommand(new DuoRoutePopAliasCommand(repository, "blue"));
-        this.addSubCommand(new DuoRoutePopAliasCommand(repository, "green"));
-        this.addSubCommand(new DuoRouteClearAliasCommand(repository, "blue"));
-        this.addSubCommand(new DuoRouteClearAliasCommand(repository, "green"));
-        this.addSubCommand(new DuoRouteClearAliasCommand(repository, "all"));
-        this.addSubCommand(new DuoRouteListAliasCommand(repository, "blue"));
-        this.addSubCommand(new DuoRouteListAliasCommand(repository, "green"));
-        this.addSubCommand(new DuoRouteListAliasCommand(repository, "all"));
-        this.addSubCommand(new DuoResetRoutesCommand(repository));
-        this.addSubCommand(new DuoResetStartsCommand(repository));
         this.addSubCommand(new SlotAddAliasCommand(repository));
         this.addSubCommand(new SlotAddTypeAliasCommand(repository, "standard"));
         this.addSubCommand(new SlotAddTypeAliasCommand(repository, "super"));
@@ -220,17 +155,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
         this.addSubCommand(new SlotAddTypeAliasCommand(repository, "tutorial"));
         this.addSubCommand(new SlotAddTypeAliasCommand(repository, "tutorial_super"));
         this.addSubCommand(new SlotAddTypeAliasCommand(repository, "tutorial_trap"));
-        this.addSubCommand(new TutorialTrapAddCommand(repository, runtime));
-        this.addSubCommand(new DuoSlotAddAliasCommand(repository, "slotaddblue", "standard", "blue", "blue_front"));
-        this.addSubCommand(new DuoSlotAddAliasCommand(repository, "slotaddgreen", "standard", "green", "green_front"));
-        this.addSubCommand(new DuoSlotAddAliasCommand(repository, "slotaddduoblue", "standard", "blue", "blue_front"));
-        this.addSubCommand(new DuoSlotAddAliasCommand(repository, "slotaddduogreen", "standard", "green", "green_front"));
-        this.addSubCommand(new DuoSlotAddAliasCommand(repository, "slotaddduotrapblue", "trap", "blue", "blue_trap"));
-        this.addSubCommand(new DuoSlotAddAliasCommand(repository, "slotaddduotrapgreen", "trap", "green", "green_trap"));
-        this.addSubCommand(new DuoSlotAddAliasCommand(repository, "slotaddduosuper", "super", "shared", "shared_super"));
-        this.addSubCommand(new SlotTeamAliasCommand(repository, "slotteamblue", "blue"));
-        this.addSubCommand(new SlotTeamAliasCommand(repository, "slotteamgreen", "green"));
-        this.addSubCommand(new SlotTeamAliasCommand(repository, "slotteamshared", "shared"));
         this.addSubCommand(new SlotRemoveAliasCommand(repository));
         this.addSubCommand(new SlotClearAliasCommand(repository));
         this.addSubCommand(new SlotClearTypeAliasCommand(repository, "standard"));
@@ -239,17 +163,12 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
         this.addSubCommand(new SlotClearTypeAliasCommand(repository, "tutorial"));
         this.addSubCommand(new SlotClearTypeAliasCommand(repository, "tutorial_super"));
         this.addSubCommand(new SlotClearTypeAliasCommand(repository, "tutorial_trap"));
-        this.addSubCommand(new TutorialTrapClearCommand(repository, runtime));
         this.addSubCommand(new SlotClearTypeAliasCommand(repository, "all"));
         this.addSubCommand(new SlotListAliasCommand(repository));
         this.addSubCommand(new ChestAddAliasCommand(repository));
         this.addSubCommand(new ChestRemoveAliasCommand(repository));
         this.addSubCommand(new ChestClearAliasCommand(repository));
         this.addSubCommand(new ChestListAliasCommand(repository));
-        this.addSubCommand(new DuoChestAddAliasCommand(repository));
-        this.addSubCommand(new DuoChestRemoveAliasCommand(repository));
-        this.addSubCommand(new DuoChestClearAliasCommand(repository));
-        this.addSubCommand(new DuoChestListAliasCommand(repository));
     }
 
     private static Vec3i currentBlockPosition(Store<EntityStore> store, Ref<EntityStore> ref) {
@@ -259,20 +178,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
         }
         Vector3d position = transformComponent.getPosition();
         return Vec3i.ofFloor(position.x, position.y, position.z);
-    }
-
-    private static void refreshWorldVisualization(World world) {
-        if (world == null) {
-            return;
-        }
-        BankDefensePlugin plugin = BankDefensePlugin.getInstance();
-        if (plugin == null || plugin.getRuntime() == null) {
-            return;
-        }
-        try {
-            plugin.getRuntime().refreshVisualization(world);
-        } catch (IOException ignored) {
-        }
     }
 
     private static float currentYaw(Store<EntityStore> store, Ref<EntityStore> ref) {
@@ -303,20 +208,7 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
             case "vendor", "merchant", "progression" -> "vendor";
             case "tutorialvendor", "tutorialkeeper", "tvendor", "learnvendor" -> "tutorialvendor";
             case "mode", "gamemode", "modeoperator", "modeselector" -> "mode";
-            case "statistics", "stats", "statnpc", "solostats" -> "statistics";
-            case "duoplayerblue", "duostartblue", "duoblueplayer", "blueplayerduo" -> "duoplayerblue";
-            case "duoplayergreen", "duostartgreen", "duogreenplayer", "greenplayerduo" -> "duoplayergreen";
-            case "duospawnblue", "duobluespawn", "bluepathspawn" -> "duospawnblue";
-            case "duospawngreen", "duogreenspawn", "greenpathspawn" -> "duospawngreen";
-            case "duobank", "duocenter", "duobankcenter" -> "duobank";
-            case "duovault", "duohollow", "duogoal" -> "duovault";
-            case "duosealblue", "duoblueuseal", "blueseal" -> "duosealblue";
-            case "duosealgreen", "duogreenseal", "greenseal" -> "duosealgreen";
-            case "duostats", "statisticsduo", "statsduo", "duostatnpc" -> "duostats";
-            case "duoteam", "duoteamnpc", "teamselectduo", "colorduo" -> "duoteam";
-            case "duoteleportnpc", "duoteleport", "duotravelnpc", "duomode" -> "duoteleportnpc";
-            case "teleportduo", "duotarget", "duoteleporttarget" -> "teleportduo";
-            case "teleportsolo", "solotarget", "soloteleporttarget" -> "teleportsolo";
+            case "statistics", "stats", "statnpc" -> "statistics";
             case "wizardintro", "introwizard", "introquebec" -> "wizardintro";
             case "tutorialwizard", "wizard", "guidewizard", "guidequebec" -> "tutorialwizard";
             default -> null;
@@ -388,13 +280,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
         return List.of("a", "b", "c", "ta", "tb", "tc");
     }
 
-    private static List<Vec3i> duoRouteRef(MapConfig mapConfig, String teamId) {
-        if (mapConfig == null) {
-            return new ArrayList<>();
-        }
-        return "green".equalsIgnoreCase(teamId) ? mapConfig.duoRouteGreen : mapConfig.duoRouteBlue;
-    }
-
     private static void clearAllRoutes(MapConfig mapConfig) {
         mapConfig.routePoints.clear();
         mapConfig.routePointsA.clear();
@@ -403,24 +288,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
         mapConfig.tutorialRoutePointsA.clear();
         mapConfig.tutorialRoutePointsB.clear();
         mapConfig.tutorialRoutePointsC.clear();
-    }
-
-    private static void clearAllDuoRoutes(MapConfig mapConfig) {
-        mapConfig.duoRouteBlue.clear();
-        mapConfig.duoRouteGreen.clear();
-    }
-
-    private static void clearAllDuoRoutesAndSpawns(MapConfig mapConfig) {
-        clearAllDuoRoutes(mapConfig);
-        mapConfig.duoSpawnPointBlue = null;
-        mapConfig.duoSpawnPointGreen = null;
-    }
-
-    private static void clearAllDuoStarts(MapConfig mapConfig) {
-        mapConfig.duoPlayerStartBlue = null;
-        mapConfig.duoPlayerStartBlueYaw = null;
-        mapConfig.duoPlayerStartGreen = null;
-        mapConfig.duoPlayerStartGreenYaw = null;
     }
 
     private static boolean applyMarker(MapConfig mapConfig, String markerName, Vec3i position, float yaw) {
@@ -452,42 +319,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
                 mapConfig.modePoint = position;
                 mapConfig.modeYaw = yaw;
             }
-            case "statistics" -> {
-                mapConfig.previousStatisticsPoint = mapConfig.statisticsPoint;
-                mapConfig.statisticsPoint = position;
-                mapConfig.statisticsYaw = yaw;
-            }
-            case "duoplayerblue" -> {
-                mapConfig.duoPlayerStartBlue = position;
-                mapConfig.duoPlayerStartBlueYaw = yaw;
-            }
-            case "duoplayergreen" -> {
-                mapConfig.duoPlayerStartGreen = position;
-                mapConfig.duoPlayerStartGreenYaw = yaw;
-            }
-            case "duospawnblue" -> mapConfig.duoSpawnPointBlue = position;
-            case "duospawngreen" -> mapConfig.duoSpawnPointGreen = position;
-            case "duobank" -> mapConfig.duoBankCenter = position;
-            case "duovault" -> mapConfig.duoVaultPoint = position;
-            case "duosealblue" -> mapConfig.duoSealNodeBluePoint = position;
-            case "duosealgreen" -> mapConfig.duoSealNodeGreenPoint = position;
-            case "duostats" -> {
-                mapConfig.previousDuoStatisticsPoint = mapConfig.duoStatisticsPoint;
-                mapConfig.duoStatisticsPoint = position;
-                mapConfig.duoStatisticsYaw = yaw;
-            }
-            case "duoteam" -> {
-                mapConfig.previousDuoTeamPoint = mapConfig.duoTeamPoint;
-                mapConfig.duoTeamPoint = position;
-                mapConfig.duoTeamYaw = yaw;
-            }
-            case "duoteleportnpc" -> {
-                mapConfig.previousDuoTeleportPoint = mapConfig.duoTeleportPoint;
-                mapConfig.duoTeleportPoint = position;
-                mapConfig.duoTeleportYaw = yaw;
-            }
-            case "teleportduo" -> mapConfig.duoTeleportTarget = position;
-            case "teleportsolo" -> mapConfig.soloTeleportTarget = position;
             case "tutorialstart" -> {
                 mapConfig.tutorialStartPoint = position;
                 mapConfig.tutorialStartYaw = yaw;
@@ -549,42 +380,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
                 mapConfig.modePoint = null;
                 mapConfig.modeYaw = null;
             }
-            case "statistics" -> {
-                mapConfig.previousStatisticsPoint = mapConfig.statisticsPoint;
-                mapConfig.statisticsPoint = null;
-                mapConfig.statisticsYaw = null;
-            }
-            case "duoplayerblue" -> {
-                mapConfig.duoPlayerStartBlue = null;
-                mapConfig.duoPlayerStartBlueYaw = null;
-            }
-            case "duoplayergreen" -> {
-                mapConfig.duoPlayerStartGreen = null;
-                mapConfig.duoPlayerStartGreenYaw = null;
-            }
-            case "duospawnblue" -> mapConfig.duoSpawnPointBlue = null;
-            case "duospawngreen" -> mapConfig.duoSpawnPointGreen = null;
-            case "duobank" -> mapConfig.duoBankCenter = null;
-            case "duovault" -> mapConfig.duoVaultPoint = null;
-            case "duosealblue" -> mapConfig.duoSealNodeBluePoint = null;
-            case "duosealgreen" -> mapConfig.duoSealNodeGreenPoint = null;
-            case "duostats" -> {
-                mapConfig.previousDuoStatisticsPoint = mapConfig.duoStatisticsPoint;
-                mapConfig.duoStatisticsPoint = null;
-                mapConfig.duoStatisticsYaw = null;
-            }
-            case "duoteam" -> {
-                mapConfig.previousDuoTeamPoint = mapConfig.duoTeamPoint;
-                mapConfig.duoTeamPoint = null;
-                mapConfig.duoTeamYaw = null;
-            }
-            case "duoteleportnpc" -> {
-                mapConfig.previousDuoTeleportPoint = mapConfig.duoTeleportPoint;
-                mapConfig.duoTeleportPoint = null;
-                mapConfig.duoTeleportYaw = null;
-            }
-            case "teleportduo" -> mapConfig.duoTeleportTarget = null;
-            case "teleportsolo" -> mapConfig.soloTeleportTarget = null;
             case "tutorialstart" -> {
                 mapConfig.tutorialStartPoint = null;
                 mapConfig.tutorialStartYaw = null;
@@ -663,154 +458,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
         return normalized == null ? "standard" : normalized;
     }
 
-    private static String slotDebugLabel(BuildSlot slot) {
-        if (slot == null) {
-            return "standard";
-        }
-        String layout = slot.layout == null || slot.layout.isBlank() ? "solo" : slot.layout;
-        String owner = slot.ownerTeam == null || slot.ownerTeam.isBlank() ? "shared" : slot.ownerTeam;
-        String segment = slot.segment == null ? "" : slot.segment;
-        String suffix = segment.isBlank() ? "" : " | segment=" + segment;
-        return slotTypeLabel(slot) + " | layout=" + layout + " | owner=" + owner + suffix;
-    }
-
-    private static String normalizeOwnerTeam(String ownerTeam) {
-        if (ownerTeam == null || ownerTeam.isBlank()) {
-            return "shared";
-        }
-        return switch (ownerTeam.trim().toLowerCase(Locale.ROOT)) {
-            case "blue" -> "blue";
-            case "green" -> "green";
-            default -> "shared";
-        };
-    }
-
-    private static String slotMarkerBlockName(BuildSlot slot, boolean occupied) {
-        if (slot == null) {
-            return null;
-        }
-        if (isSuperLikeSlot(slot)) {
-            return SUPER_SLOT_INTERACTION_BLOCK;
-        }
-        if (isTrapLikeSlot(slot)) {
-            return occupied ? TRAP_SLOT_INTERACTION_BLOCK_OCCUPIED : TRAP_SLOT_INTERACTION_BLOCK;
-        }
-        return switch (normalizeOwnerTeam(slot.ownerTeam)) {
-            case "blue" -> occupied ? SLOT_INTERACTION_BLOCK_BLUE_OCCUPIED : SLOT_INTERACTION_BLOCK_BLUE;
-            case "green" -> occupied ? SLOT_INTERACTION_BLOCK_GREEN_OCCUPIED : SLOT_INTERACTION_BLOCK_GREEN;
-            default -> occupied ? SLOT_INTERACTION_BLOCK_OCCUPIED : SLOT_INTERACTION_BLOCK;
-        };
-    }
-
-    private static void placeImmediateSlotBlock(World world, BuildSlot slot) {
-        if (world == null || slot == null || slot.position == null) {
-            return;
-        }
-        String blockName = slotMarkerBlockName(slot, false);
-        if (blockName == null || blockName.isBlank()) {
-            return;
-        }
-        int blockId = BlockType.getBlockIdOrUnknown(blockName, "Failed to find block '%s' for slot placement.", blockName);
-        if (blockId == Integer.MIN_VALUE || blockId == 0) {
-            return;
-        }
-        BlockType blockType = BlockType.getAssetMap().getAsset(blockId);
-        if (blockType == null) {
-            return;
-        }
-        Vec3i point = slot.position;
-        WorldChunk chunk = world.getChunkIfInMemory(ChunkUtil.indexChunkFromBlock(point.x, point.z));
-        if (chunk == null) {
-            return;
-        }
-        chunk.setBlock(point.x, point.y, point.z, blockId, blockType, 0, 0, 4);
-    }
-
-    private static void clearImmediateSlotBlock(World world, Vec3i point) {
-        if (world == null || point == null) {
-            return;
-        }
-        WorldChunk chunk = world.getChunkIfInMemory(ChunkUtil.indexChunkFromBlock(point.x, point.z));
-        if (chunk == null) {
-            return;
-        }
-        int existingBlockId = chunk.getBlock(point.x, point.y, point.z);
-        if (!isSlotMarkerBlockId(existingBlockId)) {
-            return;
-        }
-        chunk.breakBlock(point.x, point.y, point.z);
-    }
-
-    private static void clearImmediateSlotBlockNeighborhood(World world, Vec3i point) {
-        if (world == null || point == null) {
-            return;
-        }
-        for (int dy = -1; dy <= 1; dy++) {
-            clearImmediateSlotBlock(world, new Vec3i(point.x, point.y + dy, point.z));
-        }
-    }
-
-    private static boolean isSlotMarkerBlockId(int blockId) {
-        if (blockId == 0 || blockId == Integer.MIN_VALUE) {
-            return false;
-        }
-        return blockId == safeBlockId(SLOT_INTERACTION_BLOCK)
-            || blockId == safeBlockId(SLOT_INTERACTION_BLOCK_OCCUPIED)
-            || blockId == safeBlockId(SLOT_INTERACTION_BLOCK_BLUE)
-            || blockId == safeBlockId(SLOT_INTERACTION_BLOCK_BLUE_OCCUPIED)
-            || blockId == safeBlockId(SLOT_INTERACTION_BLOCK_GREEN)
-            || blockId == safeBlockId(SLOT_INTERACTION_BLOCK_GREEN_OCCUPIED)
-            || blockId == safeBlockId(TRAP_SLOT_INTERACTION_BLOCK)
-            || blockId == safeBlockId(TRAP_SLOT_INTERACTION_BLOCK_OCCUPIED)
-            || blockId == safeBlockId(SUPER_SLOT_INTERACTION_BLOCK);
-    }
-
-    private static int safeBlockId(String blockName) {
-        int blockId = BlockType.getBlockIdOrUnknown(blockName, "Failed to find block '%s' for immediate slot cleanup.", blockName);
-        return blockId == Integer.MIN_VALUE ? 0 : blockId;
-    }
-
-    private static Vec3i midpoint(Vec3i first, Vec3i second) {
-        if (first == null) {
-            return second;
-        }
-        if (second == null) {
-            return first;
-        }
-        return new Vec3i(
-            (int)Math.round((first.x + second.x) / 2.0),
-            (int)Math.round((first.y + second.y) / 2.0),
-            (int)Math.round((first.z + second.z) / 2.0)
-        );
-    }
-
-    private static Vec3i firstPoint(List<Vec3i> points) {
-        return points == null || points.isEmpty() ? null : points.get(0);
-    }
-
-    private static List<Vec3i> defaultTutorialTrapPoints(MapConfig mapConfig) {
-        List<Vec3i> points = new ArrayList<>();
-        if (mapConfig == null) {
-            return points;
-        }
-        Vec3i laneATrap = midpoint(mapConfig.tutorialSpawnPointA, firstPoint(mapConfig.tutorialRoutePointsA));
-        Vec3i laneBTrap = midpoint(mapConfig.tutorialSpawnPointB, firstPoint(mapConfig.tutorialRoutePointsB));
-        Vec3i mergedEntry = mapConfig.tutorialRoutePointsA != null && mapConfig.tutorialRoutePointsA.size() > 1
-            ? mapConfig.tutorialRoutePointsA.get(1)
-            : firstPoint(mapConfig.tutorialRoutePointsA);
-        Vec3i mergedTrap = midpoint(mergedEntry, mapConfig.tutorialVaultPoint);
-        if (laneATrap != null) {
-            points.add(laneATrap);
-        }
-        if (laneBTrap != null) {
-            points.add(laneBTrap);
-        }
-        if (mergedTrap != null) {
-            points.add(mergedTrap);
-        }
-        return points;
-    }
-
     private static BuildSlot createBuildSlot(BuildSlotsConfig slotsConfig, String slotType, Vec3i position) {
         int nextIndex = 1;
         for (BuildSlot existing : slotsConfig.slots) {
@@ -845,70 +492,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
             slot.allowedTowerIds = new ArrayList<>(trapTowerIds());
         }
         return slot;
-    }
-
-    private static void configureDuoSlot(BuildSlot slot, String ownerTeam, String segment) {
-        if (slot == null) {
-            return;
-        }
-        slot.layout = "duo";
-        slot.ownerTeam = ownerTeam == null || ownerTeam.isBlank() ? "shared" : ownerTeam;
-        slot.segment = segment == null ? "" : segment;
-    }
-
-    private static boolean isTrapLikeSlot(BuildSlot slot) {
-        String slotType = slotTypeLabel(slot);
-        return "trap".equals(slotType) || "tutorial_trap".equals(slotType);
-    }
-
-    private static boolean isSuperLikeSlot(BuildSlot slot) {
-        String slotType = slotTypeLabel(slot);
-        return "super".equals(slotType) || "tutorial_super".equals(slotType);
-    }
-
-    private static boolean isAutoDuoSegment(String segment) {
-        if (segment == null || segment.isBlank()) {
-            return false;
-        }
-        return switch (segment) {
-            case "blue_front", "green_front", "blue_trap", "green_trap", "shared_front", "shared_trap", "shared_super" -> true;
-            default -> false;
-        };
-    }
-
-    private static String defaultDuoSegment(BuildSlot slot, String ownerTeam) {
-        if ("blue".equals(ownerTeam)) {
-            return isTrapLikeSlot(slot) ? "blue_trap" : "blue_front";
-        }
-        if ("green".equals(ownerTeam)) {
-            return isTrapLikeSlot(slot) ? "green_trap" : "green_front";
-        }
-        if (isSuperLikeSlot(slot)) {
-            return "shared_super";
-        }
-        if (isTrapLikeSlot(slot)) {
-            return "shared_trap";
-        }
-        return "shared_front";
-    }
-
-    private static BuildSlot nearestBuildSlot(BuildSlotsConfig slotsConfig, Vec3i position, int radius) {
-        if (slotsConfig == null || position == null || radius <= 0) {
-            return null;
-        }
-        BuildSlot nearest = null;
-        double bestDistance = (double) radius * radius;
-        for (BuildSlot slot : slotsConfig.slots) {
-            if (slot == null || slot.position == null) {
-                continue;
-            }
-            double distance = slot.position.distanceSquaredTo(position);
-            if (distance <= bestDistance) {
-                bestDistance = distance;
-                nearest = slot;
-            }
-        }
-        return nearest;
     }
 
     private static List<String> superTowerIds() {
@@ -959,23 +542,11 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
                 message.append("Control: ").append(markerSummary(snapshot.map.controlPoint))
                     .append(" | Vendor: ").append(markerSummary(snapshot.map.vendorPoint))
                     .append(" | Mode: ").append(markerSummary(snapshot.map.modePoint))
-                    .append(" | Qube Solo: ").append(markerSummary(snapshot.map.soloQubeCorePoint != null ? snapshot.map.soloQubeCorePoint : snapshot.map.duoPoint))
-                    .append(" | Qube Duo: ").append(markerSummary(snapshot.map.duoQubeCorePoint))
+                    .append(" | Duo: ").append(markerSummary(snapshot.map.duoPoint))
                     .append(" | Stats: ").append(markerSummary(snapshot.map.statisticsPoint)).append('\n');
-                message.append("Duo starts: blue=").append(markerSummary(snapshot.map.duoPlayerStartBlue))
-                    .append(", green=").append(markerSummary(snapshot.map.duoPlayerStartGreen)).append('\n');
-                message.append("Duo spawns: blue=").append(markerSummary(snapshot.map.duoSpawnPointBlue))
-                    .append(", green=").append(markerSummary(snapshot.map.duoSpawnPointGreen))
-                    .append(" | Duo bank=").append(markerSummary(snapshot.map.duoBankCenter))
-                    .append(" | Duo hollow=").append(markerSummary(snapshot.map.duoVaultPoint)).append('\n');
-                message.append("Duo seals: blue=").append(markerSummary(snapshot.map.duoSealNodeBluePoint))
-                    .append(", green=").append(markerSummary(snapshot.map.duoSealNodeGreenPoint))
-                    .append(" | Duo stats=").append(markerSummary(snapshot.map.duoStatisticsPoint)).append('\n');
                 message.append("РњР°СЂС€СЂСѓС‚С‹: A=").append(snapshot.map.routePointsA.size())
                     .append(", B=").append(snapshot.map.routePointsB.size())
                     .append(", C=").append(snapshot.map.routePointsC.size())
-                    .append(", DuoBlue=").append(snapshot.map.duoRouteBlue.size())
-                    .append(", DuoGreen=").append(snapshot.map.duoRouteGreen.size())
                     .append(", РІСЃРµРіРѕ=").append(runtimeStatus.routePoints).append('\n');
                 message.append("РЎР»РѕС‚С‹: standard=").append(standardSlots)
                     .append(", super=").append(superSlots)
@@ -998,243 +569,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
             } catch (IOException e) {
                 context.sendMessage(Message.raw("РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ СЃРѕСЃС‚РѕСЏРЅРёРµ СЂРµР¶РёРјР°: " + e.getMessage()));
             }
-        }
-    }
-
-    private static final class DuoStatusCommand extends AbstractWorldCommand {
-        private final BankDefenseRuntime runtime;
-
-        private DuoStatusCommand(BankDefenseRuntime runtime) {
-            super("duostatus", "Show Duo-only map and runtime status");
-            this.runtime = runtime;
-        }
-
-        @Override
-        protected void execute(CommandContext context, World world, Store<EntityStore> store) {
-            try {
-                BankDefenseRepository.Snapshot rawSnapshot = this.runtime.loadSnapshot(world);
-                BankDefenseRepository.Snapshot duoSnapshot = this.runtime.loadDuoSnapshot(world);
-                List<String> issues = this.runtime.validateDuoWorld(world);
-                RuntimeStatus runtimeStatus = this.runtime.getRuntimeStatus(world);
-                MatchState matchState = runtimeStatus.matchState;
-
-                int blueStandard = 0;
-                int greenStandard = 0;
-                int blueTrap = 0;
-                int greenTrap = 0;
-                int sharedSuper = 0;
-                int sharedOther = 0;
-                for (BuildSlot slot : duoSnapshot.buildSlots.slots) {
-                    if (slot == null) {
-                        continue;
-                    }
-                    String slotType = normalizeSlotType(slot.slotType, "standard");
-                    String ownerTeam = normalizeOwnerTeam(slot.ownerTeam);
-                    if ("super".equals(slotType) && "shared".equals(ownerTeam)) {
-                        sharedSuper++;
-                    } else if ("trap".equals(slotType) && "blue".equals(ownerTeam)) {
-                        blueTrap++;
-                    } else if ("trap".equals(slotType) && "green".equals(ownerTeam)) {
-                        greenTrap++;
-                    } else if ("standard".equals(slotType) && "blue".equals(ownerTeam)) {
-                        blueStandard++;
-                    } else if ("standard".equals(slotType) && "green".equals(ownerTeam)) {
-                        greenStandard++;
-                    } else if ("shared".equals(ownerTeam)) {
-                        sharedOther++;
-                    }
-                }
-
-                String selectedMode = rawSnapshot == null || rawSnapshot.map == null || rawSnapshot.map.selectedModeId == null || rawSnapshot.map.selectedModeId.isBlank()
-                    ? "solo"
-                    : rawSnapshot.map.selectedModeId;
-
-                StringBuilder message = new StringBuilder();
-                message.append("DUO STATUS").append('\n');
-                message.append("world=").append(world.getName())
-                    .append(" | selectedMode=").append(selectedMode)
-                    .append(" | strictNpcMarkers=").append(duoSnapshot.map.strictNpcMarkers)
-                    .append(" | soloTest=").append(this.runtime.isDuoSoloTestEnabled(world) ? "ON" : "OFF").append('\n');
-                message.append("npcs: qube=").append(markerSummary(duoSnapshot.map.duoQubeCorePoint != null ? duoSnapshot.map.duoQubeCorePoint : duoSnapshot.map.duoPoint))
-                    .append(" | team=").append(markerSummary(duoSnapshot.map.duoTeamPoint))
-                    .append(" | teleport=").append(markerSummary(duoSnapshot.map.duoTeleportPoint))
-                    .append(" | stats=").append(markerSummary(duoSnapshot.map.duoStatisticsPoint)).append('\n');
-                message.append("starts: blue=").append(markerSummary(duoSnapshot.map.duoPlayerStartBlue))
-                    .append(", green=").append(markerSummary(duoSnapshot.map.duoPlayerStartGreen)).append('\n');
-                message.append("spawns: blue=").append(markerSummary(duoSnapshot.map.duoSpawnPointBlue))
-                    .append(", green=").append(markerSummary(duoSnapshot.map.duoSpawnPointGreen)).append('\n');
-                message.append("bank=").append(markerSummary(duoSnapshot.map.duoBankCenter))
-                    .append(" | hollow=").append(markerSummary(duoSnapshot.map.duoVaultPoint)).append('\n');
-                message.append("teleportTargets: duo=").append(markerSummary(duoSnapshot.map.duoTeleportTarget))
-                    .append(" | solo=").append(markerSummary(duoSnapshot.map.soloTeleportTarget)).append('\n');
-                message.append("routes: blue=").append(duoSnapshot.map.duoRouteBlue.size())
-                    .append(", green=").append(duoSnapshot.map.duoRouteGreen.size())
-                    .append(", chests=").append(duoSnapshot.map.duoChestSpawnPoints.size()).append('\n');
-                message.append("slots: blueStd=").append(blueStandard)
-                    .append(", greenStd=").append(greenStandard)
-                    .append(", blueTrap=").append(blueTrap)
-                    .append(", greenTrap=").append(greenTrap)
-                    .append(", sharedSuper=").append(sharedSuper);
-                if (sharedOther > 0) {
-                    message.append(", sharedOther=").append(sharedOther);
-                }
-                message.append('\n');
-                message.append("match: state=").append(matchState == null ? "none" : matchState.gameState + "/" + matchState.waveState)
-                    .append(", wave=").append(matchState == null ? 0 : matchState.currentWave)
-                    .append(", enemies=").append(runtimeStatus.activeEnemies)
-                    .append(", pending=").append(runtimeStatus.pendingSpawns)
-                    .append(", towers=").append(runtimeStatus.placedTowers)
-                    .append(", pinnedSpawnChunks=").append(runtimeStatus.pinnedSpawnChunks).append('\n');
-                if (issues.isEmpty()) {
-                    message.append("validation=OK");
-                } else {
-                    message.append("validation=").append(issues.size()).append(" issue(s): ");
-                    for (int i = 0; i < issues.size(); i++) {
-                        if (i > 0) {
-                            message.append(" | ");
-                        }
-                        message.append(issues.get(i));
-                    }
-                }
-                context.sendMessage(Message.raw(message.toString()));
-            } catch (IOException e) {
-                context.sendMessage(Message.raw("Failed to load Duo status: " + e.getMessage()));
-            }
-        }
-    }
-
-    private static final class DuoTestCommand extends AbstractCommandCollection {
-        private DuoTestCommand(BankDefenseRuntime runtime) {
-            super("duotest", "Toggle Duo solo test mode");
-            this.addSubCommand(new DuoTestOnCommand(runtime));
-            this.addSubCommand(new DuoTestOffCommand(runtime));
-            this.addSubCommand(new DuoTestStatusCommand(runtime));
-        }
-    }
-
-    private static final class DuoTestOnCommand extends AbstractWorldCommand {
-        private final BankDefenseRuntime runtime;
-
-        private DuoTestOnCommand(BankDefenseRuntime runtime) {
-            super("on", "Allow one player to run Duo tests alone");
-            this.runtime = runtime;
-        }
-
-        @Override
-        protected void execute(CommandContext context, World world, Store<EntityStore> store) {
-            context.sendMessage(Message.raw(this.runtime.setDuoSoloTestEnabled(world, true).message));
-        }
-    }
-
-    private static final class DuoTestOffCommand extends AbstractWorldCommand {
-        private final BankDefenseRuntime runtime;
-
-        private DuoTestOffCommand(BankDefenseRuntime runtime) {
-            super("off", "Restore normal two-player Duo rules");
-            this.runtime = runtime;
-        }
-
-        @Override
-        protected void execute(CommandContext context, World world, Store<EntityStore> store) {
-            context.sendMessage(Message.raw(this.runtime.setDuoSoloTestEnabled(world, false).message));
-        }
-    }
-
-    private static final class DuoTestStatusCommand extends AbstractWorldCommand {
-        private final BankDefenseRuntime runtime;
-
-        private DuoTestStatusCommand(BankDefenseRuntime runtime) {
-            super("status", "Show Duo solo test mode");
-            this.runtime = runtime;
-        }
-
-        @Override
-        protected void execute(CommandContext context, World world, Store<EntityStore> store) {
-            context.sendMessage(Message.raw("Duo solo-test: " + (this.runtime.isDuoSoloTestEnabled(world) ? "ON" : "OFF")));
-        }
-    }
-
-    private static final class DuoFillMaxCommand extends AbstractPlayerCommand {
-        private final BankDefenseRuntime runtime;
-
-        private DuoFillMaxCommand(BankDefenseRuntime runtime) {
-            super("duofillmax", "Заполнить все duo-пады самыми дорогими башнями 10 уровня для тестов");
-            this.runtime = runtime;
-        }
-
-        @Override
-        protected void execute(CommandContext context, Store<EntityStore> store, Ref<EntityStore> ref, PlayerRef playerRef, World world) {
-            try {
-                context.sendMessage(Message.raw(this.runtime.fillDuoPadsWithMaxTowers(world, playerRef).message));
-            } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось заполнить duo-пады тестовыми башнями: " + e.getMessage()));
-            }
-        }
-    }
-
-    private static final class HudCommand extends AbstractCommandCollection {
-        private HudCommand(BankDefenseRuntime runtime) {
-            super("hud", "Toggle the custom Bank Defense HUD for the current player");
-            this.addSubCommand(new HudOnCommand(runtime));
-            this.addSubCommand(new HudOffCommand(runtime));
-            this.addSubCommand(new HudToggleCommand(runtime));
-            this.addSubCommand(new HudStatusCommand(runtime));
-        }
-    }
-
-    private static final class HudOnCommand extends AbstractPlayerCommand {
-        private final BankDefenseRuntime runtime;
-
-        private HudOnCommand(BankDefenseRuntime runtime) {
-            super("on", "Show the custom Bank Defense HUD");
-            this.runtime = runtime;
-        }
-
-        @Override
-        protected void execute(CommandContext context, Store<EntityStore> store, Ref<EntityStore> ref, PlayerRef playerRef, World world) {
-            context.sendMessage(Message.raw(this.runtime.setCustomHudHidden(world, playerRef, false).message));
-        }
-    }
-
-    private static final class HudOffCommand extends AbstractPlayerCommand {
-        private final BankDefenseRuntime runtime;
-
-        private HudOffCommand(BankDefenseRuntime runtime) {
-            super("off", "Hide the custom Bank Defense HUD");
-            this.runtime = runtime;
-        }
-
-        @Override
-        protected void execute(CommandContext context, Store<EntityStore> store, Ref<EntityStore> ref, PlayerRef playerRef, World world) {
-            context.sendMessage(Message.raw(this.runtime.setCustomHudHidden(world, playerRef, true).message));
-        }
-    }
-
-    private static final class HudToggleCommand extends AbstractPlayerCommand {
-        private final BankDefenseRuntime runtime;
-
-        private HudToggleCommand(BankDefenseRuntime runtime) {
-            super("toggle", "Toggle the custom Bank Defense HUD");
-            this.runtime = runtime;
-        }
-
-        @Override
-        protected void execute(CommandContext context, Store<EntityStore> store, Ref<EntityStore> ref, PlayerRef playerRef, World world) {
-            context.sendMessage(Message.raw(this.runtime.toggleCustomHud(world, playerRef).message));
-        }
-    }
-
-    private static final class HudStatusCommand extends AbstractPlayerCommand {
-        private final BankDefenseRuntime runtime;
-
-        private HudStatusCommand(BankDefenseRuntime runtime) {
-            super("status", "Show the custom Bank Defense HUD state");
-            this.runtime = runtime;
-        }
-
-        @Override
-        protected void execute(CommandContext context, Store<EntityStore> store, Ref<EntityStore> ref, PlayerRef playerRef, World world) {
-            context.sendMessage(Message.raw("Custom HUD: " + (this.runtime.isCustomHudHidden(world, playerRef) ? "OFF" : "ON")));
         }
     }
 
@@ -1261,8 +595,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
             super("match", "РЈРїСЂР°РІР»РµРЅРёРµ РјР°С‚С‡РµРј");
             this.addSubCommand(new MatchResetCommand(runtime));
             this.addSubCommand(new MatchStartCommand(runtime));
-            this.addSubCommand(new MatchModeCommand(runtime, "solo"));
-            this.addSubCommand(new MatchModeCommand(runtime, "duo"));
         }
     }
 
@@ -1568,19 +900,13 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
                 MapConfig mapConfig = this.repository.loadMapConfig(world);
                 Vec3i position = currentBlockPosition(store, ref);
                 float yaw = currentYaw(store, ref);
-                mapConfig.previousSoloQubeCorePoint = mapConfig.soloQubeCorePoint;
-                mapConfig.soloQubeCorePoint = position;
-                mapConfig.soloQubeCoreYaw = yaw;
-                if (mapConfig.duoPoint == null) {
-                    mapConfig.previousDuoPoint = mapConfig.duoPoint;
-                    mapConfig.duoPoint = position;
-                    mapConfig.duoYaw = yaw;
-                }
+                mapConfig.previousDuoPoint = mapConfig.duoPoint;
+                mapConfig.duoPoint = position;
+                mapConfig.duoYaw = yaw;
                 this.repository.saveMapConfig(world, mapConfig);
-                refreshWorldVisualization(world);
-                context.sendMessage(Message.raw("Маркер solo QubeCore установлен в " + position.toShortString() + "."));
+                context.sendMessage(Message.raw("РњР°СЂРєРµСЂ duo СѓСЃС‚Р°РЅРѕРІР»РµРЅ РІ " + position.toShortString() + "."));
             } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось поставить solo QubeCore: " + e.getMessage()));
+                context.sendMessage(Message.raw("РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕСЃС‚Р°РІРёС‚СЊ duo NPC: " + e.getMessage()));
             }
         }
     }
@@ -1597,14 +923,13 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
         protected void execute(CommandContext context, World world, Store<EntityStore> store) {
             try {
                 MapConfig mapConfig = this.repository.loadMapConfig(world);
-                mapConfig.previousSoloQubeCorePoint = mapConfig.soloQubeCorePoint;
-                mapConfig.soloQubeCorePoint = null;
-                mapConfig.soloQubeCoreYaw = null;
+                mapConfig.previousDuoPoint = mapConfig.duoPoint;
+                mapConfig.duoPoint = null;
+                mapConfig.duoYaw = null;
                 this.repository.saveMapConfig(world, mapConfig);
-                refreshWorldVisualization(world);
-                context.sendMessage(Message.raw("Маркер solo QubeCore очищен."));
+                context.sendMessage(Message.raw("РњР°СЂРєРµСЂ duo РѕС‡РёС‰РµРЅ."));
             } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось очистить solo QubeCore: " + e.getMessage()));
+                context.sendMessage(Message.raw("РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‡РёСЃС‚РёС‚СЊ duo NPC: " + e.getMessage()));
             }
         }
     }
@@ -1749,26 +1074,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
                 context.sendMessage(Message.raw(this.runtime.startNextWave(world).message));
             } catch (IOException e) {
                 context.sendMessage(Message.raw("РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РїСѓСЃС‚РёС‚СЊ РІРѕР»РЅСѓ: " + e.getMessage()));
-            }
-        }
-    }
-
-    private static final class MatchModeCommand extends AbstractPlayerCommand {
-        private final BankDefenseRuntime runtime;
-        private final String modeId;
-
-        private MatchModeCommand(BankDefenseRuntime runtime, String modeId) {
-            super(modeId, "Переключить матч в режим " + modeId);
-            this.runtime = runtime;
-            this.modeId = modeId;
-        }
-
-        @Override
-        protected void execute(CommandContext context, Store<EntityStore> store, Ref<EntityStore> ref, PlayerRef playerRef, World world) {
-            try {
-                context.sendMessage(Message.raw(this.runtime.selectGameMode(world, ref, this.modeId).message));
-            } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось переключить режим: " + e.getMessage()));
             }
         }
     }
@@ -2094,33 +1399,11 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
                         mapConfig.modePoint = position;
                         mapConfig.modeYaw = yaw;
                     }
-                    case "qubecoresolo" -> {
-                        mapConfig.previousSoloQubeCorePoint = mapConfig.soloQubeCorePoint;
-                        mapConfig.soloQubeCorePoint = position;
-                        mapConfig.soloQubeCoreYaw = yaw;
-                    }
-                    case "qubecoreduo" -> {
-                        mapConfig.previousDuoQubeCorePoint = mapConfig.duoQubeCorePoint;
-                        mapConfig.duoQubeCorePoint = position;
-                        mapConfig.duoQubeCoreYaw = yaw;
-                    }
                     case "statistics" -> {
                         mapConfig.previousStatisticsPoint = mapConfig.statisticsPoint;
                         mapConfig.statisticsPoint = position;
                         mapConfig.statisticsYaw = yaw;
                     }
-                    case "duoteam" -> {
-                        mapConfig.previousDuoTeamPoint = mapConfig.duoTeamPoint;
-                        mapConfig.duoTeamPoint = position;
-                        mapConfig.duoTeamYaw = yaw;
-                    }
-                    case "duoteleportnpc" -> {
-                        mapConfig.previousDuoTeleportPoint = mapConfig.duoTeleportPoint;
-                        mapConfig.duoTeleportPoint = position;
-                        mapConfig.duoTeleportYaw = yaw;
-                    }
-                    case "teleportduo" -> mapConfig.duoTeleportTarget = position;
-                    case "teleportsolo" -> mapConfig.soloTeleportTarget = position;
                     case "tutorialstart" -> {
                         mapConfig.tutorialStartPoint = position;
                         mapConfig.tutorialStartYaw = yaw;
@@ -2205,33 +1488,11 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
                         mapConfig.modePoint = null;
                         mapConfig.modeYaw = null;
                     }
-                    case "qubecoresolo" -> {
-                        mapConfig.previousSoloQubeCorePoint = mapConfig.soloQubeCorePoint;
-                        mapConfig.soloQubeCorePoint = null;
-                        mapConfig.soloQubeCoreYaw = null;
-                    }
-                    case "qubecoreduo" -> {
-                        mapConfig.previousDuoQubeCorePoint = mapConfig.duoQubeCorePoint;
-                        mapConfig.duoQubeCorePoint = null;
-                        mapConfig.duoQubeCoreYaw = null;
-                    }
                     case "statistics" -> {
                         mapConfig.previousStatisticsPoint = mapConfig.statisticsPoint;
                         mapConfig.statisticsPoint = null;
                         mapConfig.statisticsYaw = null;
                     }
-                    case "duoteam" -> {
-                        mapConfig.previousDuoTeamPoint = mapConfig.duoTeamPoint;
-                        mapConfig.duoTeamPoint = null;
-                        mapConfig.duoTeamYaw = null;
-                    }
-                    case "duoteleportnpc" -> {
-                        mapConfig.previousDuoTeleportPoint = mapConfig.duoTeleportPoint;
-                        mapConfig.duoTeleportPoint = null;
-                        mapConfig.duoTeleportYaw = null;
-                    }
-                    case "teleportduo" -> mapConfig.duoTeleportTarget = null;
-                    case "teleportsolo" -> mapConfig.soloTeleportTarget = null;
                     case "tutorialstart" -> {
                         mapConfig.tutorialStartPoint = null;
                         mapConfig.tutorialStartYaw = null;
@@ -2314,52 +1575,11 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
                         mapConfig.modePoint = position;
                         mapConfig.modeYaw = yaw;
                     }
-                    case "qubecoresolo" -> {
-                        mapConfig.previousSoloQubeCorePoint = mapConfig.soloQubeCorePoint;
-                        mapConfig.soloQubeCorePoint = position;
-                        mapConfig.soloQubeCoreYaw = yaw;
-                    }
-                    case "qubecoreduo" -> {
-                        mapConfig.previousDuoQubeCorePoint = mapConfig.duoQubeCorePoint;
-                        mapConfig.duoQubeCorePoint = position;
-                        mapConfig.duoQubeCoreYaw = yaw;
-                    }
                     case "statistics" -> {
                         mapConfig.previousStatisticsPoint = mapConfig.statisticsPoint;
                         mapConfig.statisticsPoint = position;
                         mapConfig.statisticsYaw = yaw;
                     }
-                    case "duoplayerblue" -> {
-                        mapConfig.duoPlayerStartBlue = position;
-                        mapConfig.duoPlayerStartBlueYaw = yaw;
-                    }
-                    case "duoplayergreen" -> {
-                        mapConfig.duoPlayerStartGreen = position;
-                        mapConfig.duoPlayerStartGreenYaw = yaw;
-                    }
-                    case "duospawnblue" -> mapConfig.duoSpawnPointBlue = position;
-                    case "duospawngreen" -> mapConfig.duoSpawnPointGreen = position;
-                    case "duobank" -> mapConfig.duoBankCenter = position;
-                    case "duovault" -> mapConfig.duoVaultPoint = position;
-                    case "duosealblue" -> mapConfig.duoSealNodeBluePoint = position;
-                    case "duosealgreen" -> mapConfig.duoSealNodeGreenPoint = position;
-                    case "duostats" -> {
-                        mapConfig.previousDuoStatisticsPoint = mapConfig.duoStatisticsPoint;
-                        mapConfig.duoStatisticsPoint = position;
-                        mapConfig.duoStatisticsYaw = yaw;
-                    }
-                    case "duoteam" -> {
-                        mapConfig.previousDuoTeamPoint = mapConfig.duoTeamPoint;
-                        mapConfig.duoTeamPoint = position;
-                        mapConfig.duoTeamYaw = yaw;
-                    }
-                    case "duoteleportnpc" -> {
-                        mapConfig.previousDuoTeleportPoint = mapConfig.duoTeleportPoint;
-                        mapConfig.duoTeleportPoint = position;
-                        mapConfig.duoTeleportYaw = yaw;
-                    }
-                    case "teleportduo" -> mapConfig.duoTeleportTarget = position;
-                    case "teleportsolo" -> mapConfig.soloTeleportTarget = position;
                     case "tutorialstart" -> {
                         mapConfig.tutorialStartPoint = position;
                         mapConfig.tutorialStartYaw = yaw;
@@ -2386,15 +1606,14 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
                         mapConfig.tutorialWizardYaw = yaw;
                     }
                     default -> {
-                        context.sendMessage(Message.raw("Неизвестный маркер: " + this.markerName));
+                        context.sendMessage(Message.raw("РќРµРёР·РІРµСЃС‚РЅС‹Р№ РјР°СЂРєРµСЂ: " + this.markerName));
                         return;
                     }
                 }
                 this.repository.saveMapConfig(world, mapConfig);
-                refreshWorldVisualization(world);
-                context.sendMessage(Message.raw("Маркер '" + this.markerName + "' установлен в " + position.toShortString() + "."));
+                context.sendMessage(Message.raw("РњР°СЂРєРµСЂ '" + this.markerName + "' СѓСЃС‚Р°РЅРѕРІР»РµРЅ РІ " + position.toShortString() + "."));
             } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось поставить маркер: " + e.getMessage()));
+                context.sendMessage(Message.raw("РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕСЃС‚Р°РІРёС‚СЊ РјР°СЂРєРµСЂ: " + e.getMessage()));
             }
         }
     }
@@ -2441,52 +1660,11 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
                         mapConfig.modePoint = null;
                         mapConfig.modeYaw = null;
                     }
-                    case "qubecoresolo" -> {
-                        mapConfig.previousSoloQubeCorePoint = mapConfig.soloQubeCorePoint;
-                        mapConfig.soloQubeCorePoint = null;
-                        mapConfig.soloQubeCoreYaw = null;
-                    }
-                    case "qubecoreduo" -> {
-                        mapConfig.previousDuoQubeCorePoint = mapConfig.duoQubeCorePoint;
-                        mapConfig.duoQubeCorePoint = null;
-                        mapConfig.duoQubeCoreYaw = null;
-                    }
                     case "statistics" -> {
                         mapConfig.previousStatisticsPoint = mapConfig.statisticsPoint;
                         mapConfig.statisticsPoint = null;
                         mapConfig.statisticsYaw = null;
                     }
-                    case "duoplayerblue" -> {
-                        mapConfig.duoPlayerStartBlue = null;
-                        mapConfig.duoPlayerStartBlueYaw = null;
-                    }
-                    case "duoplayergreen" -> {
-                        mapConfig.duoPlayerStartGreen = null;
-                        mapConfig.duoPlayerStartGreenYaw = null;
-                    }
-                    case "duospawnblue" -> mapConfig.duoSpawnPointBlue = null;
-                    case "duospawngreen" -> mapConfig.duoSpawnPointGreen = null;
-                    case "duobank" -> mapConfig.duoBankCenter = null;
-                    case "duovault" -> mapConfig.duoVaultPoint = null;
-                    case "duosealblue" -> mapConfig.duoSealNodeBluePoint = null;
-                    case "duosealgreen" -> mapConfig.duoSealNodeGreenPoint = null;
-                    case "duostats" -> {
-                        mapConfig.previousDuoStatisticsPoint = mapConfig.duoStatisticsPoint;
-                        mapConfig.duoStatisticsPoint = null;
-                        mapConfig.duoStatisticsYaw = null;
-                    }
-                    case "duoteam" -> {
-                        mapConfig.previousDuoTeamPoint = mapConfig.duoTeamPoint;
-                        mapConfig.duoTeamPoint = null;
-                        mapConfig.duoTeamYaw = null;
-                    }
-                    case "duoteleportnpc" -> {
-                        mapConfig.previousDuoTeleportPoint = mapConfig.duoTeleportPoint;
-                        mapConfig.duoTeleportPoint = null;
-                        mapConfig.duoTeleportYaw = null;
-                    }
-                    case "teleportduo" -> mapConfig.duoTeleportTarget = null;
-                    case "teleportsolo" -> mapConfig.soloTeleportTarget = null;
                     case "tutorialstart" -> {
                         mapConfig.tutorialStartPoint = null;
                         mapConfig.tutorialStartYaw = null;
@@ -2513,58 +1691,14 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
                         mapConfig.tutorialWizardYaw = null;
                     }
                     default -> {
-                        context.sendMessage(Message.raw("Неизвестный маркер: " + this.markerName));
+                        context.sendMessage(Message.raw("РќРµРёР·РІРµСЃС‚РЅС‹Р№ РјР°СЂРєРµСЂ: " + this.markerName));
                         return;
                     }
                 }
                 this.repository.saveMapConfig(world, mapConfig);
-                refreshWorldVisualization(world);
-                context.sendMessage(Message.raw("Маркер '" + this.markerName + "' очищен."));
+                context.sendMessage(Message.raw("РњР°СЂРєРµСЂ '" + this.markerName + "' РѕС‡РёС‰РµРЅ."));
             } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось очистить маркер: " + e.getMessage()));
-            }
-        }
-    }
-
-    private static final class TutorialChestSetCommand extends AbstractPlayerCommand {
-        private final BankDefenseRepository repository;
-
-        private TutorialChestSetCommand(BankDefenseRepository repository) {
-            super("marktutorialchest", "Поставить точку учебного сундука");
-            this.repository = repository;
-        }
-
-        @Override
-        protected void execute(CommandContext context, Store<EntityStore> store, Ref<EntityStore> ref, PlayerRef playerRef, World world) {
-            try {
-                MapConfig mapConfig = this.repository.loadMapConfig(world);
-                Vec3i position = currentBlockPosition(store, ref);
-                mapConfig.tutorialChestPoint = position;
-                this.repository.saveMapConfig(world, mapConfig);
-                context.sendMessage(Message.raw("Точка учебного сундука установлена в " + position.toShortString() + "."));
-            } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось поставить точку учебного сундука: " + e.getMessage()));
-            }
-        }
-    }
-
-    private static final class TutorialChestClearCommand extends AbstractWorldCommand {
-        private final BankDefenseRepository repository;
-
-        private TutorialChestClearCommand(BankDefenseRepository repository) {
-            super("cleartutorialchest", "Очистить точку учебного сундука");
-            this.repository = repository;
-        }
-
-        @Override
-        protected void execute(CommandContext context, World world, Store<EntityStore> store) {
-            try {
-                MapConfig mapConfig = this.repository.loadMapConfig(world);
-                mapConfig.tutorialChestPoint = null;
-                this.repository.saveMapConfig(world, mapConfig);
-                context.sendMessage(Message.raw("Точка учебного сундука очищена."));
-            } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось очистить точку учебного сундука: " + e.getMessage()));
+                context.sendMessage(Message.raw("РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‡РёСЃС‚РёС‚СЊ РјР°СЂРєРµСЂ: " + e.getMessage()));
             }
         }
     }
@@ -2769,7 +1903,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
                 }
                 slotsConfig.slots.add(slot);
                 this.repository.saveBuildSlotsConfig(world, slotsConfig);
-                placeImmediateSlotBlock(world, slot);
                 context.sendMessage(Message.raw("Р”РѕР±Р°РІР»РµРЅ " + slotType + "-СЃР»РѕС‚ '" + slot.id + "' РІ " + position.toShortString() + "."));
             } catch (IOException e) {
                 context.sendMessage(Message.raw("РќРµ СѓРґР°Р»РѕСЃСЊ РґРѕР±Р°РІРёС‚СЊ СЃР»РѕС‚: " + e.getMessage()));
@@ -2816,7 +1949,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
                 }
                 slotsConfig.slots.remove(nearest);
                 this.repository.saveBuildSlotsConfig(world, slotsConfig);
-                clearImmediateSlotBlock(world, nearest.position);
                 context.sendMessage(Message.raw("РЈРґР°Р»С‘РЅ " + slotTypeLabel(nearest) + "-СЃР»РѕС‚ '" + nearest.id + "' РІ " + nearest.position.toShortString() + "."));
             } catch (IOException e) {
                 context.sendMessage(Message.raw("РќРµ СѓРґР°Р»РѕСЃСЊ СѓРґР°Р»РёС‚СЊ СЃР»РѕС‚: " + e.getMessage()));
@@ -2839,34 +1971,13 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
             try {
                 BuildSlotsConfig slotsConfig = this.repository.loadBuildSlotsConfig(world);
                 if ("all".equals(slotType)) {
-                    List<Vec3i> removedPoints = new ArrayList<>();
-                    for (BuildSlot slot : slotsConfig.slots) {
-                        if (slot != null && slot.position != null) {
-                            removedPoints.add(slot.position);
-                        }
-                    }
                     slotsConfig.slots.clear();
                     this.repository.saveBuildSlotsConfig(world, slotsConfig);
-                    for (Vec3i point : removedPoints) {
-                        clearImmediateSlotBlock(world, point);
-                    }
                     context.sendMessage(Message.raw("Р’СЃРµ СЃР»РѕС‚С‹ РѕС‡РёС‰РµРЅС‹."));
                     return;
                 }
-                List<Vec3i> removedPoints = new ArrayList<>();
-                slotsConfig.slots.removeIf(slot -> {
-                    if (slotType.equals(slotTypeLabel(slot))) {
-                        if (slot != null && slot.position != null) {
-                            removedPoints.add(slot.position);
-                        }
-                        return true;
-                    }
-                    return false;
-                });
+                slotsConfig.slots.removeIf(slot -> slotType.equals(slotTypeLabel(slot)));
                 this.repository.saveBuildSlotsConfig(world, slotsConfig);
-                for (Vec3i point : removedPoints) {
-                    clearImmediateSlotBlock(world, point);
-                }
                 context.sendMessage(Message.raw("РћС‡РёС‰РµРЅС‹ СЃР»РѕС‚С‹ С‚РёРїР° " + slotType + "."));
             } catch (IOException e) {
                 context.sendMessage(Message.raw("РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‡РёСЃС‚РёС‚СЊ СЃР»РѕС‚С‹: " + e.getMessage()));
@@ -2895,7 +2006,7 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
                     builder.append('\n')
                         .append("- ")
                         .append(slot.id)
-                        .append(" [").append(slotDebugLabel(slot)).append("] @ ")
+                        .append(" [").append(slotTypeLabel(slot)).append("] @ ")
                         .append(slot.position == null ? "РЅРµС‚ РїРѕР·РёС†РёРё" : slot.position.toShortString());
                 }
                 context.sendMessage(Message.raw(builder.toString()));
@@ -2990,42 +2101,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
                         mapConfig.modePoint = position;
                         mapConfig.modeYaw = yaw;
                     }
-                    case "statistics" -> {
-                        mapConfig.previousStatisticsPoint = mapConfig.statisticsPoint;
-                        mapConfig.statisticsPoint = position;
-                        mapConfig.statisticsYaw = yaw;
-                    }
-                    case "duoplayerblue" -> {
-                        mapConfig.duoPlayerStartBlue = position;
-                        mapConfig.duoPlayerStartBlueYaw = yaw;
-                    }
-                    case "duoplayergreen" -> {
-                        mapConfig.duoPlayerStartGreen = position;
-                        mapConfig.duoPlayerStartGreenYaw = yaw;
-                    }
-                    case "duospawnblue" -> mapConfig.duoSpawnPointBlue = position;
-                    case "duospawngreen" -> mapConfig.duoSpawnPointGreen = position;
-                    case "duobank" -> mapConfig.duoBankCenter = position;
-                    case "duovault" -> mapConfig.duoVaultPoint = position;
-                    case "duosealblue" -> mapConfig.duoSealNodeBluePoint = position;
-                    case "duosealgreen" -> mapConfig.duoSealNodeGreenPoint = position;
-                    case "duostats" -> {
-                        mapConfig.previousDuoStatisticsPoint = mapConfig.duoStatisticsPoint;
-                        mapConfig.duoStatisticsPoint = position;
-                        mapConfig.duoStatisticsYaw = yaw;
-                    }
-                    case "duoteam" -> {
-                        mapConfig.previousDuoTeamPoint = mapConfig.duoTeamPoint;
-                        mapConfig.duoTeamPoint = position;
-                        mapConfig.duoTeamYaw = yaw;
-                    }
-                    case "duoteleportnpc" -> {
-                        mapConfig.previousDuoTeleportPoint = mapConfig.duoTeleportPoint;
-                        mapConfig.duoTeleportPoint = position;
-                        mapConfig.duoTeleportYaw = yaw;
-                    }
-                    case "teleportduo" -> mapConfig.duoTeleportTarget = position;
-                    case "teleportsolo" -> mapConfig.soloTeleportTarget = position;
                     case "tutorialstart" -> {
                         mapConfig.tutorialStartPoint = position;
                         mapConfig.tutorialStartYaw = yaw;
@@ -3110,42 +2185,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
                         mapConfig.modePoint = null;
                         mapConfig.modeYaw = null;
                     }
-                    case "statistics" -> {
-                        mapConfig.previousStatisticsPoint = mapConfig.statisticsPoint;
-                        mapConfig.statisticsPoint = null;
-                        mapConfig.statisticsYaw = null;
-                    }
-                    case "duoplayerblue" -> {
-                        mapConfig.duoPlayerStartBlue = null;
-                        mapConfig.duoPlayerStartBlueYaw = null;
-                    }
-                    case "duoplayergreen" -> {
-                        mapConfig.duoPlayerStartGreen = null;
-                        mapConfig.duoPlayerStartGreenYaw = null;
-                    }
-                    case "duospawnblue" -> mapConfig.duoSpawnPointBlue = null;
-                    case "duospawngreen" -> mapConfig.duoSpawnPointGreen = null;
-                    case "duobank" -> mapConfig.duoBankCenter = null;
-                    case "duovault" -> mapConfig.duoVaultPoint = null;
-                    case "duosealblue" -> mapConfig.duoSealNodeBluePoint = null;
-                    case "duosealgreen" -> mapConfig.duoSealNodeGreenPoint = null;
-                    case "duostats" -> {
-                        mapConfig.previousDuoStatisticsPoint = mapConfig.duoStatisticsPoint;
-                        mapConfig.duoStatisticsPoint = null;
-                        mapConfig.duoStatisticsYaw = null;
-                    }
-                    case "duoteam" -> {
-                        mapConfig.previousDuoTeamPoint = mapConfig.duoTeamPoint;
-                        mapConfig.duoTeamPoint = null;
-                        mapConfig.duoTeamYaw = null;
-                    }
-                    case "duoteleportnpc" -> {
-                        mapConfig.previousDuoTeleportPoint = mapConfig.duoTeleportPoint;
-                        mapConfig.duoTeleportPoint = null;
-                        mapConfig.duoTeleportYaw = null;
-                    }
-                    case "teleportduo" -> mapConfig.duoTeleportTarget = null;
-                    case "teleportsolo" -> mapConfig.soloTeleportTarget = null;
                     case "tutorialstart" -> {
                         mapConfig.tutorialStartPoint = null;
                         mapConfig.tutorialStartYaw = null;
@@ -3326,172 +2365,6 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
                 context.sendMessage(Message.raw(builder.toString()));
             } catch (IOException e) {
                 context.sendMessage(Message.raw("РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕРєР°Р·Р°С‚СЊ РјР°СЂС€СЂСѓС‚: " + e.getMessage()));
-            }
-        }
-    }
-
-    private static final class DuoRouteAddAliasCommand extends AbstractPlayerCommand {
-        private final BankDefenseRepository repository;
-        private final String teamId;
-
-        private DuoRouteAddAliasCommand(BankDefenseRepository repository, String teamId) {
-            super("duorouteadd" + teamId, "Добавить точку duo-маршрута " + teamId);
-            this.repository = repository;
-            this.teamId = teamId;
-        }
-
-        @Override
-        protected void execute(CommandContext context, Store<EntityStore> store, Ref<EntityStore> ref, PlayerRef playerRef, World world) {
-            try {
-                MapConfig mapConfig = this.repository.loadMapConfig(world);
-                Vec3i position = currentBlockPosition(store, ref);
-                List<Vec3i> route = duoRouteRef(mapConfig, this.teamId);
-                route.add(position);
-                this.repository.saveMapConfig(world, mapConfig);
-                context.sendMessage(Message.raw("Добавлена точка duo-маршрута " + this.teamId + " #" + route.size() + " в " + position.toShortString() + "."));
-            } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось добавить точку duo-маршрута: " + e.getMessage()));
-            }
-        }
-    }
-
-    private static final class DuoRoutePopAliasCommand extends AbstractWorldCommand {
-        private final BankDefenseRepository repository;
-        private final String teamId;
-
-        private DuoRoutePopAliasCommand(BankDefenseRepository repository, String teamId) {
-            super("duoroutepop" + teamId, "Удалить последнюю точку duo-маршрута " + teamId);
-            this.repository = repository;
-            this.teamId = teamId;
-        }
-
-        @Override
-        protected void execute(CommandContext context, World world, Store<EntityStore> store) {
-            try {
-                MapConfig mapConfig = this.repository.loadMapConfig(world);
-                List<Vec3i> route = duoRouteRef(mapConfig, this.teamId);
-                if (route.isEmpty()) {
-                    context.sendMessage(Message.raw("Duo-маршрут " + this.teamId + " уже пуст."));
-                    return;
-                }
-                Vec3i removed = route.remove(route.size() - 1);
-                this.repository.saveMapConfig(world, mapConfig);
-                context.sendMessage(Message.raw("Удалена точка duo-маршрута " + this.teamId + " в " + removed.toShortString() + "."));
-            } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось удалить точку duo-маршрута: " + e.getMessage()));
-            }
-        }
-    }
-
-    private static final class DuoRouteClearAliasCommand extends AbstractWorldCommand {
-        private final BankDefenseRepository repository;
-        private final String teamId;
-
-        private DuoRouteClearAliasCommand(BankDefenseRepository repository, String teamId) {
-            super("duorouteclear" + teamId, "Очистить duo-маршрут " + teamId);
-            this.repository = repository;
-            this.teamId = teamId;
-        }
-
-        @Override
-        protected void execute(CommandContext context, World world, Store<EntityStore> store) {
-            try {
-                MapConfig mapConfig = this.repository.loadMapConfig(world);
-                if ("all".equals(this.teamId)) {
-                    clearAllDuoRoutes(mapConfig);
-                    this.repository.saveMapConfig(world, mapConfig);
-                    context.sendMessage(Message.raw("Все duo-маршруты очищены."));
-                    return;
-                }
-                duoRouteRef(mapConfig, this.teamId).clear();
-                this.repository.saveMapConfig(world, mapConfig);
-                context.sendMessage(Message.raw("Duo-маршрут " + this.teamId + " очищен."));
-            } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось очистить duo-маршрут: " + e.getMessage()));
-            }
-        }
-    }
-
-    private static final class DuoRouteListAliasCommand extends AbstractWorldCommand {
-        private final BankDefenseRepository repository;
-        private final String teamId;
-
-        private DuoRouteListAliasCommand(BankDefenseRepository repository, String teamId) {
-            super("duoroutelist" + teamId, "Показать duo-маршрут " + teamId);
-            this.repository = repository;
-            this.teamId = teamId;
-        }
-
-        @Override
-        protected void execute(CommandContext context, World world, Store<EntityStore> store) {
-            try {
-                MapConfig mapConfig = this.repository.loadMapConfig(world);
-                if ("all".equals(this.teamId)) {
-                    StringBuilder builder = new StringBuilder("Duo-маршруты:");
-                    for (String currentTeam : List.of("blue", "green")) {
-                        List<Vec3i> route = duoRouteRef(mapConfig, currentTeam);
-                        builder.append('\n').append(currentTeam).append(": ").append(route.size()).append(" точек");
-                        for (int i = 0; i < route.size(); i++) {
-                            builder.append('\n').append("  ").append(i + 1).append(". ").append(route.get(i).toShortString());
-                        }
-                    }
-                    context.sendMessage(Message.raw(builder.toString()));
-                    return;
-                }
-                List<Vec3i> route = duoRouteRef(mapConfig, this.teamId);
-                if (route.isEmpty()) {
-                    context.sendMessage(Message.raw("Duo-маршрут " + this.teamId + " пуст."));
-                    return;
-                }
-                StringBuilder builder = new StringBuilder("Duo-маршрут ").append(this.teamId).append(": ").append(route.size()).append(" точек");
-                for (int i = 0; i < route.size(); i++) {
-                    builder.append('\n').append(i + 1).append(". ").append(route.get(i).toShortString());
-                }
-                context.sendMessage(Message.raw(builder.toString()));
-            } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось показать duo-маршрут: " + e.getMessage()));
-            }
-        }
-    }
-
-    private static final class DuoResetRoutesCommand extends AbstractWorldCommand {
-        private final BankDefenseRepository repository;
-
-        private DuoResetRoutesCommand(BankDefenseRepository repository) {
-            super("duoresetroutes", "Очистить duo-маршруты и spawn-точки");
-            this.repository = repository;
-        }
-
-        @Override
-        protected void execute(CommandContext context, World world, Store<EntityStore> store) {
-            try {
-                MapConfig mapConfig = this.repository.loadMapConfig(world);
-                clearAllDuoRoutesAndSpawns(mapConfig);
-                this.repository.saveMapConfig(world, mapConfig);
-                context.sendMessage(Message.raw("Duo-маршруты и точки спавна очищены. Теперь заново поставь markduospawnblue, markduospawngreen и точки через duorouteaddblue / duorouteaddgreen."));
-            } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось очистить duo-маршруты: " + e.getMessage()));
-            }
-        }
-    }
-
-    private static final class DuoResetStartsCommand extends AbstractWorldCommand {
-        private final BankDefenseRepository repository;
-
-        private DuoResetStartsCommand(BankDefenseRepository repository) {
-            super("duoresetstarts", "Очистить стартовые точки игроков Duo");
-            this.repository = repository;
-        }
-
-        @Override
-        protected void execute(CommandContext context, World world, Store<EntityStore> store) {
-            try {
-                MapConfig mapConfig = this.repository.loadMapConfig(world);
-                clearAllDuoStarts(mapConfig);
-                this.repository.saveMapConfig(world, mapConfig);
-                context.sendMessage(Message.raw("Duo-старты игроков очищены. Поставь их заново через markduoplayerblue и markduoplayergreen."));
-            } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось очистить duo-старты: " + e.getMessage()));
             }
         }
     }
@@ -3714,151 +2587,9 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
                 }
                 slotsConfig.slots.add(slot);
                 this.repository.saveBuildSlotsConfig(world, slotsConfig);
-                placeImmediateSlotBlock(world, slot);
                 context.sendMessage(Message.raw("Р”РѕР±Р°РІР»РµРЅ " + this.slotType + "-СЃР»РѕС‚ '" + slot.id + "' РІ " + position.toShortString() + "."));
             } catch (IOException e) {
                 context.sendMessage(Message.raw("РќРµ СѓРґР°Р»РѕСЃСЊ РґРѕР±Р°РІРёС‚СЊ СЃР»РѕС‚: " + e.getMessage()));
-            }
-        }
-    }
-
-    private static final class TutorialTrapAddCommand extends AbstractPlayerCommand {
-        private final BankDefenseRepository repository;
-        private final BankDefenseRuntime runtime;
-
-        private TutorialTrapAddCommand(BankDefenseRepository repository, BankDefenseRuntime runtime) {
-            super("marktutorialtrap", "Поставить учебную ловушечную площадку");
-            this.repository = repository;
-            this.runtime = runtime;
-        }
-
-        @Override
-        protected void execute(CommandContext context, Store<EntityStore> store, Ref<EntityStore> ref, PlayerRef playerRef, World world) {
-            try {
-                MapConfig mapConfig = this.repository.loadMapConfig(world);
-                BuildSlotsConfig slotsConfig = this.repository.loadBuildSlotsConfig(world);
-                Vec3i position = currentBlockPosition(store, ref);
-                for (BuildSlot existing : slotsConfig.slots) {
-                    if (existing.position != null && existing.position.distanceSquaredTo(position) == 0.0) {
-                        context.sendMessage(Message.raw("Слот уже существует в " + position.toShortString() + "."));
-                        return;
-                    }
-                }
-                BuildSlot slot = createBuildSlot(slotsConfig, "tutorial_trap", position);
-                slot.allowedTowerIds = new ArrayList<>(List.of("root_snare", "spore_mine", "frost_seal"));
-                slotsConfig.slots.add(slot);
-                mapConfig.tutorialTrapLayoutCustom = true;
-                this.repository.saveMapConfig(world, mapConfig);
-                this.repository.saveBuildSlotsConfig(world, slotsConfig);
-                placeImmediateSlotBlock(world, slot);
-                this.runtime.refreshVisualization(world);
-                context.sendMessage(Message.raw("Учебная ловушка '" + slot.id + "' добавлена в " + position.toShortString() + "."));
-            } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось добавить учебную ловушку: " + e.getMessage()));
-            }
-        }
-    }
-
-    private static final class DuoSlotAddAliasCommand extends AbstractPlayerCommand {
-        private final BankDefenseRepository repository;
-        private final String slotType;
-        private final String ownerTeam;
-        private final String segment;
-
-        private DuoSlotAddAliasCommand(BankDefenseRepository repository, String commandName, String slotType, String ownerTeam, String segment) {
-            super(commandName, "Добавить duo-slot " + ownerTeam + " / " + slotType);
-            this.repository = repository;
-            this.slotType = slotType;
-            this.ownerTeam = ownerTeam;
-            this.segment = segment;
-        }
-
-        @Override
-        protected void execute(CommandContext context, Store<EntityStore> store, Ref<EntityStore> ref, PlayerRef playerRef, World world) {
-            try {
-                BuildSlotsConfig slotsConfig = this.repository.loadBuildSlotsConfig(world);
-                Vec3i position = currentBlockPosition(store, ref);
-                for (BuildSlot existing : slotsConfig.slots) {
-                    if (existing.position != null && existing.position.distanceSquaredTo(position) == 0.0) {
-                        context.sendMessage(Message.raw("Слот уже существует в " + position.toShortString() + "."));
-                        return;
-                    }
-                }
-                BuildSlot slot = createBuildSlot(slotsConfig, this.slotType, position);
-                String resolvedOwnerTeam = this.ownerTeam;
-                String resolvedSegment = this.segment;
-                if ("trap".equals(this.slotType)) {
-                    resolvedOwnerTeam = "shared";
-                    resolvedSegment = "shared_trap";
-                }
-                configureDuoSlot(slot, resolvedOwnerTeam, resolvedSegment);
-                if ("shared".equals(resolvedOwnerTeam)) {
-                    slot.label = slot.label + " [Duo Shared]";
-                } else if ("blue".equals(resolvedOwnerTeam)) {
-                    slot.label = slot.label + " [Duo Blue]";
-                } else if ("green".equals(resolvedOwnerTeam)) {
-                    slot.label = slot.label + " [Duo Green]";
-                }
-                slotsConfig.slots.add(slot);
-                this.repository.saveBuildSlotsConfig(world, slotsConfig);
-                placeImmediateSlotBlock(world, slot);
-                context.sendMessage(Message.raw("Добавлен duo-slot '" + slot.id + "' [" + slotDebugLabel(slot) + "] в " + position.toShortString() + "."));
-            } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось добавить duo-slot: " + e.getMessage()));
-            }
-        }
-    }
-
-    private static final class SlotTeamAliasCommand extends AbstractPlayerCommand {
-        private final BankDefenseRepository repository;
-        private final String ownerTeam;
-        private final DefaultArg<Integer> radiusArg = this.withDefaultArg("radius", "Радиус", ArgTypes.INTEGER, 3, "3");
-
-        private SlotTeamAliasCommand(BankDefenseRepository repository, String commandName, String ownerTeam) {
-            super(commandName, "Назначить владельца ближайшему слоту: " + ownerTeam);
-            this.repository = repository;
-            this.ownerTeam = ownerTeam;
-        }
-
-        @Override
-        protected void execute(CommandContext context, Store<EntityStore> store, Ref<EntityStore> ref, PlayerRef playerRef, World world) {
-            int radius = Math.max(1, this.radiusArg.get(context));
-            try {
-                BuildSlotsConfig slotsConfig = this.repository.loadBuildSlotsConfig(world);
-                Vec3i position = currentBlockPosition(store, ref);
-                BuildSlot nearest = nearestBuildSlot(slotsConfig, position, radius);
-                if (nearest == null) {
-                    context.sendMessage(Message.raw("Рядом нет слота в радиусе " + radius + "."));
-                    return;
-                }
-
-                String previousLayout = nearest.layout == null || nearest.layout.isBlank() ? "solo" : nearest.layout;
-                String previousOwner = nearest.ownerTeam == null || nearest.ownerTeam.isBlank() ? "shared" : nearest.ownerTeam;
-                String previousSegment = nearest.segment == null ? "" : nearest.segment;
-
-                nearest.layout = "duo";
-                nearest.ownerTeam = this.ownerTeam;
-                if (previousSegment.isBlank() || isAutoDuoSegment(previousSegment)) {
-                    nearest.segment = defaultDuoSegment(nearest, this.ownerTeam);
-                }
-
-                this.repository.saveBuildSlotsConfig(world, slotsConfig);
-                placeImmediateSlotBlock(world, nearest);
-
-                StringBuilder message = new StringBuilder()
-                    .append("Слот '").append(nearest.id).append("' теперь ")
-                    .append(slotDebugLabel(nearest))
-                    .append(" @ ").append(nearest.position == null ? position.toShortString() : nearest.position.toShortString())
-                    .append(".");
-                if (!"duo".equals(previousLayout) || !this.ownerTeam.equals(previousOwner)) {
-                    message.append(" Было: layout=").append(previousLayout).append(", owner=").append(previousOwner).append(".");
-                }
-                if (isSuperLikeSlot(nearest) && !"shared".equals(this.ownerTeam)) {
-                    message.append(" Внимание: super-пады обычно лучше оставлять shared.");
-                }
-                context.sendMessage(Message.raw(message.toString()));
-            } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось обновить слот: " + e.getMessage()));
             }
         }
     }
@@ -3878,17 +2609,27 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
             try {
                 BuildSlotsConfig slotsConfig = this.repository.loadBuildSlotsConfig(world);
                 Vec3i position = currentBlockPosition(store, ref);
-                BuildSlot nearest = nearestBuildSlot(slotsConfig, position, radius);
+                BuildSlot nearest = null;
+                double bestDistance = (double) radius * radius;
+                for (BuildSlot slot : slotsConfig.slots) {
+                    if (slot.position == null) {
+                        continue;
+                    }
+                    double distance = slot.position.distanceSquaredTo(position);
+                    if (distance <= bestDistance) {
+                        bestDistance = distance;
+                        nearest = slot;
+                    }
+                }
                 if (nearest == null) {
                     context.sendMessage(Message.raw("Р СЏРґРѕРј РЅРµС‚ СЃР»РѕС‚Р° РІ СЂР°РґРёСѓСЃРµ " + radius + "."));
                     return;
                 }
                 slotsConfig.slots.remove(nearest);
                 this.repository.saveBuildSlotsConfig(world, slotsConfig);
-                clearImmediateSlotBlock(world, nearest.position);
-                context.sendMessage(Message.raw("Удалён слот '" + nearest.id + "'."));
+                context.sendMessage(Message.raw("РЈРґР°Р»С‘РЅ СЃР»РѕС‚ '" + nearest.id + "'."));
             } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось удалить слот: " + e.getMessage()));
+                context.sendMessage(Message.raw("РќРµ СѓРґР°Р»РѕСЃСЊ СѓРґР°Р»РёС‚СЊ СЃР»РѕС‚: " + e.getMessage()));
             }
         }
     }
@@ -3908,34 +2649,13 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
             try {
                 BuildSlotsConfig slotsConfig = this.repository.loadBuildSlotsConfig(world);
                 if ("all".equals(slotType)) {
-                    List<Vec3i> removedPoints = new ArrayList<>();
-                    for (BuildSlot slot : slotsConfig.slots) {
-                        if (slot != null && slot.position != null) {
-                            removedPoints.add(slot.position);
-                        }
-                    }
                     slotsConfig.slots.clear();
                     this.repository.saveBuildSlotsConfig(world, slotsConfig);
-                    for (Vec3i point : removedPoints) {
-                        clearImmediateSlotBlock(world, point);
-                    }
                     context.sendMessage(Message.raw("Р’СЃРµ СЃР»РѕС‚С‹ РѕС‡РёС‰РµРЅС‹."));
                     return;
                 }
-                List<Vec3i> removedPoints = new ArrayList<>();
-                slotsConfig.slots.removeIf(slot -> {
-                    if (slotType.equals(slotTypeLabel(slot))) {
-                        if (slot != null && slot.position != null) {
-                            removedPoints.add(slot.position);
-                        }
-                        return true;
-                    }
-                    return false;
-                });
+                slotsConfig.slots.removeIf(slot -> slotType.equals(slotTypeLabel(slot)));
                 this.repository.saveBuildSlotsConfig(world, slotsConfig);
-                for (Vec3i point : removedPoints) {
-                    clearImmediateSlotBlock(world, point);
-                }
                 context.sendMessage(Message.raw("РћС‡РёС‰РµРЅС‹ СЃР»РѕС‚С‹ С‚РёРїР° " + slotType + "."));
             } catch (IOException e) {
                 context.sendMessage(Message.raw("РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‡РёСЃС‚РёС‚СЊ СЃР»РѕС‚С‹: " + e.getMessage()));
@@ -3958,91 +2678,16 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
             try {
                 BuildSlotsConfig slotsConfig = this.repository.loadBuildSlotsConfig(world);
                 if ("all".equals(this.slotType)) {
-                    List<Vec3i> removedPoints = new ArrayList<>();
-                    for (BuildSlot slot : slotsConfig.slots) {
-                        if (slot != null && slot.position != null) {
-                            removedPoints.add(slot.position);
-                        }
-                    }
                     slotsConfig.slots.clear();
                     this.repository.saveBuildSlotsConfig(world, slotsConfig);
-                    for (Vec3i point : removedPoints) {
-                        clearImmediateSlotBlock(world, point);
-                    }
                     context.sendMessage(Message.raw("Р’СЃРµ СЃР»РѕС‚С‹ РѕС‡РёС‰РµРЅС‹."));
                     return;
                 }
-                List<Vec3i> removedPoints = new ArrayList<>();
-                slotsConfig.slots.removeIf(slot -> {
-                    if (this.slotType.equals(slotTypeLabel(slot))) {
-                        if (slot != null && slot.position != null) {
-                            removedPoints.add(slot.position);
-                        }
-                        return true;
-                    }
-                    return false;
-                });
+                slotsConfig.slots.removeIf(slot -> this.slotType.equals(slotTypeLabel(slot)));
                 this.repository.saveBuildSlotsConfig(world, slotsConfig);
-                for (Vec3i point : removedPoints) {
-                    clearImmediateSlotBlock(world, point);
-                }
                 context.sendMessage(Message.raw("РћС‡РёС‰РµРЅС‹ СЃР»РѕС‚С‹ С‚РёРїР° " + this.slotType + "."));
             } catch (IOException e) {
                 context.sendMessage(Message.raw("РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‡РёСЃС‚РёС‚СЊ СЃР»РѕС‚С‹: " + e.getMessage()));
-            }
-        }
-    }
-
-    private static final class TutorialTrapClearCommand extends AbstractWorldCommand {
-        private final BankDefenseRepository repository;
-        private final BankDefenseRuntime runtime;
-
-        private TutorialTrapClearCommand(BankDefenseRepository repository, BankDefenseRuntime runtime) {
-            super("cleartutorialtraps", "Очистить все учебные ловушечные площадки");
-            this.repository = repository;
-            this.runtime = runtime;
-        }
-
-        @Override
-        protected void execute(CommandContext context, World world, Store<EntityStore> store) {
-            try {
-                MapConfig mapConfig = this.repository.loadMapConfig(world);
-                BuildSlotsConfig slotsConfig = this.repository.loadBuildSlotsConfig(world);
-                Set<String> removedKeys = new LinkedHashSet<>();
-                List<Vec3i> removedPoints = new ArrayList<>();
-                int before = slotsConfig.slots.size();
-                slotsConfig.slots.removeIf(slot -> {
-                    if ("tutorial_trap".equals(slotTypeLabel(slot))) {
-                        if (slot != null && slot.position != null) {
-                            String key = slot.position.x + ":" + slot.position.y + ":" + slot.position.z;
-                            if (removedKeys.add(key)) {
-                                removedPoints.add(slot.position);
-                            }
-                        }
-                        return true;
-                    }
-                    return false;
-                });
-                int removed = before - slotsConfig.slots.size();
-                for (Vec3i point : defaultTutorialTrapPoints(mapConfig)) {
-                    if (point == null) {
-                        continue;
-                    }
-                    String key = point.x + ":" + point.y + ":" + point.z;
-                    if (removedKeys.add(key)) {
-                        removedPoints.add(point);
-                    }
-                }
-                mapConfig.tutorialTrapLayoutCustom = true;
-                this.repository.saveMapConfig(world, mapConfig);
-                this.repository.saveBuildSlotsConfig(world, slotsConfig);
-                for (Vec3i point : removedPoints) {
-                    clearImmediateSlotBlockNeighborhood(world, point);
-                }
-                this.runtime.refreshVisualization(world);
-                context.sendMessage(Message.raw("Удалено учебных ловушечных площадок: " + removed + "."));
-            } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось очистить учебные ловушечные площадки: " + e.getMessage()));
             }
         }
     }
@@ -4068,7 +2713,7 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
                     builder.append('\n')
                         .append("- ")
                         .append(slot.id)
-                        .append(" [").append(slotDebugLabel(slot)).append("] @ ")
+                        .append(" [").append(slotTypeLabel(slot)).append("] @ ")
                         .append(slot.position == null ? "РЅРµС‚ РїРѕР·РёС†РёРё" : slot.position.toShortString());
                 }
                 context.sendMessage(Message.raw(builder.toString()));
@@ -4187,115 +2832,4 @@ public final class BankDefenseCommand extends AbstractCommandCollection {
             }
         }
     }
-
-    private static final class DuoChestAddAliasCommand extends AbstractPlayerCommand {
-        private final BankDefenseRepository repository;
-
-        private DuoChestAddAliasCommand(BankDefenseRepository repository) {
-            super("duochestadd", "Добавить точку duo-сундука");
-            this.repository = repository;
-        }
-
-        @Override
-        protected void execute(CommandContext context, Store<EntityStore> store, Ref<EntityStore> ref, PlayerRef playerRef, World world) {
-            try {
-                MapConfig mapConfig = this.repository.loadMapConfig(world);
-                Vec3i position = currentBlockPosition(store, ref);
-                for (Vec3i existing : mapConfig.duoChestSpawnPoints) {
-                    if (existing != null && existing.distanceSquaredTo(position) == 0.0) {
-                        context.sendMessage(Message.raw("Точка duo-сундука уже существует в " + position.toShortString() + "."));
-                        return;
-                    }
-                }
-                mapConfig.duoChestSpawnPoints.add(position);
-                this.repository.saveMapConfig(world, mapConfig);
-                context.sendMessage(Message.raw("Добавлена точка duo-сундука #" + mapConfig.duoChestSpawnPoints.size() + " в " + position.toShortString() + "."));
-            } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось добавить точку duo-сундука: " + e.getMessage()));
-            }
-        }
-    }
-
-    private static final class DuoChestRemoveAliasCommand extends AbstractPlayerCommand {
-        private final BankDefenseRepository repository;
-        private final DefaultArg<Double> radiusArg = this.withDefaultArg("radius", "Радиус", ArgTypes.DOUBLE, 3.0, "3");
-
-        private DuoChestRemoveAliasCommand(BankDefenseRepository repository) {
-            super("duochestremove", "Удалить ближайшую точку duo-сундука");
-            this.repository = repository;
-        }
-
-        @Override
-        protected void execute(CommandContext context, Store<EntityStore> store, Ref<EntityStore> ref, PlayerRef playerRef, World world) {
-            try {
-                MapConfig mapConfig = this.repository.loadMapConfig(world);
-                if (mapConfig.duoChestSpawnPoints.isEmpty()) {
-                    context.sendMessage(Message.raw("Точки duo-сундуков не заданы."));
-                    return;
-                }
-                Vec3i position = currentBlockPosition(store, ref);
-                double radius = Math.max(0.5, this.radiusArg.get(context));
-                Vec3i removed = nearestPoint(mapConfig.duoChestSpawnPoints, position, radius);
-                if (removed == null) {
-                    context.sendMessage(Message.raw("Рядом нет точки duo-сундука в радиусе " + radius + "."));
-                    return;
-                }
-                mapConfig.duoChestSpawnPoints.removeIf(point -> point != null && point.distanceSquaredTo(removed) == 0.0);
-                this.repository.saveMapConfig(world, mapConfig);
-                context.sendMessage(Message.raw("Удалена точка duo-сундука в " + removed.toShortString() + "."));
-            } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось удалить точку duo-сундука: " + e.getMessage()));
-            }
-        }
-    }
-
-    private static final class DuoChestClearAliasCommand extends AbstractWorldCommand {
-        private final BankDefenseRepository repository;
-
-        private DuoChestClearAliasCommand(BankDefenseRepository repository) {
-            super("duochestclear", "Очистить все точки duo-сундуков");
-            this.repository = repository;
-        }
-
-        @Override
-        protected void execute(CommandContext context, World world, Store<EntityStore> store) {
-            try {
-                MapConfig mapConfig = this.repository.loadMapConfig(world);
-                mapConfig.duoChestSpawnPoints.clear();
-                this.repository.saveMapConfig(world, mapConfig);
-                context.sendMessage(Message.raw("Все точки duo-сундуков очищены."));
-            } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось очистить точки duo-сундуков: " + e.getMessage()));
-            }
-        }
-    }
-
-    private static final class DuoChestListAliasCommand extends AbstractWorldCommand {
-        private final BankDefenseRepository repository;
-
-        private DuoChestListAliasCommand(BankDefenseRepository repository) {
-            super("duochestlist", "Показать точки duo-сундуков");
-            this.repository = repository;
-        }
-
-        @Override
-        protected void execute(CommandContext context, World world, Store<EntityStore> store) {
-            try {
-                MapConfig mapConfig = this.repository.loadMapConfig(world);
-                if (mapConfig.duoChestSpawnPoints.isEmpty()) {
-                    context.sendMessage(Message.raw("Точки duo-сундуков не заданы."));
-                    return;
-                }
-                StringBuilder builder = new StringBuilder("Точек duo-сундуков: ").append(mapConfig.duoChestSpawnPoints.size());
-                for (int i = 0; i < mapConfig.duoChestSpawnPoints.size(); i++) {
-                    Vec3i point = mapConfig.duoChestSpawnPoints.get(i);
-                    builder.append('\n').append(i + 1).append(". ").append(point == null ? "нет позиции" : point.toShortString());
-                }
-                context.sendMessage(Message.raw(builder.toString()));
-            } catch (IOException e) {
-                context.sendMessage(Message.raw("Не удалось показать точки duo-сундуков: " + e.getMessage()));
-            }
-        }
-    }
 }
-

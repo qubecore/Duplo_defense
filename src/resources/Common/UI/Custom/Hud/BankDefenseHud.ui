@@ -160,143 +160,186 @@ Group #BankDefenseHud {
   }
 
   Group #SuperStatusPanel {
-    Anchor: (Width: 324, Height: 322, Top: 206, Left: 18);
-    Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+    Anchor: (Width: 312, Height: 280, Top: 206, Left: 18);
     Visible: false;
 
+    Group #SuperStatusBg1 {
+      Anchor: (Width: 1, Height: 1);
+      Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+      Visible: false;
+    }
+
+    Group #SuperStatusBg2 {
+      Anchor: (Width: 1, Height: 1);
+      Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+      Visible: false;
+    }
+
+    Group #SuperStatusBg3 {
+      Anchor: (Width: 1, Height: 1);
+      Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+      Visible: false;
+    }
+
+    Group #SuperStatusCaptionPill {
+      Anchor: (Width: 132, Height: 24, Top: 0, Left: 6);
+      Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+
+      Group {
+        Anchor: (Left: 2, Right: 2, Top: 2, Bottom: 2);
+        Background: #091521(0.88);
+      }
+    }
+
     Label #SuperStatusCaption {
+      Anchor: (Top: 5, Left: 16, Right: 12);
       Style: (FontSize: 12, TextColor: #96c0ff, RenderBold: true, RenderUppercase: true);
-      Text: "Super Towers";
+      Text: "";
     }
 
     Group #SuperHeartRow {
-      Anchor: (Width: 300, Height: 84, Top: 38, Left: 12);
-      Background: #0b1927(0.74);
+      Anchor: (Width: 312, Height: 78, Top: 32, Left: 0);
+      Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
       Visible: false;
 
       Group {
-        Anchor: (Width: 68, Height: 68, Top: 2, Left: 6);
-        Background: #1e1215(0.92);
+        Anchor: (Left: 2, Right: 2, Top: 2, Bottom: 2);
+        Background: #091521(0.76);
+      }
+
+      Group {
+        Anchor: (Width: 74, Height: 74, Top: 2, Left: 2);
+        Background: #132332(0.94);
       }
 
       Group #SuperHeartIconHeart {
-        Anchor: (Width: 60, Height: 60, Top: 6, Left: 10);
+        Anchor: (Width: 56, Height: 56, Top: 11, Left: 11);
         Background: (TexturePath: "../Pages/SuperTowerIcons/korni.png", Border: 8);
       }
 
       Group #SuperHeartIconMonolith {
-        Anchor: (Width: 60, Height: 60, Top: 6, Left: 10);
+        Anchor: (Width: 56, Height: 56, Top: 11, Left: 11);
         Background: (TexturePath: "../Pages/SuperTowerIcons/monolit.png", Border: 8);
         Visible: false;
       }
 
       Group #SuperHeartIconIdol {
-        Anchor: (Width: 60, Height: 60, Top: 6, Left: 10);
+        Anchor: (Width: 56, Height: 56, Top: 11, Left: 11);
         Background: (TexturePath: "../Pages/SuperTowerIcons/idol.png", Border: 8);
         Visible: false;
       }
 
       Group {
         LayoutMode: Top;
-        Anchor: (Width: 208, Top: 10, Left: 84);
+        Anchor: (Width: 206, Top: 12, Left: 92);
 
         Label #SuperHeartName {
-          Style: (FontSize: 15, TextColor: #ffffff, RenderBold: true);
-          Text: "Heart of Roots";
+          Style: (FontSize: 15, TextColor: #ffffff, RenderBold: true, Wrap: true);
+          Text: "";
         }
 
         Label #SuperHeartState {
-          Anchor: (Top: 2);
-          Style: (FontSize: 13, TextColor: #c8d5e3, RenderBold: true, Wrap: true);
-          Text: "inactive";
+          Anchor: (Top: 4);
+          Style: (FontSize: 12, TextColor: #c8d5e3, RenderBold: true, Wrap: true);
+          Text: "";
         }
       }
     }
 
     Group #SuperMonolithRow {
-      Anchor: (Width: 300, Height: 84, Top: 128, Left: 12);
-      Background: #0b1927(0.74);
+      Anchor: (Width: 312, Height: 78, Top: 116, Left: 0);
+      Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
       Visible: false;
 
       Group {
-        Anchor: (Width: 68, Height: 68, Top: 2, Left: 6);
-        Background: #111c2a(0.92);
+        Anchor: (Left: 2, Right: 2, Top: 2, Bottom: 2);
+        Background: #091521(0.76);
+      }
+
+      Group {
+        Anchor: (Width: 74, Height: 74, Top: 2, Left: 2);
+        Background: #11283a(0.94);
       }
 
       Group #SuperMonolithIconHeart {
-        Anchor: (Width: 60, Height: 60, Top: 6, Left: 10);
+        Anchor: (Width: 56, Height: 56, Top: 11, Left: 11);
         Background: (TexturePath: "../Pages/SuperTowerIcons/korni.png", Border: 8);
         Visible: false;
       }
 
       Group #SuperMonolithIconMonolith {
-        Anchor: (Width: 60, Height: 60, Top: 6, Left: 10);
+        Anchor: (Width: 56, Height: 56, Top: 11, Left: 11);
         Background: (TexturePath: "../Pages/SuperTowerIcons/monolit.png", Border: 8);
       }
 
       Group #SuperMonolithIconIdol {
-        Anchor: (Width: 60, Height: 60, Top: 6, Left: 10);
+        Anchor: (Width: 56, Height: 56, Top: 11, Left: 11);
         Background: (TexturePath: "../Pages/SuperTowerIcons/idol.png", Border: 8);
         Visible: false;
       }
 
       Group {
         LayoutMode: Top;
-        Anchor: (Width: 208, Top: 10, Left: 84);
+        Anchor: (Width: 206, Top: 12, Left: 92);
 
         Label #SuperMonolithName {
-          Style: (FontSize: 15, TextColor: #ffffff, RenderBold: true);
-          Text: "Storm Monolith";
+          Style: (FontSize: 15, TextColor: #ffffff, RenderBold: true, Wrap: true);
+          Text: "";
         }
 
         Label #SuperMonolithState {
-          Anchor: (Top: 2);
-          Style: (FontSize: 13, TextColor: #c8d5e3, RenderBold: true, Wrap: true);
-          Text: "inactive";
+          Anchor: (Top: 4);
+          Style: (FontSize: 12, TextColor: #c8d5e3, RenderBold: true, Wrap: true);
+          Text: "";
         }
       }
     }
 
     Group #SuperIdolRow {
-      Anchor: (Width: 300, Height: 84, Top: 218, Left: 12);
-      Background: #0b1927(0.74);
+      Anchor: (Width: 312, Height: 78, Top: 200, Left: 0);
+      Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
       Visible: false;
 
       Group {
-        Anchor: (Width: 68, Height: 68, Top: 2, Left: 6);
-        Background: #2a210e(0.92);
+        Anchor: (Left: 2, Right: 2, Top: 2, Bottom: 2);
+        Background: #091521(0.76);
+      }
+
+      Group {
+        Anchor: (Width: 74, Height: 74, Top: 2, Left: 2);
+        Background: #32220f(0.96);
       }
 
       Group #SuperIdolIconHeart {
-        Anchor: (Width: 60, Height: 60, Top: 6, Left: 10);
+        Anchor: (Width: 56, Height: 56, Top: 11, Left: 11);
         Background: (TexturePath: "../Pages/SuperTowerIcons/korni.png", Border: 8);
         Visible: false;
       }
 
       Group #SuperIdolIconMonolith {
-        Anchor: (Width: 60, Height: 60, Top: 6, Left: 10);
+        Anchor: (Width: 56, Height: 56, Top: 11, Left: 11);
         Background: (TexturePath: "../Pages/SuperTowerIcons/monolit.png", Border: 8);
         Visible: false;
       }
 
       Group #SuperIdolIconIdol {
-        Anchor: (Width: 60, Height: 60, Top: 6, Left: 10);
+        Anchor: (Width: 56, Height: 56, Top: 11, Left: 11);
         Background: (TexturePath: "../Pages/SuperTowerIcons/idol.png", Border: 8);
       }
 
       Group {
         LayoutMode: Top;
-        Anchor: (Width: 208, Top: 10, Left: 84);
+        Anchor: (Width: 206, Top: 12, Left: 92);
 
         Label #SuperIdolName {
-          Style: (FontSize: 15, TextColor: #ffffff, RenderBold: true);
-          Text: "Harvest Idol";
+          Style: (FontSize: 15, TextColor: #ffffff, RenderBold: true, Wrap: true);
+          Text: "";
         }
 
         Label #SuperIdolState {
-          Anchor: (Top: 2);
-          Style: (FontSize: 13, TextColor: #c8d5e3, RenderBold: true, Wrap: true);
-          Text: "inactive";
+          Anchor: (Top: 4);
+          Style: (FontSize: 12, TextColor: #c8d5e3, RenderBold: true, Wrap: true);
+          Text: "";
         }
       }
     }
@@ -882,41 +925,62 @@ Group #BankDefenseHud {
   }
 
   Group #DefeatBanner {
-    Anchor: (Height: 166, Top: 196, Left: 320, Right: 320);
+    Anchor: (Height: 112, Top: 188, Left: 660, Right: 660);
     Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
     Visible: false;
 
-    Label #DefeatText {
-      Anchor: (Width: 920, Top: 16, Left: 100);
-      Style: (FontSize: 42, TextColor: #ff2b2b, RenderBold: true, Wrap: false);
-      Text: "THE HOLLOW HAS FALLEN";
-    }
-
-    Label #DefeatHint {
-      Anchor: (Width: 620, Top: 78, Left: 210);
-      Style: (FontSize: 14, TextColor: #c9d1d9, RenderBold: true, Wrap: true);
-      Text: "Start a new match with the operator";
+    Group {
+      Anchor: (Left: 2, Right: 2, Top: 2, Bottom: 2);
+      Background: #08131d(0.70);
     }
 
     Group {
-      Anchor: (Width: 56, Height: 56, Top: 96, Left: 286);
-      Background: #102b33(0.92);
+      Anchor: (Height: 6, Top: 2, Left: 2, Right: 2);
+      Background: #7a1318(0.82);
+    }
+
+    Label #DefeatText {
+      Anchor: (Top: 18, Left: 24, Right: 24);
+      Style: (FontSize: 34, TextColor: #ff4a45, RenderBold: true, Wrap: true, HorizontalAlignment: Center);
+      Text: "";
+    }
+
+    Label #DefeatHint {
+      Anchor: (Top: 62, Left: 24, Right: 24);
+      Style: (FontSize: 18, TextColor: #d8e2eb, RenderBold: true, Wrap: true, HorizontalAlignment: Center);
+      Text: "";
+    }
+  }
+
+  Group #DefeatShardPanel {
+    Anchor: (Height: 104, Bottom: 52, Left: 780, Right: 780);
+    Background: (TexturePath: "../Common/ContainerPanelPatch.png", Border: 4);
+    Visible: false;
+
+    Group {
+      Anchor: (Left: 2, Right: 2, Top: 2, Bottom: 2);
+      Background: #071926(0.70);
+    }
+
+    Group {
+      Anchor: (Width: 60, Height: 60, Top: 22, Left: 18);
+      Background: #102b33(0.96);
     }
 
     Group #DefeatShardIcon {
-      Anchor: (Width: 46, Height: 46, Top: 101, Left: 291);
+      Anchor: (Width: 48, Height: 48, Top: 28, Left: 24);
       Background: (TexturePath: "HudIcons/hud_cores.png", Border: 8);
     }
 
     Label #DefeatShardHeading {
-      Anchor: (Width: 340, Top: 96, Left: 356);
-      Style: (FontSize: 12, TextColor: #8fe6ff, RenderBold: true, RenderUppercase: true);
-      Text: "Your shards";
+      Anchor: (Top: 14, Left: 92, Right: 18);
+      Style: (FontSize: 14, TextColor: #8fe6ff, RenderBold: true, RenderUppercase: true, HorizontalAlignment: Center);
+      Text: "";
     }
 
     Label #DefeatShardValue {
-      Anchor: (Width: 200, Top: 116, Left: 356);
-      Style: (FontSize: 28, TextColor: #8fe6ff, RenderBold: true);
+      Anchor: (Top: 34, Left: 92, Right: 18);
+      Style: (FontSize: 40, TextColor: #8fe6ff, RenderBold: true, HorizontalAlignment: Center);
       Text: "0";
     }
   }

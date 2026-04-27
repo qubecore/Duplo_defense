@@ -4,6 +4,8 @@ import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -11,6 +13,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class BankDefenseLocalization {
+    private static final int FREEFORM_CACHE_LIMIT = 4096;
+    private static final Map<String, String> FREEFORM_CACHE = Collections.synchronizedMap(
+        new LinkedHashMap<String, String>(512, 0.75f, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<String, String> eldest) {
+                return this.size() > FREEFORM_CACHE_LIMIT;
+            }
+        }
+    );
+
     public enum Lang {
         RU,
         EN
@@ -125,27 +137,27 @@ public final class BankDefenseLocalization {
     );
 
     private static final Map<String, String> MODULE_NOTE_RU = Map.ofEntries(
-        Map.entry("overload", "+20% к скорострельности."),
+        Map.entry("overload", "+25% к скорострельности."),
         Map.entry("heavy_caliber", "+30% к урону, но -12% к скорострельности."),
-        Map.entry("long_optics", "+дальность для прицельных башен."),
-        Map.entry("cryo_capsule", "Атаки дополнительно замедляют цель."),
+        Map.entry("long_optics", "+6% к дальности для прицельных башен."),
+        Map.entry("cryo_capsule", "Попадания дополнительно замедляют цель на 12% на 0.9 с. С Ледяным тотемом эффект складывается."),
         Map.entry("fragment_charge", "Попадания наносят 35% урона по площади в широком радиусе вокруг цели."),
         Map.entry("armor_scanner", "+40% урона по тяжёлым целям и боссам."),
         Map.entry("arc_splitter", "Выстрел перескакивает ещё на одну цель."),
-        Map.entry("dual_camera", "Каждый 5-й выстрел даёт дополнительный выстрел на 120% урона."),
-        Map.entry("reserve_capacitor", "После 2.2 секунд простоя следующий выстрел получает +90% урона.")
+        Map.entry("dual_camera", "Каждый 3-й выстрел даёт дополнительный выстрел на 100% урона."),
+        Map.entry("reserve_capacitor", "После 3 секунд простоя следующий выстрел получает +800% урона.")
     );
 
     private static final Map<String, String> MODULE_NOTE_EN = Map.ofEntries(
-        Map.entry("overload", "+20% attack speed."),
+        Map.entry("overload", "+25% attack speed."),
         Map.entry("heavy_caliber", "+30% damage, but -12% attack speed."),
-        Map.entry("long_optics", "+range for precise towers."),
-        Map.entry("cryo_capsule", "Hits apply an extra slow."),
+        Map.entry("long_optics", "+6% range for precise towers."),
+        Map.entry("cryo_capsule", "Hits apply an extra 12% slow for 0.9s. On the Freeze Gate, this stacks with the tower's own slow."),
         Map.entry("fragment_charge", "Hits deal 35% splash damage in a wide radius around the target."),
         Map.entry("armor_scanner", "+40% damage against heavy enemies and bosses."),
         Map.entry("arc_splitter", "Each shot chains to one extra target."),
-        Map.entry("dual_camera", "Every 5th shot fires an extra shot for 120% damage."),
-        Map.entry("reserve_capacitor", "After 2.2 seconds of idle time, the next shot gains +90% damage.")
+        Map.entry("dual_camera", "Every 3rd shot fires an extra shot for 100% damage."),
+        Map.entry("reserve_capacitor", "After 3 seconds of idle time, the next shot gains +800% damage.")
     );
 
     private static final Map<String, String> ENEMY_RU = Map.ofEntries(
@@ -293,17 +305,17 @@ public final class BankDefenseLocalization {
     );
 
     private static final Pattern PATTERN_WAVE_STARTED = Pattern.compile("^Волна (\\d+) началась\\.$");
-    private static final Pattern PATTERN_WAVE_COMPLETE_REWARD = Pattern.compile("^Волна (\\d+) завершена\\. Выбери 1 модуль награды\\.$");
+    private static final Pattern PATTERN_WAVE_COMPLETE_REWARD = Pattern.compile("^Волна (\\d+) завершена\\. Выберите 1 модуль награды\\.$");
     private static final Pattern PATTERN_RECEIVED_MODULE = Pattern.compile("^Получен модуль: (.+?)\\.?$");
     private static final Pattern PATTERN_OPENED_UPGRADE = Pattern.compile("^Открыто улучшение: (.+?) \\(-?(\\d+) осколков\\)\\.$");
     private static final Pattern PATTERN_MODULE_INSTALLED = Pattern.compile("^Модуль (.+?) установлен в (.+?)\\.$");
     private static final Pattern PATTERN_MODULE_REMOVED = Pattern.compile("^Модуль (.+?) снят и возвращён в запас\\.$");
-    private static final Pattern PATTERN_BUILT = Pattern.compile("^Построен (.+?) в слоте (.+?) за (\\d+)\\. Баланс: (\\d+)\\.$");
-    private static final Pattern PATTERN_UPGRADED = Pattern.compile("^Улучшен (.+?) в слоте (.+?) до ур\\. (\\d+)\\. Баланс: (\\d+)\\.$");
-    private static final Pattern PATTERN_SOLD = Pattern.compile("^Продан (.+?) из слота (.+?)\\. Возврат: (\\d+)\\. Баланс: (\\d+)\\.(.*)$");
+    private static final Pattern PATTERN_BUILT = Pattern.compile("^Башня построена: (.+?)\\. Площадка: (.+?)\\. Стоимость: (\\d+)\\. Баланс: (\\d+)\\.$");
+    private static final Pattern PATTERN_UPGRADED = Pattern.compile("^Башня улучшена: (.+?)\\. Площадка: (.+?)\\. Ур\\. (\\d+)\\. Баланс: (\\d+)\\.$");
+    private static final Pattern PATTERN_SOLD = Pattern.compile("^Башня продана: (.+?)\\. Площадка: (.+?)\\. Возврат: (\\d+)\\. Баланс: (\\d+)\\.(.*)$");
     private static final Pattern PATTERN_NOT_ENOUGH = Pattern.compile("^Недостаточно средств\\. Нужно: (\\d+), сейчас: (\\d+)\\.$");
-    private static final Pattern PATTERN_GOBLIN_SABOTEUR = Pattern.compile("^Гоблин-саботажник уничтожил (.+?)\\.$");
-    private static final Pattern PATTERN_GOBLIN_BOSS = Pattern.compile("^Гоблин-босс понизил (.+?) до ур\\. (\\d+)\\.$");
+    private static final Pattern PATTERN_GOBLIN_SABOTEUR = Pattern.compile("^Гоблин-саботажник уничтожил (.+?) \\(Ур\\. (\\d+)\\)\\. Возврат: только (\\d+) монет\\.$");
+    private static final Pattern PATTERN_GOBLIN_BOSS = Pattern.compile("^Гоблин-босс понизил (.+?) до [Уу]р\\. (\\d+)\\.$");
     private static final Pattern PATTERN_DISABLED_TOWERS = Pattern.compile("^(.+?) отключил башни возле себя\\.$");
 
     private static final Pattern PATTERN_SUPER_ACTIVE_READY = Pattern.compile("^активная • готова • (\\d+)/(\\d+)$");
@@ -313,17 +325,17 @@ public final class BankDefenseLocalization {
     private static final Pattern PATTERN_IDOL_SAVINGS = Pattern.compile("^активная • накопление • (\\d+) мон\\.$");
 
     private static final Pattern PATTERN_WAVE_STARTED_CLEAN = Pattern.compile("^Волна (\\d+) началась\\.$");
-    private static final Pattern PATTERN_WAVE_COMPLETE_REWARD_CLEAN = Pattern.compile("^Волна (\\d+) завершена\\. Выбери 1 модуль награды\\.$");
+    private static final Pattern PATTERN_WAVE_COMPLETE_REWARD_CLEAN = Pattern.compile("^Волна (\\d+) завершена\\. Выберите 1 модуль награды\\.$");
     private static final Pattern PATTERN_RECEIVED_MODULE_CLEAN = Pattern.compile("^Получен модуль: (.+?)\\.?$");
     private static final Pattern PATTERN_OPENED_UPGRADE_CLEAN = Pattern.compile("^Открыто улучшение: (.+?) \\(-?(\\d+) осколков\\)\\.$");
     private static final Pattern PATTERN_MODULE_INSTALLED_CLEAN = Pattern.compile("^Модуль (.+?) установлен в (.+?)\\.$");
     private static final Pattern PATTERN_MODULE_REMOVED_CLEAN = Pattern.compile("^Модуль (.+?) снят и возвращён в запас\\.$");
-    private static final Pattern PATTERN_BUILT_CLEAN = Pattern.compile("^Построен (.+?) в слоте (.+?) за (\\d+)\\. Баланс: (\\d+)\\.$");
-    private static final Pattern PATTERN_UPGRADED_CLEAN = Pattern.compile("^Улучшен (.+?) в слоте (.+?) до ур\\. (\\d+)\\. Баланс: (\\d+)\\.$");
-    private static final Pattern PATTERN_SOLD_CLEAN = Pattern.compile("^Продан (.+?) из слота (.+?)\\. Возврат: (\\d+)\\. Баланс: (\\d+)\\.(.*)$");
+    private static final Pattern PATTERN_BUILT_CLEAN = Pattern.compile("^Башня построена: (.+?)\\. Площадка: (.+?)\\. Стоимость: (\\d+)\\. Баланс: (\\d+)\\.$");
+    private static final Pattern PATTERN_UPGRADED_CLEAN = Pattern.compile("^Башня улучшена: (.+?)\\. Площадка: (.+?)\\. Ур\\. (\\d+)\\. Баланс: (\\d+)\\.$");
+    private static final Pattern PATTERN_SOLD_CLEAN = Pattern.compile("^Башня продана: (.+?)\\. Площадка: (.+?)\\. Возврат: (\\d+)\\. Баланс: (\\d+)\\.(.*)$");
     private static final Pattern PATTERN_NOT_ENOUGH_CLEAN = Pattern.compile("^Недостаточно средств\\. Нужно: (\\d+), сейчас: (\\d+)\\.$");
-    private static final Pattern PATTERN_GOBLIN_SABOTEUR_CLEAN = Pattern.compile("^Гоблин-саботажник уничтожил (.+?)\\.$");
-    private static final Pattern PATTERN_GOBLIN_BOSS_CLEAN = Pattern.compile("^Гоблин-босс понизил (.+?) до ур\\. (\\d+)\\.$");
+    private static final Pattern PATTERN_GOBLIN_SABOTEUR_CLEAN = Pattern.compile("^Гоблин-саботажник уничтожил (.+?) \\(Ур\\. (\\d+)\\)\\. Возврат: только (\\d+) монет\\.$");
+    private static final Pattern PATTERN_GOBLIN_BOSS_CLEAN = Pattern.compile("^Гоблин-босс понизил (.+?) до [Уу]р\\. (\\d+)\\.$");
     private static final Pattern PATTERN_DISABLED_TOWERS_CLEAN = Pattern.compile("^(.+?) отключил башни возле себя\\.$");
     private static final Pattern PATTERN_SUPER_ACTIVE_READY_CLEAN = Pattern.compile("^активная • готова • (\\d+)/(\\d+)$");
     private static final Pattern PATTERN_SUPER_ACTIVE_SPENT_CLEAN = Pattern.compile("^активная • истощена • (\\d+)/(\\d+)$");
@@ -361,7 +373,9 @@ public final class BankDefenseLocalization {
     }
 
     public static String choose(Lang lang, String ru, String en) {
-        return lang == Lang.RU ? ru : en;
+        return lang == Lang.RU
+            ? repairKnownRuFragments(BankDefenseTextSupport.clean(ru))
+            : BankDefenseTextSupport.clean(en);
     }
 
     public static String tr(PlayerRef playerRef, String key, Object... args) {
@@ -379,6 +393,7 @@ public final class BankDefenseLocalization {
             case "hud.preparation" -> lang == Lang.RU ? "Подготовка" : "Preparation";
             case "hud.wave.difficulty" -> lang == Lang.RU ? "Сложность волны" : "Wave Threat";
             case "hud.paused" -> lang == Lang.RU ? "Пауза дохода" : "Income paused";
+            case "hud.paused_match" -> lang == Lang.RU ? "Матч на паузе" : "Match paused";
             case "hud.wave.none" -> lang == Lang.RU ? "Волна -" : "Wave -";
             case "hud.wave" -> lang == Lang.RU ? "Волна {0}" : "Wave {0}";
             case "hud.training" -> lang == Lang.RU ? "Обучение" : "Tutorial";
@@ -389,12 +404,12 @@ public final class BankDefenseLocalization {
             case "hud.in_wave" -> lang == Lang.RU ? "Волна в бою" : "Wave in progress";
             case "hud.victory" -> lang == Lang.RU ? "Победа" : "Victory";
             case "hud.defeat" -> lang == Lang.RU ? "Поражение" : "Defeat";
-            case "hud.preparation_s" -> lang == Lang.RU ? "Подготовка {0}с" : "Preparation {0}s";
+            case "hud.preparation_s" -> lang == Lang.RU ? "Подготовка {0} с" : "Preparation {0}s";
             case "hud.prompt.init" -> lang == Lang.RU ? "Подготовка систем дупла." : "Preparing hollow systems.";
             case "hud.prompt.new_match" -> lang == Lang.RU ? "Начните новый матч у оператора." : "Start a new match with the operator.";
-            case "hud.prompt.choose_match" -> lang == Lang.RU ? "Выбери сложность и контракт у оператора." : "Choose a difficulty and contract at the operator.";
+            case "hud.prompt.choose_match" -> lang == Lang.RU ? "Выберите сложность и контракт у оператора." : "Choose a difficulty and contract at the operator.";
             case "hud.prompt.choose_reward" -> lang == Lang.RU ? "Выберите модуль награды у оператора." : "Choose the reward module at the operator.";
-            case "hud.prompt.build" -> lang == Lang.RU ? "Поставьте хотя бы 1 башню или ловушку." : "Place at least 1 tower or trap.";
+            case "hud.prompt.build" -> lang == Lang.RU ? "Поставьте хотя бы одну башню или ловушку." : "Place at least one tower or trap.";
             case "page.match.open_reward" -> lang == Lang.RU ? "Выбрать модуль" : "Choose module";
             case "hud.prompt.prepare_and_start" -> lang == Lang.RU ? "Подготовь защиту и запусти волну у оператора." : "Prepare your defense and start the wave at the operator.";
             case "hud.prompt.cleanup" -> lang == Lang.RU ? "Удерживай маршрут. Мертвяки прорываются к сердцу дупла." : "Hold the route. The dead are pushing toward the hollow core.";
@@ -408,6 +423,7 @@ public final class BankDefenseLocalization {
             case "hud.enemies.pressure.low" -> lang == Lang.RU ? "Финиш зачистки" : "Final cleanup";
             case "hud.enemies.pressure.mid" -> lang == Lang.RU ? "Давление держится" : "Pressure holding";
             case "hud.enemies.pressure.high" -> lang == Lang.RU ? "Орда на поле" : "Horde on the field";
+            case "hud.super.caption" -> lang == Lang.RU ? "Супер-башни" : "Super Towers";
             case "hud.super.inactive" -> lang == Lang.RU ? "неактивная" : "inactive";
             case "hud.super.active" -> lang == Lang.RU ? "активная" : "active";
             case "hud.super.ready" -> lang == Lang.RU ? "готова" : "ready";
@@ -421,7 +437,7 @@ public final class BankDefenseLocalization {
             case "hud.bank.captured" -> lang == Lang.RU ? "Дупло захвачено" : "The Hollow was taken";
             case "hud.bank.warning" -> lang == Lang.RU ? "Прорывы опасны" : "Breaches are dangerous";
             case "hud.bank.critical" -> lang == Lang.RU ? "Критическая угроза" : "Critical threat";
-            case "hud.next_wave.starts_in" -> lang == Lang.RU ? "Старт через {0}с" : "Starts in {0}s";
+            case "hud.next_wave.starts_in" -> lang == Lang.RU ? "Старт через {0} с" : "Starts in {0}s";
             case "hud.defeat.banner" -> lang == Lang.RU ? "ДУПЛО ЗАХВАЧЕНО" : "THE HOLLOW HAS FALLEN";
             case "hud.defeat.hint" -> lang == Lang.RU ? "Потратьте осколки у Хранителя и начните новый матч" : "Spend your shards at the Keeper and start a new match";
             case "hud.defeat.cores" -> lang == Lang.RU ? "Ваши осколки" : "Your shards";
@@ -599,7 +615,7 @@ public final class BankDefenseLocalization {
             case "page.duo.unknown" -> lang == Lang.RU ? "Неизвестное действие: {0}" : "Unknown action: {0}";
 
             case "page.duoteam.title" -> "Duplo TD: " + (lang == Lang.RU ? "выбор стороны" : "side select");
-            case "page.duoteam.header" -> lang == Lang.RU ? "Выбери свою сторону" : "Choose your side";
+            case "page.duoteam.header" -> lang == Lang.RU ? "Выберите свою сторону" : "Choose your side";
             case "page.duoteam.header.complete" -> lang == Lang.RU ? "Стороны уже выбраны" : "Teams already selected";
             case "page.duoteam.selected" -> lang == Lang.RU ? "Выбрано" : "Selected";
             case "page.duoteam.taken" -> lang == Lang.RU ? "Занято" : "Taken";
@@ -638,16 +654,21 @@ public final class BankDefenseLocalization {
 
             case "page.match.title" -> "Duplo TD: " + (lang == Lang.RU ? "старт матча" : "match setup");
             case "page.match.title.tutorial" -> "Duplo TD: " + (lang == Lang.RU ? "обучение" : "tutorial");
-            case "page.match.hint" -> lang == Lang.RU ? "Выбери сложность матча, затем контракт." : "Choose a match difficulty, then a contract.";
-            case "page.match.hint.duo" -> lang == Lang.RU ? "Выбери сложность. Контракты в Duo режиме отключены." : "Choose a difficulty. Contracts are disabled in Duo mode.";
+            case "page.match.hint" -> lang == Lang.RU ? "Выберите сложность матча, затем контракт." : "Choose a match difficulty, then a contract.";
+            case "page.match.hint.duo" -> lang == Lang.RU ? "Выберите сложность. Контракты в Duo режиме отключены." : "Choose a difficulty. Contracts are disabled in Duo mode.";
             case "page.match.hint.tutorial" -> lang == Lang.RU ? "Оператор обучения запускает волны вручную. Сложность уже выбрана, контракт отключён." : "The training operator starts waves manually. Difficulty is already selected and contracts are disabled.";
-            case "page.match.step1" -> lang == Lang.RU ? "Шаг 1: выбери уровень сложности." : "Step 1: choose a difficulty.";
-            case "page.match.step2" -> lang == Lang.RU ? "Шаг 2: выбери контракт. Сложность: {0}." : "Step 2: choose a contract. Difficulty: {0}.";
+            case "page.match.step1" -> lang == Lang.RU ? "Шаг 1: выберите уровень сложности." : "Step 1: choose a difficulty.";
+            case "page.match.step2" -> lang == Lang.RU ? "Шаг 2: выберите контракт. Сложность: {0}." : "Step 2: choose a contract. Difficulty: {0}.";
             case "page.match.step2.duo" -> lang == Lang.RU ? "Контракты в Duo режиме отключены" : "Contracts are disabled in Duo mode";
             case "page.match.training_wave" -> lang == Lang.RU ? "Учебная волна" : "Training wave";
             case "page.match.prepared" -> lang == Lang.RU ? "Матч подготовлен" : "Match prepared";
             case "page.match.start_wave" -> lang == Lang.RU ? "Начать волну" : "Start wave";
             case "page.match.end_match" -> lang == Lang.RU ? "Завершить матч" : "End match";
+            case "page.match.pause_game" -> lang == Lang.RU ? "Пауза матча" : "Pause match";
+            case "page.match.resume_game" -> lang == Lang.RU ? "Продолжить матч" : "Resume match";
+            case "page.match.status.paused" -> lang == Lang.RU ? "Матч на паузе" : "Match paused";
+            case "page.match.paused" -> lang == Lang.RU ? "Матч поставлен на паузу." : "Match paused.";
+            case "page.match.resumed" -> lang == Lang.RU ? "Пауза снята." : "Match resumed.";
             case "page.match.contracts_disabled_duo" -> lang == Lang.RU ? "Контракты в Duo режиме отключены." : "Contracts are disabled in Duo mode.";
             case "page.match.auto_start_on" -> lang == Lang.RU ? "Автостарт без ожидания: ВКЛ" : "Instant auto-start: ON";
             case "page.match.auto_start_off" -> lang == Lang.RU ? "Автостарт без ожидания: ВЫКЛ" : "Instant auto-start: OFF";
@@ -663,16 +684,17 @@ public final class BankDefenseLocalization {
             case "page.match.select" -> lang == Lang.RU ? "Выбрать" : "Select";
             case "page.match.select_active" -> lang == Lang.RU ? "Выбрать [активен]" : "Select [active]";
             case "page.match.tutorial.auto_disabled" -> lang == Lang.RU ? "В обучении автостарт отключён." : "Instant auto-start is disabled in the tutorial.";
+            case "page.match.tutorial.pause_unavailable" -> lang == Lang.RU ? "В обучении пауза у оператора недоступна." : "Pause from the operator is unavailable in the tutorial.";
             case "page.match.tutorial.end_unavailable" -> lang == Lang.RU ? "В обучении завершение матча у оператора недоступно." : "Ending the match from the operator is unavailable in the tutorial.";
             case "page.match.tutorial.only_start_available" -> lang == Lang.RU ? "В обучении сейчас доступна только кнопка запуска волны." : "Only the start-wave button is available during the tutorial.";
             case "page.match.difficulty_unavailable" -> lang == Lang.RU ? "Эта сложность сейчас недоступна." : "This difficulty is currently unavailable.";
-            case "page.match.difficulty_selected" -> lang == Lang.RU ? "Сложность выбрана. Теперь выбери контракт." : "Difficulty selected. Now choose a contract.";
+            case "page.match.difficulty_selected" -> lang == Lang.RU ? "Сложность выбрана. Теперь выберите контракт." : "Difficulty selected. Now choose a contract.";
             case "page.match.contract_not_found" -> lang == Lang.RU ? "Контракт не найден." : "Contract not found.";
             case "page.match.contract_unavailable" -> lang == Lang.RU ? "Этот контракт сейчас недоступен." : "This contract is currently unavailable.";
             case "page.match.unknown_action" -> lang == Lang.RU ? "Неизвестное действие панели матча: {0}" : "Unknown match panel action: {0}";
 
             case "page.slot.title" -> lang == Lang.RU ? "Слот" : "Slot";
-            case "page.slot.hint" -> lang == Lang.RU ? "Выбери башню для слота." : "Choose a tower for this slot.";
+            case "page.slot.hint" -> lang == Lang.RU ? "Выберите башню для слота." : "Choose a tower for this slot.";
             case "page.slot.super" -> lang == Lang.RU ? "Супер-слот" : "Super slot";
             case "page.slot.trap" -> lang == Lang.RU ? "Слот ловушки" : "Trap slot";
             case "page.slot.empty" -> lang == Lang.RU ? "Слот пуст." : "The slot is empty.";
@@ -707,7 +729,7 @@ public final class BankDefenseLocalization {
             case "page.slot.unknown_action" -> lang == Lang.RU ? "Неизвестное действие слота: {0}" : "Unknown slot action: {0}";
 
             case "page.super.title" -> lang == Lang.RU ? "Супер-слот" : "Super slot";
-            case "page.super.hint" -> lang == Lang.RU ? "Выбери супер-башню для слота." : "Choose a super tower for this slot.";
+            case "page.super.hint" -> lang == Lang.RU ? "Выберите супер-башню для слота." : "Choose a super tower for this slot.";
             case "page.super.buy_for" -> lang == Lang.RU ? "Купить за {0}" : "Buy for {0}";
             case "page.super.unavailable" -> lang == Lang.RU ? "Недоступно" : "Unavailable";
             case "page.super.unlock_in_progression" -> lang == Lang.RU ? "Открыть в прогрессии" : "Unlock in progression";
@@ -716,7 +738,7 @@ public final class BankDefenseLocalization {
             case "page.super.card.monolith.title" -> lang == Lang.RU ? "Штормовой монолит" : "Storm Monolith";
             case "page.super.card.monolith.description" -> lang == Lang.RU ? "Автоматически спасает дупло от прорыва и отбрасывает орду к спавнам." : "Automatically saves the Hollow from a breach and throws the horde back to the spawns.";
             case "page.super.card.idol.title" -> lang == Lang.RU ? "Идол урожая" : "Harvest Idol";
-            case "page.super.card.idol.description" -> lang == Lang.RU ? "Экономическая супер-башня. После покупки выбери режим работы." : "An economic super tower. After building it, choose its operating mode.";
+            case "page.super.card.idol.description" -> lang == Lang.RU ? "Экономическая супер-башня. После покупки выберите режим работы." : "An economic super tower. After building it, choose its operating mode.";
             case "page.super.current.none" -> lang == Lang.RU ? "Супер-башня" : "Super tower";
             case "page.super.activate" -> lang == Lang.RU ? "Активировать способность" : "Activate ability";
             case "page.super.reactivate" -> lang == Lang.RU ? "Реактивировать" : "Reactivate";
@@ -735,8 +757,8 @@ public final class BankDefenseLocalization {
             case "page.super.no_primary_command" -> lang == Lang.RU ? "Для этой супер-башни нет основной команды." : "This super tower has no primary command.";
 
             case "page.reward.title" -> "Duplo TD: " + (lang == Lang.RU ? "модуль" : "module reward");
-            case "page.reward.hint" -> lang == Lang.RU ? "Каждые 5 волн выбирай один модуль для запаса." : "Every 5 waves, choose one module for your reserve.";
-            case "page.reward.subtitle" -> lang == Lang.RU ? "Выбери один модуль. Он попадёт в общий запас и его можно будет вставить в башню во время подготовки." : "Choose one module. It will go into your shared reserve and can be inserted into a tower during preparation.";
+            case "page.reward.hint" -> lang == Lang.RU ? "Каждые 5 волн выбирайте один модуль для запаса." : "Every 5 waves, choose one module for your reserve.";
+            case "page.reward.subtitle" -> lang == Lang.RU ? "Выберите один модуль. Он попадёт в общий запас, и его можно будет вставить в башню во время подготовки." : "Choose one module. It will go into your shared reserve and can be inserted into a tower during preparation.";
             case "page.reward.choice_header" -> lang == Lang.RU ? "Выбор модуля" : "Module Selection";
             case "page.reward.empty" -> lang == Lang.RU ? "Пусто" : "Empty";
             case "page.reward.empty.note" -> lang == Lang.RU ? "Этот слот сейчас пуст." : "This reward slot is currently empty.";
@@ -771,8 +793,8 @@ public final class BankDefenseLocalization {
             case "page.progression.desc.economy.next" -> lang == Lang.RU ? "\nСледующий уровень: +{0} монет." : "\nNext level: +{0} gold.";
             case "page.progression.desc.duplo.current" -> lang == Lang.RU ? "Повышает запас здоровья дупла.\nСейчас: +{0} HP." : "Increases the Hollow's health pool.\nCurrent: +{0} HP.";
             case "page.progression.desc.duplo.next" -> lang == Lang.RU ? "\nСледующий уровень: +{0} HP." : "\nNext level: +{0} HP.";
-            case "page.progression.desc.towers.current" -> lang == Lang.RU ? "Открывает более высокие уровни сразу для всех башен.\nСейчас доступен максимум: {0} ур." : "Unlocks higher starting level caps for all towers.\nCurrent maximum: lvl {0}.";
-            case "page.progression.desc.towers.next" -> lang == Lang.RU ? "\nСледующий уровень откроет {0} ур." : "\nNext level unlocks lvl {0}.";
+            case "page.progression.desc.towers.current" -> lang == Lang.RU ? "Открывает более высокие уровни сразу для всех башен.\nТекущий максимум: Ур. {0}." : "Unlocks higher starting level caps for all towers.\nCurrent maximum: Lvl. {0}.";
+            case "page.progression.desc.towers.next" -> lang == Lang.RU ? "\nСледующий уровень откроет: Ур. {0}." : "\nNext level unlocks: Lvl. {0}.";
             case "page.progression.desc.towers.full" -> lang == Lang.RU ? "\nОткрыт полный кап до 10 уровня." : "\nThe full cap up to level 10 is unlocked.";
             case "page.progression.desc.super.current" -> lang == Lang.RU ? "Даёт дополнительные реактивации Сердцу корней и Штормовому монолиту.\nСейчас: +{0} реактивации для каждой." : "Grants extra reactivations to Heart of Roots and the Storm Monolith.\nCurrent: +{0} reactivations for each.";
             case "page.progression.desc.super.next" -> lang == Lang.RU ? "\nСледующий уровень: ещё +1 реактивация." : "\nNext level: another +1 reactivation.";
@@ -872,59 +894,88 @@ public final class BankDefenseLocalization {
     }
 
     public static String translateFreeform(Lang lang, String text) {
-        String cleaned = BankDefenseTextSupport.clean(text);
+        String cacheKey = lang.name() + '\u0000' + Objects.toString(text, "");
+        String cached = FREEFORM_CACHE.get(cacheKey);
+        if (cached != null) {
+            return cached;
+        }
+        String cleaned = repairKnownRuFragments(BankDefenseTextSupport.clean(text));
         if (lang == Lang.RU || cleaned.isBlank()) {
+            FREEFORM_CACHE.put(cacheKey, cleaned);
             return cleaned;
         }
 
         String exact = translateExactEn(cleaned);
         if (exact != null) {
+            FREEFORM_CACHE.put(cacheKey, exact);
             return exact;
         }
 
         Matcher matcher = PATTERN_FINISH_TASK_AND_OBJECTIVE.matcher(cleaned);
         if (matcher.matches()) {
-            return "Finish your current task first.\n\n" + translateFreeform(lang, matcher.group(1));
+            String translated = "Finish your current task first.\n\n" + translateFreeform(lang, matcher.group(1));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_UPGRADE_FOR_CLEAN.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Upgrade for {0}", matcher.group(1));
+            String translated = format("Upgrade for {0}", matcher.group(1));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_SELL_FOR_CLEAN.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Sell for {0}", matcher.group(1));
+            String translated = format("Sell for {0}", matcher.group(1));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_WAVE_STARTED_CLEAN.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Wave {0} has started.", matcher.group(1));
+            String translated = format("Wave {0} has started.", matcher.group(1));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_WAVE_COMPLETE_REWARD_CLEAN.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Wave {0} is complete. Choose 1 module reward.", matcher.group(1));
+            String translated = format("Wave {0} is complete. Choose 1 module reward.", matcher.group(1));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_RECEIVED_MODULE_CLEAN.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Module received: {0}.", translateKnownNameEn(matcher.group(1)));
+            String translated = format("Module received: {0}.", translateKnownNameEn(matcher.group(1)));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_OPENED_UPGRADE_CLEAN.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Upgrade unlocked: {0} (-{1} shards).", translateKnownNameEn(matcher.group(1)), matcher.group(2));
+            String translated = format("Upgrade unlocked: {0} (-{1} shards).", translateKnownNameEn(matcher.group(1)), matcher.group(2));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_MODULE_INSTALLED_CLEAN.matcher(cleaned);
         if (matcher.matches()) {
-            return format("{0} was installed into {1}.", translateKnownNameEn(matcher.group(1)), translateKnownNameEn(matcher.group(2)));
+            String translated = format("{0} was installed into {1}.", translateKnownNameEn(matcher.group(1)), translateKnownNameEn(matcher.group(2)));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_MODULE_REMOVED_CLEAN.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Module {0} was removed and returned to storage.", translateKnownNameEn(matcher.group(1)));
+            String translated = format("Module {0} was removed and returned to storage.", translateKnownNameEn(matcher.group(1)));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_BUILT_CLEAN.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Built {0} in slot {1} for {2}. Balance: {3}.", translateKnownNameEn(matcher.group(1)), matcher.group(2), matcher.group(3), matcher.group(4));
+            String translated = format("Tower built: {0}. Pad: {1}. Cost: {2}. Balance: {3}.", translateKnownNameEn(matcher.group(1)), matcher.group(2), matcher.group(3), matcher.group(4));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_UPGRADED_CLEAN.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Upgraded {0} in slot {1} to lvl {2}. Balance: {3}.", translateKnownNameEn(matcher.group(1)), matcher.group(2), matcher.group(3), matcher.group(4));
+            String translated = format("Tower upgraded: {0}. Pad: {1}. Lvl. {2}. Balance: {3}.", translateKnownNameEn(matcher.group(1)), matcher.group(2), matcher.group(3), matcher.group(4));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_SOLD_CLEAN.matcher(cleaned);
         if (matcher.matches()) {
@@ -932,76 +983,112 @@ public final class BankDefenseLocalization {
             if (!suffix.isBlank()) {
                 suffix = " Module returned to storage.";
             }
-            return format("Sold {0} from slot {1}. Refund: {2}. Balance: {3}.{4}", translateKnownNameEn(matcher.group(1)), matcher.group(2), matcher.group(3), matcher.group(4), suffix);
+            String translated = format("Tower sold: {0}. Pad: {1}. Refund: {2}. Balance: {3}.{4}", translateKnownNameEn(matcher.group(1)), matcher.group(2), matcher.group(3), matcher.group(4), suffix);
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_NOT_ENOUGH_CLEAN.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Not enough funds. Need: {0}, current: {1}.", matcher.group(1), matcher.group(2));
+            String translated = format("Not enough funds. Need: {0}, current: {1}.", matcher.group(1), matcher.group(2));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_GOBLIN_SABOTEUR_CLEAN.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Goblin Saboteur destroyed {0}.", translateKnownNameEn(matcher.group(1)));
+            String translated = format("Goblin Saboteur destroyed {0} (Lvl. {1}). Refund: only {2} gold.", translateKnownNameEn(matcher.group(1)), matcher.group(2), matcher.group(3));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_GOBLIN_BOSS_CLEAN.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Goblin Bomber lowered {0} to lvl {1}.", translateKnownNameEn(matcher.group(1)), matcher.group(2));
+            String translated = format("Goblin Bomber lowered {0} to lvl {1}.", translateKnownNameEn(matcher.group(1)), matcher.group(2));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_DISABLED_TOWERS_CLEAN.matcher(cleaned);
         if (matcher.matches()) {
-            return format("{0} disabled nearby towers.", translateKnownNameEn(matcher.group(1)));
+            String translated = format("{0} disabled nearby towers.", translateKnownNameEn(matcher.group(1)));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_SUPER_ACTIVE_READY_CLEAN.matcher(cleaned);
         if (matcher.matches()) {
-            return format("active • ready • {0}/{1}", matcher.group(1), matcher.group(2));
+            String translated = format("active • ready • {0}/{1}", matcher.group(1), matcher.group(2));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_SUPER_ACTIVE_SPENT_CLEAN.matcher(cleaned);
         if (matcher.matches()) {
-            return format("active • exhausted • {0}/{1}", matcher.group(1), matcher.group(2));
+            String translated = format("active • exhausted • {0}/{1}", matcher.group(1), matcher.group(2));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_SUPER_MONOLITH_READY_CLEAN.matcher(cleaned);
         if (matcher.matches()) {
-            return format("active • ready • {0}/{1}", matcher.group(1), matcher.group(2));
+            String translated = format("active • ready • {0}/{1}", matcher.group(1), matcher.group(2));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_SUPER_MONOLITH_SPENT_CLEAN.matcher(cleaned);
         if (matcher.matches()) {
-            return format("active • exhausted • {0}/{1}", matcher.group(1), matcher.group(2));
+            String translated = format("active • exhausted • {0}/{1}", matcher.group(1), matcher.group(2));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_IDOL_SAVINGS_CLEAN.matcher(cleaned);
         if (matcher.matches()) {
-            return format("active • savings • {0} gold", matcher.group(1));
+            String translated = format("active • savings • {0} gold", matcher.group(1));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
 
         matcher = PATTERN_WAVE_STARTED.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Wave {0} has started.", matcher.group(1));
+            String translated = format("Wave {0} has started.", matcher.group(1));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_WAVE_COMPLETE_REWARD.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Wave {0} is complete. Choose 1 module reward.", matcher.group(1));
+            String translated = format("Wave {0} is complete. Choose 1 module reward.", matcher.group(1));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_RECEIVED_MODULE.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Module received: {0}.", translateKnownNameEn(matcher.group(1)));
+            String translated = format("Module received: {0}.", translateKnownNameEn(matcher.group(1)));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_OPENED_UPGRADE.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Upgrade unlocked: {0} (-{1} shards).", translateKnownNameEn(matcher.group(1)), matcher.group(2));
+            String translated = format("Upgrade unlocked: {0} (-{1} shards).", translateKnownNameEn(matcher.group(1)), matcher.group(2));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_MODULE_INSTALLED.matcher(cleaned);
         if (matcher.matches()) {
-            return format("{0} was installed into {1}.", translateKnownNameEn(matcher.group(1)), translateKnownNameEn(matcher.group(2)));
+            String translated = format("{0} was installed into {1}.", translateKnownNameEn(matcher.group(1)), translateKnownNameEn(matcher.group(2)));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_MODULE_REMOVED.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Module {0} was removed and returned to storage.", translateKnownNameEn(matcher.group(1)));
+            String translated = format("Module {0} was removed and returned to storage.", translateKnownNameEn(matcher.group(1)));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_BUILT.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Built {0} in slot {1} for {2}. Balance: {3}.", translateKnownNameEn(matcher.group(1)), matcher.group(2), matcher.group(3), matcher.group(4));
+            String translated = format("Tower built: {0}. Pad: {1}. Cost: {2}. Balance: {3}.", translateKnownNameEn(matcher.group(1)), matcher.group(2), matcher.group(3), matcher.group(4));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_UPGRADED.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Upgraded {0} in slot {1} to lvl {2}. Balance: {3}.", translateKnownNameEn(matcher.group(1)), matcher.group(2), matcher.group(3), matcher.group(4));
+            String translated = format("Tower upgraded: {0}. Pad: {1}. Lvl. {2}. Balance: {3}.", translateKnownNameEn(matcher.group(1)), matcher.group(2), matcher.group(3), matcher.group(4));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_SOLD.matcher(cleaned);
         if (matcher.matches()) {
@@ -1009,44 +1096,65 @@ public final class BankDefenseLocalization {
             if (!suffix.isBlank()) {
                 suffix = " Module returned to storage.";
             }
-            return format("Sold {0} from slot {1}. Refund: {2}. Balance: {3}.{4}", translateKnownNameEn(matcher.group(1)), matcher.group(2), matcher.group(3), matcher.group(4), suffix);
+            String translated = format("Tower sold: {0}. Pad: {1}. Refund: {2}. Balance: {3}.{4}", translateKnownNameEn(matcher.group(1)), matcher.group(2), matcher.group(3), matcher.group(4), suffix);
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_NOT_ENOUGH.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Not enough funds. Need: {0}, current: {1}.", matcher.group(1), matcher.group(2));
+            String translated = format("Not enough funds. Need: {0}, current: {1}.", matcher.group(1), matcher.group(2));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_GOBLIN_SABOTEUR.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Goblin Saboteur destroyed {0}.", translateKnownNameEn(matcher.group(1)));
+            String translated = format("Goblin Saboteur destroyed {0} (Lvl. {1}). Refund: only {2} gold.", translateKnownNameEn(matcher.group(1)), matcher.group(2), matcher.group(3));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_GOBLIN_BOSS.matcher(cleaned);
         if (matcher.matches()) {
-            return format("Goblin Bomber lowered {0} to lvl {1}.", translateKnownNameEn(matcher.group(1)), matcher.group(2));
+            String translated = format("Goblin Bomber lowered {0} to lvl {1}.", translateKnownNameEn(matcher.group(1)), matcher.group(2));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_DISABLED_TOWERS.matcher(cleaned);
         if (matcher.matches()) {
-            return format("{0} disabled nearby towers.", translateKnownNameEn(matcher.group(1)));
+            String translated = format("{0} disabled nearby towers.", translateKnownNameEn(matcher.group(1)));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_SUPER_ACTIVE_READY.matcher(cleaned);
         if (matcher.matches()) {
-            return format("active • ready • {0}/{1}", matcher.group(1), matcher.group(2));
+            String translated = format("active • ready • {0}/{1}", matcher.group(1), matcher.group(2));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_SUPER_ACTIVE_SPENT.matcher(cleaned);
         if (matcher.matches()) {
-            return format("active • exhausted • {0}/{1}", matcher.group(1), matcher.group(2));
+            String translated = format("active • exhausted • {0}/{1}", matcher.group(1), matcher.group(2));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_SUPER_MONOLITH_READY.matcher(cleaned);
         if (matcher.matches()) {
-            return format("active • ready • {0}/{1}", matcher.group(1), matcher.group(2));
+            String translated = format("active • ready • {0}/{1}", matcher.group(1), matcher.group(2));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_SUPER_MONOLITH_SPENT.matcher(cleaned);
         if (matcher.matches()) {
-            return format("active • exhausted • {0}/{1}", matcher.group(1), matcher.group(2));
+            String translated = format("active • exhausted • {0}/{1}", matcher.group(1), matcher.group(2));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
         matcher = PATTERN_IDOL_SAVINGS.matcher(cleaned);
         if (matcher.matches()) {
-            return format("active • savings • {0} gold", matcher.group(1));
+            String translated = format("active • savings • {0} gold", matcher.group(1));
+            FREEFORM_CACHE.put(cacheKey, translated);
+            return translated;
         }
+        FREEFORM_CACHE.put(cacheKey, cleaned);
         return cleaned;
     }
 
@@ -1075,17 +1183,17 @@ public final class BankDefenseLocalization {
             case "Ожидание старта" -> "Waiting to start";
             case "Волна -" -> "Wave -";
             case "Загрузка" -> "Loading";
-            case "Выбери башню для слота." -> "Choose a tower for this slot.";
+            case "Выбери башню для слота.", "Выберите башню для слота." -> "Choose a tower for this slot.";
             case "Выбор модуля" -> "Module Selection";
-            case "Каждые 5 волн выбирай один модуль для запаса." -> "Every 5 waves, choose one module for your reserve.";
-            case "Выбери один модуль. Он попадёт в общий запас и его можно будет вставить в башню во время подготовки." -> "Choose one module. It will go into your shared reserve and can be inserted into a tower during preparation.";
+            case "Каждые 5 волн выбирай один модуль для запаса.", "Каждые 5 волн выбирайте один модуль для запаса." -> "Every 5 waves, choose one module for your reserve.";
+            case "Выбери один модуль. Он попадёт в общий запас и его можно будет вставить в башню во время подготовки.", "Выберите один модуль. Он попадёт в общий запас, и его можно будет вставить в башню во время подготовки." -> "Choose one module. It will go into your shared reserve and can be inserted into a tower during preparation.";
             case "Продать" -> "Sell";
             case "Снять модуль" -> "Remove module";
             case "Улучшить" -> "Upgrade";
             case "Нужна мета-прокачка" -> "Requires progression upgrade";
             case "Продажа недоступна" -> "Selling unavailable";
-            case "Выбери 1 модуль награды за волну." -> "Choose 1 module reward for the wave.";
-            case "Сначала выбери модуль награды за волну." -> "Choose a wave reward module first.";
+            case "Выбери 1 модуль награды за волну.", "Выберите 1 модуль награды за волну." -> "Choose 1 module reward for the wave.";
+            case "Сначала выбери модуль награды за волну.", "Сначала выберите модуль награды за волну." -> "Choose a wave reward module first.";
             case "Этот модуль сейчас недоступен." -> "This module is currently unavailable.";
             case "Сейчас Квибек ждёт другое действие." -> "Kweebec is waiting for a different action right now.";
             case "Сначала вставь модуль, заполни все площадки и доведи башни до 5 уровня." -> "First insert a module, fill all pads, and bring your towers to level 5.";
@@ -1109,7 +1217,7 @@ public final class BankDefenseLocalization {
             case "Переход в Duo Режим" -> "Switch to Duo Mode";
             case "Подготовка систем дупла." -> "Preparing hollow systems.";
             case "Начните новый матч у оператора." -> "Start a new match at the operator.";
-            case "Выбери сложность и контракт у оператора." -> "Choose a difficulty and contract at the operator.";
+            case "Выбери сложность и контракт у оператора.", "Выберите сложность и контракт у оператора." -> "Choose a difficulty and contract at the operator.";
             case "Поставьте башни на площадки." -> "Place towers on the pads.";
             case "Подготовь защиту и запусти волну у оператора." -> "Prepare your defense and start the wave at the operator.";
             case "Удерживай маршрут. Мертвяки прорываются к сердцу дупла." -> "Hold the route. The dead are pushing toward the hollow's heart.";
@@ -1174,7 +1282,7 @@ public final class BankDefenseLocalization {
     }
 
     private static String translateKnownNameEn(String value) {
-        String cleaned = BankDefenseTextSupport.clean(value);
+        String cleaned = repairKnownRuFragments(BankDefenseTextSupport.clean(value));
         if (cleaned.isBlank()) {
             return cleaned;
         }
@@ -1222,8 +1330,9 @@ public final class BankDefenseLocalization {
     }
 
     private static String translateMapValue(String cleaned, Map<String, String> ruValues, Map<String, String> enValues) {
+        String lookupKey = normalizeLookupKey(cleaned);
         for (Map.Entry<String, String> entry : ruValues.entrySet()) {
-            if (Objects.equals(BankDefenseTextSupport.clean(entry.getValue()), cleaned)) {
+            if (Objects.equals(normalizeLookupKey(entry.getValue()), lookupKey)) {
                 return enValues.getOrDefault(entry.getKey(), cleaned);
             }
         }
@@ -1247,21 +1356,74 @@ public final class BankDefenseLocalization {
     }
 
     private static String cleanedOrFallback(String value, String fallback) {
-        String cleaned = BankDefenseTextSupport.clean(value);
+        String cleaned = repairKnownRuFragments(BankDefenseTextSupport.clean(value));
         if (!cleaned.isBlank()) {
             return cleaned;
         }
-        return BankDefenseTextSupport.clean(fallback);
+        return repairKnownRuFragments(BankDefenseTextSupport.clean(fallback));
     }
 
     private static String format(String template, Object... args) {
         String value = template == null ? "" : template;
         if (args == null || args.length == 0) {
-            return value;
+            return repairKnownRuFragments(BankDefenseTextSupport.clean(value));
         }
         for (int index = 0; index < args.length; index++) {
             value = value.replace("{" + index + "}", Objects.toString(args[index], ""));
         }
-        return value;
+        return repairKnownRuFragments(BankDefenseTextSupport.clean(value));
+    }
+
+    private static String normalizeLookupKey(String value) {
+        String cleaned = repairKnownRuFragments(BankDefenseTextSupport.clean(value));
+        if (cleaned.isBlank()) {
+            return "";
+        }
+        return cleaned
+            .replace('Ё', 'Е')
+            .replace('ё', 'е')
+            .replaceAll("[\\?]+", "")
+            .replaceAll("[\\p{Punct}&&[^+%]]+", " ")
+            .replaceAll("\\s+", " ")
+            .trim()
+            .toLowerCase(Locale.ROOT);
+    }
+
+    private static String repairKnownRuFragments(String text) {
+        if (text == null || text.isBlank()) {
+            return text == null ? "" : text;
+        }
+        String repaired = text;
+        repaired = repairKnownMapValues(repaired, TOWER_RU);
+        repaired = repairKnownMapValues(repaired, TOWER_SHORT_RU);
+        repaired = repairKnownMapValues(repaired, MODULE_RU);
+        repaired = repairKnownMapValues(repaired, MODULE_SHORT_RU);
+        repaired = repairKnownMapValues(repaired, ENEMY_RU);
+        repaired = repairKnownMapValues(repaired, CONTRACT_RU);
+        repaired = repairKnownMapValues(repaired, DIFFICULTY_RU);
+        repaired = repairKnownMapValues(repaired, PROGRESSION_RU);
+        return repaired;
+    }
+
+    private static String repairKnownMapValues(String text, Map<String, String> values) {
+        String repaired = text;
+        for (String known : values.values()) {
+            repaired = repairKnownFragment(repaired, known);
+        }
+        return repaired;
+    }
+
+    private static String repairKnownFragment(String text, String known) {
+        if (text == null || text.isBlank() || known == null || known.length() < 4) {
+            return text == null ? "" : text;
+        }
+        String repaired = text;
+        int maxMissing = Math.min(2, known.length() - 3);
+        for (int missing = 1; missing <= maxMissing; missing++) {
+            String suffix = Pattern.quote(known.substring(missing));
+            String regex = "(?iu)(^|(?<=[\\s\\[\\(\\{\"']))\\?{1,3}" + suffix + "(?=$|[\\s\\]\\)\\}\\.,!?:;\"'])";
+            repaired = Pattern.compile(regex).matcher(repaired).replaceAll("$1" + Matcher.quoteReplacement(known));
+        }
+        return repaired;
     }
 }

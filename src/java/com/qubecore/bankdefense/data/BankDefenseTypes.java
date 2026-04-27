@@ -95,6 +95,7 @@ public final class BankDefenseTypes {
         public String note;
         public double fireRateMultiplier = 1.0;
         public double damageMultiplier = 1.0;
+        public double rangeMultiplier = 1.0;
         public double rangeBonus = 0.0;
         public double slowPercentBonus = 0.0;
         public double slowDurationBonus = 0.0;

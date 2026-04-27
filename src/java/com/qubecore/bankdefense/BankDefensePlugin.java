@@ -55,6 +55,7 @@ import java.util.logging.Level;
 public final class BankDefensePlugin extends JavaPlugin {
     private static final long MATCH_TICK_MS = 50L;
     private static final Set<String> PROTECTED_WORLD_KEYS = ConcurrentHashMap.newKeySet();
+    private static final Set<String> ACTIVE_TICK_WORLD_KEYS = ConcurrentHashMap.newKeySet();
     private static volatile BankDefensePlugin instance;
     private static volatile boolean noBuildEnabled = true;
     private static volatile boolean builderToolsEnabled = false;
@@ -166,7 +167,6 @@ public final class BankDefensePlugin extends JavaPlugin {
         this.getEntityStoreRegistry().registerSystem(new NoBuildPlaceSystem());
         this.getEntityStoreRegistry().registerSystem(new NoBuildBreakSystem());
         this.getEntityStoreRegistry().registerSystem(new NoBuildDamageSystem());
-
         this.startMatchTicker();
         this.getLogger().at(Level.INFO).log("QubeCore Bank Defense runtime initialized.");
     }
@@ -292,16 +292,25 @@ public final class BankDefensePlugin extends JavaPlugin {
                 return;
             }
             Universe.get().getWorlds().values().forEach(world -> {
+                String key = worldKey(world);
+                if (!ACTIVE_TICK_WORLD_KEYS.add(key)) {
+                    return;
+                }
                 try {
                     world.execute(() -> {
-                        if (this.runtime.hasActiveMatch(world)) {
-                            this.runtime.tickWorld(world, MATCH_TICK_MS / 1000.0);
-                        }
-                        if (this.runtime.isVisualizationEnabled(world)) {
-                            this.runtime.tickVisualization(world, MATCH_TICK_MS / 1000.0);
+                        try {
+                            if (this.runtime.hasActiveMatch(world)) {
+                                this.runtime.tickWorld(world, MATCH_TICK_MS / 1000.0);
+                            }
+                            if (this.runtime.isVisualizationEnabled(world)) {
+                                this.runtime.tickVisualization(world, MATCH_TICK_MS / 1000.0);
+                            }
+                        } finally {
+                            ACTIVE_TICK_WORLD_KEYS.remove(key);
                         }
                     });
                 } catch (Throwable t) {
+                    ACTIVE_TICK_WORLD_KEYS.remove(key);
                     this.getLogger().at(Level.WARNING).withCause(t).log("Failed to tick Bank Defense match in world '%s'.", world.getName());
                 }
             });

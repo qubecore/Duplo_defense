@@ -71,6 +71,10 @@ public final class BankDefenseSuperSlotPage extends InteractiveCustomUIPage<Bank
             if (result.message != null && !result.message.isBlank()) {
                 player.sendMessage(Message.raw(BankDefenseLocalization.translateFreeform(this.viewerRef, result.message)));
             }
+            if (result.success && data.action.startsWith("idol_mode:")) {
+                this.close();
+                return;
+            }
         } catch (IOException e) {
             this.hint = BankDefenseLocalization.tr(this.viewerRef, "page.super.error", e.getMessage());
             this.runtime.playUiErrorSound(player.getWorld(), this.viewerRef);

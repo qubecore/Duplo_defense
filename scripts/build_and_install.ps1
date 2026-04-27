@@ -4,9 +4,6 @@ $ErrorActionPreference = "Stop"
 
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $logPath = Join-Path $projectRoot "SETUP_LOG.md"
-$modVersion = "0.2.1"
-$modArtifactName = "BankDefense-$modVersion.jar"
-$installArtifactName = "DuploTD-$modVersion.jar"
 
 function Add-Log {
     param([string]$Message)
@@ -64,7 +61,7 @@ $hytaleRoot = "C:\Users\QubeCore\AppData\Roaming\Hytale"
 $userDataRoot = Join-Path $hytaleRoot "UserData"
 $modsRoot = Join-Path $userDataRoot "Mods"
 $savesRoot = Join-Path $userDataRoot "Saves"
-$installJarPath = Join-Path $modsRoot $installArtifactName
+$installJarPath = Join-Path $modsRoot "BankDefense-0.1.0.jar"
 $savePaths = @()
 $fallbackSavePaths = @(
     (Join-Path $savesRoot "Bank Defense"),
@@ -79,7 +76,7 @@ $buildRoot = Join-Path $projectRoot "build"
 $classesRoot = Join-Path $buildRoot "classes"
 $stageRoot = Join-Path $buildRoot "stage"
 $distRoot = Join-Path $projectRoot "dist"
-$distJar = Join-Path $distRoot $modArtifactName
+$distJar = Join-Path $distRoot "BankDefense-0.1.0.jar"
 $backupRoot = Join-Path $projectRoot "install_backups"
 $modBackupRoot = Join-Path $backupRoot "mods"
 $saveConfigBackupRoot = Join-Path $backupRoot "save_configs"
@@ -201,11 +198,10 @@ try {
 }
 Add-Log "Verified packaged jar contains manifest, class, and default data entries with Java-compatible paths."
 
-@("BankDefense-*.jar", "DuploTD-*.jar") | ForEach-Object {
-    Get-ChildItem -Path $modsRoot -Filter $_ -ErrorAction SilentlyContinue | ForEach-Object {
-        Backup-IfExists -PathToBackup $_.FullName -BackupRoot $modBackupRoot | Out-Null
-    }
+Get-ChildItem -Path $modsRoot -Filter "BankDefense-0.1.0.jar.backup-*" -ErrorAction SilentlyContinue | ForEach-Object {
+    Backup-IfExists -PathToBackup $_.FullName -BackupRoot $modBackupRoot | Out-Null
 }
+Backup-IfExists -PathToBackup $installJarPath -BackupRoot $modBackupRoot | Out-Null
 Copy-Item -Path $distJar -Destination $installJarPath -Force
 Add-Log "Installed mod jar to $installJarPath"
 
