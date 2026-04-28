@@ -17357,7 +17357,7 @@ public final class BankDefenseRuntime {
             case ENEMY_SEAL_MASTER -> new RoleModelProfile(new String[]{"Skeleton_burnt_soldier", "Skeleton"}, MODEL_PLAYER, 1.28f);
             case ENEMY_SEAL_NODE -> new RoleModelProfile(new String[]{"Skeleton_Incandescent_Head", "Skeleton"}, MODEL_PLAYER, 0.78f);
             case "vault_breaker" -> new RoleModelProfile(new String[]{"Zombie_Aberrant"}, MODEL_PLAYER, 1.45f);
-            case "necro_king" -> new RoleModelProfile(new String[]{"Skeleton_burnt_soldier", "Zombie_Aberrant"}, MODEL_PLAYER, 1.34f);
+            case "necro_king" -> new RoleModelProfile(new String[]{"Hedera"}, "Hedera", 1.34f);
             case "goblin_bomber_boss" -> new RoleModelProfile(new String[]{"Goblin_Duke", "Goblin"}, MODEL_PLAYER, 1.42f);
             default -> new RoleModelProfile(new String[]{"Skeleton", "Zombie"}, MODEL_PLAYER, 0.96f);
         };

@@ -217,7 +217,7 @@ public final class BankDefenseLocalization {
     private static final Map<String, String> CONTRACT_RU = Map.ofEntries(
         Map.entry("none", "Без контракта"),
         Map.entry("triple_breach", "Тройной прорыв"),
-        Map.entry("empty_purse", "Пустой кошель"),
+        Map.entry("lean_purse", "Пустой кошель"),
         Map.entry("necrotic_mist", "Некротический туман"),
         Map.entry("storm_front", "Грозовой фронт")
     );
@@ -225,7 +225,7 @@ public final class BankDefenseLocalization {
     private static final Map<String, String> CONTRACT_EN = Map.ofEntries(
         Map.entry("none", "No Contract"),
         Map.entry("triple_breach", "Triple Breach"),
-        Map.entry("empty_purse", "Empty Purse"),
+        Map.entry("lean_purse", "Empty Purse"),
         Map.entry("necrotic_mist", "Necrotic Mist"),
         Map.entry("storm_front", "Storm Front")
     );
@@ -233,7 +233,7 @@ public final class BankDefenseLocalization {
     private static final Map<String, String> CONTRACT_NOTE_EN = Map.ofEntries(
         Map.entry("none", "A clean run with no extra modifiers."),
         Map.entry("triple_breach", "Two-lane and three-lane waves arrive earlier, and bosses are escorted by neighboring lanes more often."),
-        Map.entry("empty_purse", "Starting money is cut, gold chests are disabled, and the early-start bonus is almost gone."),
+        Map.entry("lean_purse", "Starting money is cut, gold chests are disabled, and the early-start bonus is almost gone."),
         Map.entry("necrotic_mist", "Necro thieves and priests appear more often, their auras are stronger, and the mist raises fodder along cleared route segments."),
         Map.entry("storm_front", "Preparation between waves is shorter, fast enemies appear more often and move faster, and slows affect them less.")
     );
