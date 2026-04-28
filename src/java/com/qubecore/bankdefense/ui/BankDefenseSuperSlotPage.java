@@ -1,8 +1,5 @@
 package com.qubecore.bankdefense.ui;
 
-import com.hypixel.hytale.codec.Codec;
-import com.hypixel.hytale.codec.KeyedCodec;
-import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.protocol.packets.interface_.CustomPageLifetime;
@@ -25,7 +22,7 @@ import java.io.IOException;
 import java.util.List;
 import javax.annotation.Nonnull;
 
-public final class BankDefenseSuperSlotPage extends InteractiveCustomUIPage<BankDefenseSuperSlotPage.EventDataPayload> {
+public final class BankDefenseSuperSlotPage extends InteractiveCustomUIPage<BankDefenseSuperSlotEventDataPayload> {
     private static final String UI_PAGE = "Pages/BankDefenseSuperSlotPage.ui";
     private static final List<String> SUPER_CARD_SELECTORS = List.of("#HeartCard", "#MonolithCard", "#IdolCard");
     private static final List<String> SUPER_BUTTON_SELECTORS = List.of("#HeartBuild", "#MonolithBuild", "#IdolBuild");
@@ -36,7 +33,7 @@ public final class BankDefenseSuperSlotPage extends InteractiveCustomUIPage<Bank
     private String hint = "";
 
     public BankDefenseSuperSlotPage(PlayerRef playerRef, BankDefenseRuntime runtime, String slotId) {
-        super(playerRef, CustomPageLifetime.CanDismiss, EventDataPayload.CODEC);
+        super(playerRef, CustomPageLifetime.CanDismiss, BankDefenseSuperSlotEventDataPayload.CODEC);
         this.runtime = runtime;
         this.viewerRef = playerRef;
         this.slotId = slotId;
@@ -50,7 +47,7 @@ public final class BankDefenseSuperSlotPage extends InteractiveCustomUIPage<Bank
     }
 
     @Override
-    public void handleDataEvent(@Nonnull Ref<EntityStore> ref, @Nonnull Store<EntityStore> store, @Nonnull EventDataPayload data) {
+    public void handleDataEvent(@Nonnull Ref<EntityStore> ref, @Nonnull Store<EntityStore> store, @Nonnull BankDefenseSuperSlotEventDataPayload data) {
         if (data.action == null || data.action.isBlank()) {
             return;
         }
@@ -314,12 +311,4 @@ public final class BankDefenseSuperSlotPage extends InteractiveCustomUIPage<Bank
         return value == null || value.isBlank() ? fallback : value;
     }
 
-    public static final class EventDataPayload {
-        public static final BuilderCodec<EventDataPayload> CODEC = BuilderCodec.builder(EventDataPayload.class, EventDataPayload::new)
-            .append(new KeyedCodec<>("Action", Codec.STRING), (entry, value) -> entry.action = value, entry -> entry.action)
-            .add()
-            .build();
-
-        public String action;
-    }
 }

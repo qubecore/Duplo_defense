@@ -68,7 +68,9 @@ public final class BankDefenseSlotPageSupplier implements OpenCustomUIInteractio
                 return new BankDefenseSuperSlotPage(playerRef, currentRuntime, target.slotId);
             }
             return new BankDefenseSlotPage(playerRef, currentRuntime, target.slotId);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException | LinkageError e) {
+            System.err.println("[BankDefense] Failed to open slot UI for slot target at " + targetBlock + ": " + e);
+            e.printStackTrace(System.err);
             return null;
         }
     }
